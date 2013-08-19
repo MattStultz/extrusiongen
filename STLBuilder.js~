@@ -1,0 +1,15 @@
+
+/**
+ * A Three.js geometry-to-STL converter.
+ *
+ * @author Ikaros Kappler
+ * @date 2013-08-14
+ * @version 1.0.0
+ **/
+
+function buildSTL( geometry ) {
+
+    
+
+
+}

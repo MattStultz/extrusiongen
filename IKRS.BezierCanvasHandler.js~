@@ -1,0 +1,369 @@
+/**
+ * @author Ikaros Kappler
+ * @date 2013-08-14
+ * @version 1.0.0
+ **/
+
+IKRS.BezierCanvasHandler = function() {
+
+    IKRS.Object.call( this );
+    
+    // These are MouseEvent locations
+    var latestMouseDownPosition;
+    var latestMouseDragPosition;
+
+    var currentDragPoint;
+
+    var canvas_width  = 512;
+    var canvas_height = 768;
+    
+    this.bezierCurve = null;
+
+    this.canvas = document.getElementById("bezier_canvas");
+    this.context = this.canvas.getContext( "2d" );
+    /*
+    var renderer       = new THREE.WebGLRenderer( { "canvas" : bezier_canvas } ); 
+    if( !renderer.context )
+	window.alert( "ERR" );
+    
+    
+    // This is a THREE.Vector3 rotation (euklid)
+    var currentRotation;
+    
+    
+    var mesh; // will be initialized later
+    var scene = new THREE.Scene(); 
+    var camera = new THREE.PerspectiveCamera( 75, 
+					      canvas_width/canvas_height,
+					      0.1, 
+					      1000 
+					    ); 
+    
+    // create a point light
+    var pointLight =
+	new THREE.PointLight(0xFFFFFF);
+    
+    // set its position
+    pointLight.position.x = 10;
+    pointLight.position.y = 50;
+    pointLight.position.z = 130;
+    
+    // add to the scene
+    scene.add( pointLight );
+    */  
+
+    this.canvas.onmousedown = this.mouseDownHandler;
+    this.canvas.onmouseup   = this.mouseUpHandler;
+    this.canvas.onmousemove = this.mouseMoveHandler;
+
+    /*
+    this.canvas.onmousedown = function( e ) {
+	// window.alert( "mouse down. Event: " + e + ", e.pageX=" + e.pageX + ", e.pageY=" + e.pageY );
+	this.latestMouseDownPosition = new THREE.Vector2( e.pageX, e.pageY ); 
+	this.latestMouseDragPosition = new THREE.Vector2( e.pageX, e.pageY ); 
+	
+	window.alert( getBezierCurve() );
+
+	// Find drag point?
+	if( this.pointIsNearPosition(this.getBezierCurve().getStartPoint(), e.pageX, e.pageY, 5) ) {
+	    this.currentDragPoint = this.getBezierCurve().getStartPoint();
+	} else if( this.pointIsNearPosition(this.getBezierCurve().getEndPoint(), e.pageX, e.pageY, 5) ) {
+	    this.currentDragPoint = this.getBezierCurve().getEndPoint();
+	} else if( this.pointIsNearPosition(this.getBezierCurve().getStartControlPoint(), e.pageX, e.pageY, 5) ) {
+	    this.currentDragPoint = this.getBezierCurve().getStartControlPoint();
+	} else if( this.pointIsNearPosition(this.getBezierCurve().getEndControlPoint(), e.pageX, e.pageY, 5) ) {
+	    this.currentDragPoint = this.getBezierCurve().getEndControlPoint();
+	}
+	
+    }
+
+
+    this.canvas.onmouseup = function( e ) {
+	// window.alert( "mouse up. Event: " + e + ", e.pageX=" + e.pageX + ", e.pageY=" + e.pageY );
+	// Clear mouse down position
+	this.latestMouseDownPosition = null; 
+	this.latestMouseDragPosition = null; 
+	this.currentDragPoint = null;
+    }
+
+    this.canvas.onmousemove = function( e ) {
+	// window.alert( "mouse move. Event: " + e + ", e.pageX=" + e.pageX + ", e.pageY=" + e.pageY );
+	
+	if( this.latestMouseDownPosition ) {
+
+	    if( this.currentDragPoint ) {
+
+		// Update dragges point's position
+		var moveX = this.latestMouseDragPosition.x - e.pageX;
+		var moveY = this.latestMouseDragPosition.y - e.pageY;
+		this.currentDragPoint.add( new THREE.Vector2(moveX,moveY) );
+		
+		// Re-calculate the segment cache
+		this.getBezierCurve().updateArcLengths();
+		
+
+		// And repaint the curve
+		this.drawBezierCurve( this.context, 
+				      this.bezierCurve, 
+				      this.drawOffset 
+				    );
+	    }
+	    
+
+	    this.latestMouseDownPosition.set( e.pageX, e.pageY );
+	    this.latestMouseDragPosition.set( e.pageX, e.pageY );
+	    
+	}
+    }
+    */
+    
+    /*
+    this.pointIsNearPosition = function( point,
+					 x, 
+					 y,
+					 tolerance ) {
+	
+	return (Math.sqrt( Math.pow(point.x-x,2) + Math.pow(point.y-y,2) ) <= tolerance);
+
+    }
+    */
+
+    /*
+    //window.alert( "preview_canvas.width=" +  preview_canvas.width + ", preview_canvas.height=" + preview_canvas.height );
+    renderer.setSize( canvas_width, // preview_canvas.width,  //  canvasWidth, // window.innerWidth, 
+		      canvas_height // preview_canvas.height  // canvasHeight   // window.innerHeight 
+		    ); 
+    
+    document.body.appendChild( renderer.domElement );
+    
+    */
+
+    //window.alert( "BB" );
+
+    var bezierWidth = 400;
+    var bezierHeight = 500;
+    this.bezierCurve = new IKRS.CubicBezierCurve( new THREE.Vector2( bezierWidth/8,   5*bezierHeight/8 ),     // startPoint
+						    new THREE.Vector2( 7*bezierWidth/8, 5*bezierHeight/8 ),     // endPoint
+						    new THREE.Vector2( 3*bezierWidth/8, bezierHeight/4,   0),   // startControlPoint
+						    new THREE.Vector2( 5*bezierWidth/8, bezierHeight/4,   0)    // endControlPoint
+						  );
+    // Store a reverse reference inside the handler so the mousehandlers can access this object
+    this.canvas.bezierCanvasHandler = this;
+    
+    // Draw the bezier curve 
+    // (the dirty way: access the segment cache directly)
+    //this.drawOffset = new THREE.Vector2( 100, 0 );
+    
+    
+    
+    this.drawBezierCurve( this.context, 
+			  this.bezierCurve, 
+			  this.drawOffset,
+			  true,  // drawStartPoint
+			  true,  // drawEndPoint
+			  true,  // drawStartControlPoint
+			  true   // drawEndControlPoint
+			);
+}
+
+
+IKRS.BezierCanvasHandler.prototype = new IKRS.Object();
+IKRS.BezierCanvasHandler.prototype.constructor = IKRS.BezierCanvasHandler;
+
+IKRS.BezierCanvasHandler.prototype.drawOffset = new THREE.Vector2( 100, 0 );
+// 0: start point
+// 1: start control point
+// 2: end control point
+// 3: end point
+IKRS.BezierCanvasHandler.prototype.draggedPointID = -1; 
+
+IKRS.BezierCanvasHandler.prototype.drawBezierCurve = function( context,
+							       bezierCurve,
+							       drawOffset,
+							       drawStartPoint,
+							       drawEndPoint,
+							       drawStartControlPoint,
+							       drawEndControlPoint ) {
+    
+    // Clear screen?
+    if( document.forms["bezier_form"].elements["clear_on_repaint"].checked ) {
+
+	context.fillStyle = "#FFFFFF";
+	context.fillRect( 0, 0, 512, 768 );
+	
+    }
+
+    context.lineWidth = 1;
+    context.beginPath();
+    // window.alert( "Beginning bezier path at: (" + bezierCurve.segmentCache[0].x + ", " + bezierCurve.segmentCache[0].y + ")" );
+    context.moveTo( bezierCurve.segmentCache[0].x + drawOffset.x,
+		    bezierCurve.segmentCache[0].y + drawOffset.y
+		  );
+    for( var i = 1; i < bezierCurve.segmentCache.length; i++ ) {
+
+	
+	context.lineTo( bezierCurve.segmentCache[i].x + drawOffset.x,
+			bezierCurve.segmentCache[i].y + drawOffset.y
+		      );	
+    }
+    context.stroke();
+
+    
+    // Draw the end points
+    if( drawStartPoint || drawEndPoint ) {
+	context.fillStyle = "#B400FF";
+	// Start point?
+	if( drawStartPoint ) {
+	    context.fillRect( bezierCurve.getStartPoint().x - 1 + drawOffset.x,
+			      bezierCurve.getStartPoint().y - 1 + drawOffset.y,
+			      3, 3 );
+	}
+	// End point?
+	if( drawEndPoint ) {
+	    context.fillRect( bezierCurve.getEndPoint().x - 1 + drawOffset.x,
+			      bezierCurve.getEndPoint().y - 1 + drawOffset.y,
+			      3, 3 );
+	}
+    }
+
+    // Draw the control points?
+    if( drawStartControlPoint || drawEndControlPoint ) {
+	context.fillStyle = "#B8D438";
+	// Start control point?
+	if( drawStartControlPoint ) {
+	    context.fillRect( bezierCurve.getStartControlPoint().x - 1 + drawOffset.x,
+			      bezierCurve.getStartControlPoint().y - 1 + drawOffset.y,
+			      3, 3 );
+	}
+	// End control point?
+	if( drawEndControlPoint ) {
+	    context.fillRect( bezierCurve.getEndControlPoint().x - 1 + drawOffset.x,
+			      bezierCurve.getEndControlPoint().y - 1 + drawOffset.y,
+			      3, 3 );
+	}
+    }
+}
+
+IKRS.BezierCanvasHandler.prototype.getBezierCurve = function() {
+    return this.bezierCurve;
+}
+
+IKRS.BezierCanvasHandler.prototype.pointIsNearPosition = function( point,
+								   x, 
+								   y,
+								   tolerance ) {
+
+    var distance = Math.sqrt( Math.pow(point.x-x,2) + Math.pow(point.y-y,2) );
+
+    //window.alert( "point=(" + point.x + ", " + point.y + "), x=" + x + ", y=" + y + ", tolerance=" + tolerance + ", distance=" + distance );
+
+    return ( distance <= tolerance );
+
+}
+
+IKRS.BezierCanvasHandler.prototype.mouseDownHandler = function( e ) {
+    // window.alert( "mouse down. Event: " + e + ", e.pageX=" + e.pageX + ", e.pageY=" + e.pageY );
+    this.bezierCanvasHandler.latestMouseDownPosition = new THREE.Vector2( e.pageX, e.pageY ); 
+    this.bezierCanvasHandler.latestMouseDragPosition = new THREE.Vector2( e.pageX, e.pageY ); 
+    
+    //window.alert( this.bezierCanvasHandler.getBezierCurve() );
+    // Find relative coordinates
+    var rect = this.getBoundingClientRect();
+    var left = e.clientX - rect.left - this.clientLeft + this.scrollLeft;
+    var top = e.clientY - rect.top - this.clientTop + this.scrollTop;
+    //window.alert( "left=" + left + ", top=" + top );
+
+    // Add draw offset :)
+    left -= this.bezierCanvasHandler.drawOffset.x;
+    top -= this.bezierCanvasHandler.drawOffset.y;
+
+    var clickTolerance = 50; // px
+
+    // Find drag point?
+    if( this.bezierCanvasHandler.pointIsNearPosition(this.bezierCanvasHandler.getBezierCurve().getStartPoint(), left, top, clickTolerance) ) {
+
+	this.bezierCanvasHandler.currentDragPoint = this.bezierCanvasHandler.getBezierCurve().getStartPoint();
+	this.bezierCanvasHandler.draggedPointID = 0;
+	
+    } else if( this.bezierCanvasHandler.pointIsNearPosition(this.bezierCanvasHandler.getBezierCurve().getEndPoint(), left, top, clickTolerance) ) {
+
+	this.bezierCanvasHandler.currentDragPoint = this.bezierCanvasHandler.getBezierCurve().getEndPoint();
+	this.bezierCanvasHandler.draggedPointID = 3;
+	
+    } else if( this.bezierCanvasHandler.pointIsNearPosition(this.bezierCanvasHandler.getBezierCurve().getStartControlPoint(), left, top, clickTolerance) ) {
+	
+	this.bezierCanvasHandler.currentDragPoint = this.bezierCanvasHandler.getBezierCurve().getStartControlPoint();
+	this.bezierCanvasHandler.draggedPointID = 1;
+
+    } else if( this.bezierCanvasHandler.pointIsNearPosition(this.bezierCanvasHandler.getBezierCurve().getEndControlPoint(), left, top, clickTolerance) ) {
+	
+	this.bezierCanvasHandler.currentDragPoint = this.bezierCanvasHandler.getBezierCurve().getEndControlPoint();
+	this.bezierCanvasHandler.draggedPointID = 2;
+
+    } else {
+	
+	this.bezierCanvasHandler.draggedPointID = -1;
+
+    }
+    
+}
+
+
+IKRS.BezierCanvasHandler.prototype.mouseUpHandler = function( e ) {
+    // window.alert( "mouse up. Event: " + e + ", e.pageX=" + e.pageX + ", e.pageY=" + e.pageY );
+    // Clear mouse down position
+    this.bezierCanvasHandler.latestMouseDownPosition = null; 
+    this.bezierCanvasHandler.latestMouseDragPosition = null; 
+    this.bezierCanvasHandler.currentDragPoint = null;
+    this.bezierCanvasHandler.draggedPointID = -1;
+
+    // And repaint the curve (to make the eventually hidden drag points to disappear)
+    this.bezierCanvasHandler.drawBezierCurve( this.bezierCanvasHandler.context, 
+					      this.bezierCanvasHandler.bezierCurve, 
+					      this.bezierCanvasHandler.drawOffset,
+					      (this.bezierCanvasHandler.draggedPointID != 0),  // drawStartPoint
+					      (this.bezierCanvasHandler.draggedPointID != 3),  // drawEndPoint
+					      (this.bezierCanvasHandler.draggedPointID != 1),  // drawStartControlPoint
+					      (this.bezierCanvasHandler.draggedPointID != 2)   // drawEndControlPoint
+					    );
+}
+
+IKRS.BezierCanvasHandler.prototype.mouseMoveHandler = function( e ) {
+   //window.alert( "mouse move. Event: " + e + ", e.pageX=" + e.pageX + ", e.pageY=" + e.pageY + ", lastMouseDownPosition=" + this.bezierCanvasHandler.latestMouseDownPosition + ", currentDragPoint=" + this.bezierCanvasHandler.currentDragPoint );
+    
+    if( this.bezierCanvasHandler.latestMouseDownPosition ) {
+
+	if( this.bezierCanvasHandler.currentDragPoint ) {
+
+	    // Update dragges point's position
+	    var moveX = this.bezierCanvasHandler.latestMouseDragPosition.x - e.pageX;
+	    var moveY = this.bezierCanvasHandler.latestMouseDragPosition.y - e.pageY;
+	    this.bezierCanvasHandler.currentDragPoint.add( new THREE.Vector2(-moveX,-moveY) );
+	    
+	    // window.alert( "Point moved by (" + moveX + ", " + moveY + ")" );
+	    
+	    // Re-calculate the segment cache
+	    this.bezierCanvasHandler.getBezierCurve().updateArcLengths();
+	    
+
+	    // And repaint the curve
+	    this.bezierCanvasHandler.drawBezierCurve( this.bezierCanvasHandler.context, 
+						      this.bezierCanvasHandler.bezierCurve, 
+						      this.bezierCanvasHandler.drawOffset,
+						      (this.bezierCanvasHandler.draggedPointID != 0),  // drawStartPoint
+						      (this.bezierCanvasHandler.draggedPointID != 3),  // drawEndPoint
+						      (this.bezierCanvasHandler.draggedPointID != 1),  // drawStartControlPoint
+						      (this.bezierCanvasHandler.draggedPointID != 2)   // drawEndControlPoint
+						    );
+	}
+	
+
+	this.bezierCanvasHandler.latestMouseDownPosition.set( e.pageX, e.pageY );
+	this.bezierCanvasHandler.latestMouseDragPosition.set( e.pageX, e.pageY );
+	
+    }
+}
+
+
+//window.alert( "IKRS.BezierCanvasHandler=" + IKRS.BezierCanvasHandler );
+//window.alert( "IKRS.BezierCanvasHandler.prototype=" + IKRS.BezierCanvasHandler.prototype );
