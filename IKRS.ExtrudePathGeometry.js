@@ -7,7 +7,7 @@
 
 
 
-THREE.ExtrudePathGeometry = function( shape,
+IKRS.ExtrudePathGeometry = function( shape,
 				      path,
 				      options
 				    ) {
@@ -120,7 +120,7 @@ THREE.ExtrudePathGeometry = function( shape,
     // return new THREE.ExtrudeGeometry( shape, options );
 };
 
-THREE.ExtrudePathGeometry.prototype = new THREE.Geometry();
-THREE.ExtrudePathGeometry.prototype.constructor = THREE.ExtrudePathGeometry;
+IKRS.ExtrudePathGeometry.prototype = new THREE.Geometry();
+IKRS.ExtrudePathGeometry.prototype.constructor = IKRS.ExtrudePathGeometry;
 
-// window.alert( "THREE.ExtrudePathGeometry=" + THREE.ExtrudePathGeometry );
+// window.alert( "IKRS.ExtrudePathGeometry=" + IKRS.ExtrudePathGeometry );

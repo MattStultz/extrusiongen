@@ -25,7 +25,7 @@ var preview_scene = new THREE.Scene();
 var preview_camera = new THREE.PerspectiveCamera( 75, 
 						  preview_canvas_width/preview_canvas_height, // window.innerWidth / window.innerHeight, 
 						  0.1, 
-						  1000 
+						  2000 
 						); 
 
 // create a point light
@@ -130,7 +130,8 @@ function preview_rebuild_model() {
   
   var extrusionPath = new THREE.Path( pathPoints );
  
-  var extrusionGeometry = new THREE.ExtrudePathGeometry( extrusionShape, 
+    
+  var extrusionGeometry = new IKRS.ExtrudePathGeometry( extrusionShape, 
 							 extrusionPath,
 							 { size: pathLength, // 300,
 							     height: 4,
@@ -162,6 +163,7 @@ function preview_rebuild_model() {
 				   new THREE.MeshFaceMaterial( extrusionMaterialArray )
 				 );
     preview_mesh.position.y  = 150;
+    preview_mesh.position.z  = -250;
     preview_mesh.overdraw    = true;
     preview_mesh.doubleSided = false;  // true
 

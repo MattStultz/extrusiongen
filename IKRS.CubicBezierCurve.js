@@ -29,8 +29,13 @@ IKRS.CubicBezierCurve = function ( p_startPoint,        // THREE.Vector2
     
     this.curveIntervals     = 30;
     
+    // An array of points
     this.segmentCache       = [];
+
+    // An array of floats
     this.segmentLengths     = [];
+    
+    // float
     this.arcLength          = null;
 	
     
@@ -80,6 +85,10 @@ IKRS.CubicBezierCurve.prototype.moveCurvePoint = function( pointID,           //
     
     if( updateArcLengths )
 	this.updateArcLengths();
+}
+
+IKRS.CubicBezierCurve.prototype.getLength = function() {
+    return this.arcLength;
 }
 
 /*
@@ -153,7 +162,7 @@ IKRS.CubicBezierCurve.prototype.updateArcLengths = function() {
     //var point;
     for( var i = 0; i < this.curveIntervals; i++) {
 	
-	pointB = this.getPointAt( (i+1) * curveStep );  // parameter is 'u' (not 't')
+	pointB = this.getPoint( (i+1) * curveStep );  // parameter is 'u' (not 't')
 	
 	
 	// Store point into cache
@@ -214,21 +223,30 @@ IKRS.CubicBezierCurve.prototype.getEndControlPoint = function() {
     return this.endControlPoint;
 };
 
-IKRS.CubicBezierCurve.prototype.getPointAt = function( u ) {
+IKRS.CubicBezierCurve.prototype.getPoint = function( t ) {
     
     // Perform some powerful math magic
+    /*
     var x = this.startPoint.x * Math.pow(1.0-u,3) + this.startControlPoint.x*3*u*Math.pow(1.0-u,2)
 	+ this.endControlPoint.x*3*Math.pow(u,2)*(1.0-u)+this.endPoint.x*Math.pow(u,3);
     
     var y = this.startPoint.y*Math.pow(1.0-u,3)+this.startControlPoint.y*3*u*Math.pow(1.0-u,2)
 	+ this.endControlPoint.y*3*Math.pow(u,2)*(1.0-u)+this.endPoint.y*Math.pow(u,3);
+	*/
+
+    var x = this.startPoint.x * Math.pow(1.0-t,3) + this.startControlPoint.x*3*t*Math.pow(1.0-t,2)
+	+ this.endControlPoint.x*3*Math.pow(t,2)*(1.0-t)+this.endPoint.x*Math.pow(t,3);
+    
+    var y = this.startPoint.y*Math.pow(1.0-t,3)+this.startControlPoint.y*3*t*Math.pow(1.0-t,2)
+	+ this.endControlPoint.y*3*Math.pow(t,2)*(1.0-t)+this.endPoint.y*Math.pow(t,3);
     
     return new THREE.Vector2( x, y );
 };
 
-IKRS.CubicBezierCurve.prototype.getPoint = function( t ) {  
+IKRS.CubicBezierCurve.prototype.getPointAt = function( u ) {  
     
-    return this.getPointAt( t * this.arcLength );
+    //return this.getPointAt( t * this.arcLength );
+    return this.getPoint( u/this.arcLength );
 };
 
 

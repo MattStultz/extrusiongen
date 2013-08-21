@@ -16,7 +16,8 @@ IKRS.BezierPath = function( pathPoints ) {
     if( !pathPoints )
 	pathPoints = [];
 
-    
+
+    this.totalArcLength = 0.0;
     this.bezierCurves = [];
     for( var i = 1; i < pathPoints.length; i++ ) {
 
@@ -39,6 +40,7 @@ IKRS.BezierPath = function( pathPoints ) {
 								  )
 					       );
 	this.bezierCurves.push( bCurve );
+	this.totalArcLength += bCurve.getLength();
 	
 	// Auto adjust the second control point (should be on a linear sub-space)
 	if( this.bezierCurves.length >= 2 ) {
@@ -61,6 +63,9 @@ IKRS.BezierPath.prototype.START_CONTROL_POINT = 1;
 IKRS.BezierPath.prototype.END_CONTROL_POINT   = 2;
 IKRS.BezierPath.prototype.END_POINT           = 3;
 
+IKRS.BezierPath.prototype.getLength = function() {
+    return this.totalArcLength;
+}
 
 IKRS.BezierPath.prototype.getCurveCount = function() {
     return this.bezierCurves.length;
@@ -70,6 +75,99 @@ IKRS.BezierPath.prototype.getCurveAt = function( curveIndex ) {
     return this.bezierCurves[ curveIndex ];
 }
 
+IKRS.BezierPath.prototype.splitAt = function( curveIndex,
+					      segmentIndex 
+					    ) {
+
+    // Must be a valid curve index
+    if( curveIndex < 0 || curveIndex >= this.bezierCurves.length )
+	return false;
+
+
+    var oldCurve = this.bezierCurves[ curveIndex ];
+
+
+    // Segment must be an INNER point!
+    // (the outer points are already bezier end/start points!)
+    if( segmentIndex < 1 || segmentIndex-1 >= oldCurve.segmentCache.length )
+	return false;
+
+
+    // Make room for a new curve
+    for( var c = this.bezierCurves.length; c > curveIndex; c-- ) {
+
+	// Move one position to the right
+	this.bezierCurves[ c ] = this.bezierCurves[ c-1 ];
+	
+    }
+
+
+    var newLeft  = new IKRS.CubicBezierCurve( oldCurve.getStartPoint(),                      // old start point
+					      oldCurve.segmentCache[ segmentIndex ],         // new end point
+					      oldCurve.getStartControlPoint(),               // old start control point ?
+					      oldCurve.segmentCache[ segmentIndex ].clone()  // new end control point !!! ???
+					    );
+    var newRight = new IKRS.CubicBezierCurve( oldCurve.segmentCache[ segmentIndex ],         // new start point
+					      oldCurve.getEndPoint(),                        // old end point
+					      oldCurve.segmentCache[ segmentIndex ].clone(), // new start control point ???
+					      oldCurve.getEndControlPoint()                  // old end control point
+					    );
+				    
+
+    // Insert split curve(s) at free index
+    this.bezierCurves[ curveIndex ]     = newLeft;
+    this.bezierCurves[ curveIndex + 1 ] = newRight;
+
+    
+    // Update total arc length, even if there is only a very little change!
+    this.totalArcLength -= oldCurve.getLength();
+
+    this.totalArcLength += newLeft.getLength();
+    this.totalArcLength += newRight.getLength();
+
+
+    return true;
+}
+
+IKRS.BezierPath.prototype.getPointAt = function( u ) {
+
+    if( u < 0 || u > this.totalArcLength ) {
+	console.log( "[IKRS.BezierPath.getPointAt(u)] u is out of bounds: " + u + "." );
+	return null;
+    }
+
+    // Find the spline to extract the value from
+    var i = 0;
+    var uTemp = 0.0;
+    
+    while( i < this.bezierCurves.length &&
+	   (uTemp + this.bezierCurves[i].getLength()) < u 
+	 ) {
+	
+	uTemp += this.bezierCurves[ i ].getLength();
+	i++;
+
+    }
+    
+    //window.alert( i );
+    
+    // if u == arcLength
+    //   -> i is max
+    if( i >= this.bezierCurves.length )
+	return this.bezierCurves[ this.bezierCurves.length-1 ].getEndPoint().clone();
+    
+    var bCurve    = this.bezierCurves[ i ];
+    var relativeU = u - uTemp;
+    
+    //window.alert( "relativeU=" + relativeU );
+
+    return bCurve.getPointAt( relativeU );
+}
+
+IKRS.BezierPath.prototype.getPoint = function( t ) {
+    //window.alert( "IKRS.BezierPath.totalArcLength=" + this.totalArcLength );
+    return this.getPointAt( t * this.totalArcLength );
+}
 
 IKRS.BezierPath.prototype.moveCurvePoint = function( curveIndex,      // int
 						     pointID,         // int
