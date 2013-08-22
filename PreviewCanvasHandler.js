@@ -235,7 +235,7 @@ function preview_rebuild_model() {
 	new_mesh.rotation.x = preview_mesh.rotation.x;
 	new_mesh.rotation.y = preview_mesh.rotation.y;
 	
-	window.alert( "mesh.rotation=(" + new_mesh.rotation.x + ", " + new_mesh.rotation.y + ", " + new_mesh.rotation.z + ", " + new_mesh.rotation.w + ")" );
+	// window.alert( "mesh.rotation=(" + new_mesh.rotation.x + ", " + new_mesh.rotation.y + ", " + new_mesh.rotation.z + ", " + new_mesh.rotation.w + ")" );
 	
 	new_mesh.scale.x    = preview_mesh.scale.x;
 	new_mesh.scale.y    = preview_mesh.scale.y;

@@ -228,7 +228,7 @@ IKRS.BezierPath.prototype.moveCurvePoint = function( curveIndex,      // int
 	predecessor.moveCurvePoint( this.END_CONTROL_POINT, 
 				    moveAmount,
 				    true,                    // move control point, too
-				    true                     // updateArcLengths
+				    false                    // updateArcLengths
 				  );
 
     } else if( pointID == this.END_POINT && curveIndex+1 < this.bezierCurves.length ) {
@@ -238,7 +238,7 @@ IKRS.BezierPath.prototype.moveCurvePoint = function( curveIndex,      // int
 	successor.moveCurvePoint( this.START_CONTROL_POINT, 
 				  moveAmount, 
 				  true,                  // move control point, too
-				  true                   // updateArcLengths
+				  false                  // updateArcLengths
 			  );
 			  
 
@@ -246,19 +246,21 @@ IKRS.BezierPath.prototype.moveCurvePoint = function( curveIndex,      // int
 	
 	this.adjustPredecessorControlPoint( curveIndex, 
 					    true,            // obtain handle length?
-					    true             // update arc lengths
+					    false            // update arc lengths
 					  );
 					  
     } else if( pointID == this.END_CONTROL_POINT && curveIndex+1 < this.getCurveCount() ) {
 	
 	this.adjustSuccessorControlPoint( curveIndex, 
 					  true,            // obtain handle length?
-					  true             // update arc lengths
+					  false            // update arc lengths
 					);
 					  
     }
 
-    //bCurve.updateArcLengths();
+    // Don't forget to update the arc lengths!
+    // Note: this can be optimized as only two curves have changed their lengths!
+    this.updateArcLengths();
 
 }
 
@@ -414,6 +416,10 @@ IKRS.BezierPath.fromArray = function( arr ) {
 	
 	lastCurve = bCurve;
     }   
+    // Bezier segments added.
+    // Recalculate length?
+    //bPath.updateArcLengths();
+    
     // Done
     
 

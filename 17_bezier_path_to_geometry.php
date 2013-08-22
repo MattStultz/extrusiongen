@@ -133,10 +133,10 @@ tooltip:hover:before{
   <input type="checkbox" id="draw_tangents" name="draw_tangents" checked="checked" onchange="javascript:bezierCanvasHandler.redraw();" />
   <label for="draw_tangents">Draw tangents</label>
   <br/>
-  <input type="checkbox" id="draw_linear_path_segments" name="draw_linear_path_segments" checked="checked" onchange="javascript:bezierCanvasHandler.redraw();" />
+  <input type="checkbox" id="draw_linear_path_segments" name="draw_linear_path_segments" onchange="javascript:bezierCanvasHandler.redraw();" />
   <label for="draw_linear_path_segments">Draw linear path segments</label>
   <br/>
-  <input type="checkbox" id="draw_coordinate_system" name="draw_coordinate_system" checked="checked" onchange="javascript:bezierCanvasHandler.redraw();" />
+  <input type="checkbox" id="draw_coordinate_system" name="draw_coordinate_system" onchange="javascript:bezierCanvasHandler.redraw();" />
   <label for="draw_coordinate_system">Draw coordinate system</label>
   <br/>
   <input type="checkbox" id="draw_bounding_box" name="draw_bounding_box" checked="checked" onchange="javascript:bezierCanvasHandler.redraw();" />

@@ -464,24 +464,6 @@ IKRS.BezierCanvasHandler.prototype.mouseUpHandler = function( e ) {
     this.bezierCanvasHandler.redraw();
 } // END mouseUpHandler
 
-
-IKRS.BezierCanvasHandler.prototype.doubleClickHandler = function( parent,
-								  e ) {
-    var relativeP = this.translateMouseEventToRelativePosition( parent, e );
-    var location = locateCachedBezierPointNearPosition = 
-	this.locateCachedBezierPointNearPosition( relativeP,  // point
-						  10.0        // tolerance
-						);
-    // window.alert( "Double click at (" + e.pageX+ ", " + e.pageY + "); relative (" + relativeP.x + ", " + relativeP.y + "). Point nearby found: " + location );
-    
-    // Will return false if any index is out of (valid) bounds
-    var splitSucceeded = this.bezierPath.splitAt( location[0],   // curveIndex
-						  location[1]    // segmentIndex
-						);
-    if( splitSucceeded )
-	this.redraw();
-}
-
 IKRS.BezierCanvasHandler.prototype.mouseMoveHandler = function( e ) {
    //window.alert( "mouse move. Event: " + e + ", e.pageX=" + e.pageX + ", e.pageY=" + e.pageY + ", lastMouseDownPosition=" + this.bezierCanvasHandler.latestMouseDownPosition + ", currentDragPoint=" + this.bezierCanvasHandler.currentDragPoint );
     
@@ -508,6 +490,24 @@ IKRS.BezierCanvasHandler.prototype.mouseMoveHandler = function( e ) {
 	this.bezierCanvasHandler.latestMouseDragPosition.set( e.pageX, e.pageY );
 	
     }
+}
+
+
+IKRS.BezierCanvasHandler.prototype.doubleClickHandler = function( parent,
+								  e ) {
+    var relativeP = this.translateMouseEventToRelativePosition( parent, e );
+    var location = locateCachedBezierPointNearPosition = 
+	this.locateCachedBezierPointNearPosition( relativeP,  // point
+						  10.0        // tolerance
+						);
+    // window.alert( "Double click at (" + e.pageX+ ", " + e.pageY + "); relative (" + relativeP.x + ", " + relativeP.y + "). Point nearby found: " + location );
+    
+    // Will return false if any index is out of (valid) bounds
+    var splitSucceeded = this.bezierPath.splitAt( location[0],   // curveIndex
+						  location[1]    // segmentIndex
+						);
+    if( splitSucceeded )
+	this.redraw();
 }
 
 
