@@ -67,6 +67,18 @@ IKRS.BezierPath.prototype.getLength = function() {
     return this.totalArcLength;
 }
 
+IKRS.BezierPath.prototype.updateArcLengths = function() {
+
+    this.totalArcLength = 0.0;
+    for( var i = 0; i < this.bezierCurves.length; i++ ) {
+
+	this.bezierCurves[ i ].updateArcLengths();
+	this.totalArcLength += this.bezierCurves[ i ].getLength();
+
+    }
+
+}
+
 IKRS.BezierPath.prototype.getCurveCount = function() {
     return this.bezierCurves.length;
 }
@@ -168,6 +180,32 @@ IKRS.BezierPath.prototype.getPoint = function( t ) {
     //window.alert( "IKRS.BezierPath.totalArcLength=" + this.totalArcLength );
     return this.getPointAt( t * this.totalArcLength );
 }
+
+
+IKRS.BezierPath.prototype.getBoundingBox = function() {
+
+    if( this.bezierCurves.length == 0 ) {
+	
+	// Empty box
+	return new IKRS.BoundingBox( 0, 0, 0, 0 );
+
+    }
+	
+
+    var boundingBox = this.bezierCurves[ 0 ].getBoundingBox();
+    for( var i = 1; i < this.bezierCurves.length; i++ ) {
+
+	var tmpBounds = this.bezierCurves[ i ].getBoundingBox();
+	boundingBox.xMin = Math.min( boundingBox.xMin, tmpBounds.xMin );
+	boundingBox.xMax = Math.max( boundingBox.xMax, tmpBounds.xMax );
+	boundingBox.yMin = Math.min( boundingBox.yMin, tmpBounds.yMin );
+	boundingBox.yMax = Math.max( boundingBox.yMax, tmpBounds.yMax );
+	
+    }
+    
+    return boundingBox;
+}
+
 
 IKRS.BezierPath.prototype.moveCurvePoint = function( curveIndex,      // int
 						     pointID,         // int
@@ -371,12 +409,14 @@ IKRS.BezierPath.fromArray = function( arr ) {
 	
 	// Add to path's internal list
 	bPath.bezierCurves.push( bCurve );
+	bPath.totalArcLength += bCurve.getLength();
 	
 	
 	lastCurve = bCurve;
-    }
+    }   
     // Done
     
+
     return bPath;
 }
 

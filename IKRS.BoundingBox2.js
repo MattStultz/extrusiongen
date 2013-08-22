@@ -1,0 +1,53 @@
+
+/**
+ * @author Ikaros Kappler
+ * @date 2013-08-22
+ * @version 1.0.0
+ **/
+
+IKRS.BoundingBox2 = function( _xMin,
+			      _xMax,
+			      _yMin,
+			      _yMax ) {
+    
+    IKRS.Object.call( this );
+    
+    this.xMin = _xMin;
+    this.xMax = _xMax;
+    this.yMin = _yMin;
+    this.yMax = _yMax;
+}
+
+IKRS.BoundingBox2.prototype = new IKRS.Object();
+IKRS.BoundingBox2.prototype.constructor = IKRS.BoundingBox2;
+
+
+IKRS.BoundingBox2.prototype.getXMax = function() {
+    return this.xMax;
+}
+
+IKRS.BoundingBox2.prototype.getXMin = function() {
+    return this.xMin;
+}
+
+IKRS.BoundingBox2.prototype.getYMax = function() {
+    return this.yMax;
+}
+
+IKRS.BoundingBox2.prototype.getYMin = function() {
+    return this.yMin;
+}
+
+IKRS.BoundingBox2.prototype.getWidth = function() {
+    return this.xMax - this.xMin;
+}
+
+IKRS.BoundingBox2.prototype.getHeight = function() {
+    return this.yMax - this.yMin;
+}
+
+
+
+
+//IKRS.BoundingBox2.prototype = new IKRS.Object();
+//IKRS.BoundingBox2.prototype.constructor = IKRS.BoundingBox2;

@@ -48,7 +48,10 @@ IKRS.BezierCanvasHandler = function() {
     */
 
     // This is a new way: build from a JSON string
-    var jsonString = "[ { \"startPoint\" : [-113,73], \"endPoint\" : [-58.454814814814796,4.460592592592583], \"startControlPoint\": [-110,13], \"endControlPoint\" : [-67.28766869253815,33.77964111961321] }, { \"startPoint\" : [-58.454814814814796,4.460592592592583], \"endPoint\" : [-41,-136], \"startControlPoint\": [-51.31974300727449,-19.222977798698675], \"endControlPoint\" : [-107.4320266593341,-79.6267965414431] }, { \"startPoint\" : [-41,-136], \"endPoint\" : [-2,-323], \"startControlPoint\": [-0.12927125352024404,-170.6822763505299], \"endControlPoint\" : [-72,-321] } ]";
+    /*
+      var jsonString = "[ { \"startPoint\" : [-113,73], \"endPoint\" : [-58.454814814814796,4.460592592592583], \"startControlPoint\": [-110,13], \"endControlPoint\" : [-67.28766869253815,33.77964111961321] }, { \"startPoint\" : [-58.454814814814796,4.460592592592583], \"endPoint\" : [-41,-136], \"startControlPoint\": [-51.31974300727449,-19.222977798698675], \"endControlPoint\" : [-107.4320266593341,-79.6267965414431] }, { \"startPoint\" : [-41,-136], \"endPoint\" : [-2,-323], \"startControlPoint\": [-0.12927125352024404,-170.6822763505299], \"endControlPoint\" : [-72,-321] } ]";
+      */
+    var jsonString = "[ { \"startPoint\" : [-122,74], \"endPoint\" : [-57.454814814814796,5.460592592592583], \"startControlPoint\": [-119,14], \"endControlPoint\" : [-66.28766869253815,34.77964111961321] }, { \"startPoint\" : [-57.454814814814796,5.460592592592583], \"endPoint\" : [-47,-136], \"startControlPoint\": [-50.31974300727449,-18.222977798698675], \"endControlPoint\" : [-90.39852870089842,-53.03385508483299] }, { \"startPoint\" : [-47,-136], \"endPoint\" : [-51.66118578883062,-227.750293953586], \"startControlPoint\": [-23.468584251986567,-180.98564599883105], \"endControlPoint\" : [-56.750583998055625,-189.07086756347596] }, { \"startPoint\" : [-51.66118578883062,-227.750293953586], \"endPoint\" : [-2,-323], \"startControlPoint\": [-46.66118578883062,-265.75029395358604], \"endControlPoint\" : [-41,-324] } ]";
     this.bezierPath = IKRS.BezierPath.fromJSON( jsonString );
 
     //window.alert( "IKRS.BezierCanvashandler.bezierPath=" + this.bezierPath );
@@ -125,7 +128,22 @@ IKRS.BezierCanvasHandler.prototype.redraw = function() {
 			 
 			 drawTangents
 		       );
-    //this.drawBezierPath();
+
+
+    // Draw the bounding box?
+    if( document.forms["bezier_form"].elements["draw_bounding_box"].checked ) {
+
+	var boundingBox = this.bezierPath.getBoundingBox();
+	// window.alert( boundingBox.getWidth );
+	this.context.strokeStyle = "#888888";
+	this.context.lineWidth   = 0.5;
+	this.context.strokeRect( boundingBox.xMin * this.zoomFactor + this.drawOffset.x,
+				 boundingBox.yMin * this.zoomFactor + this.drawOffset.y,
+				 boundingBox.getWidth() * this.zoomFactor,
+				 boundingBox.getHeight() * this.zoomFactor
+			       );
+
+    }
 }
 
 IKRS.BezierCanvasHandler.prototype.drawBezierCurve = function( context,

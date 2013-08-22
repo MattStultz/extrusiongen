@@ -250,6 +250,28 @@ IKRS.CubicBezierCurve.prototype.getPointAt = function( u ) {
 };
 
 
+IKRS.CubicBezierCurve.prototype.getBoundingBox = function() {
+
+    // Inspect all cached points
+    var xMin = this.getStartPoint().x;
+    var xMax = this.getStartPoint().x;
+    var yMin = this.getStartPoint().y;
+    var yMax = this.getStartPoint().y;
+    
+    for( var i = 1; i < this.segmentCache.length; i++ ) {
+
+	var point = this.segmentCache[ i ];
+	xMin = Math.min( xMin, point.x );
+	xMax = Math.max( xMax, point.x );
+	yMin = Math.min( yMin, point.y );
+	yMax = Math.max( yMax, point.y );
+
+    }
+
+    return new IKRS.BoundingBox2( xMin, xMax, yMin, yMax );
+}
+
+
 IKRS.CubicBezierCurve.prototype.toJSON = function() {
     
     //window.alert( "[IKRS.CubicBezierCurve.toJSON()]" );
