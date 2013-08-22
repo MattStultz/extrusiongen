@@ -1,0 +1,18 @@
+
+/**
+ * @author Ikaros Kappler
+ * @date 2013-08-22
+ * @version 1.0.0
+ **/
+
+
+function saveTextFile( stringData, filename ){
+
+    if( !filename )
+	filename = "extrusion.stl";
+    
+    var stlString = buildSTL( geometry );  
+    var blob = new Blob([stlString], {type: 'text/plain'});
+    saveAs(blob, filename);
+    
+}

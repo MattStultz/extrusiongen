@@ -250,10 +250,81 @@ IKRS.CubicBezierCurve.prototype.getPointAt = function( u ) {
 };
 
 
+IKRS.CubicBezierCurve.prototype.toJSON = function() {
+    
+    //window.alert( "[IKRS.CubicBezierCurve.toJSON()]" );
+    var jsonString = "{ " + // begin object
+	"\"startPoint\" : [" + this.getStartPoint().x + "," + this.getStartPoint().y + "], " +
+	"\"endPoint\" : [" + this.getEndPoint().x + "," + this.getEndPoint().y + "], " +
+	"\"startControlPoint\": [" + this.getStartControlPoint().x + "," + this.getStartControlPoint().y + "], " +
+	"\"endControlPoint\" : [" + this.getEndControlPoint().x + "," + this.getEndControlPoint().y + "]" +
+	" }";  // end object
+    
+    //window.alert( "[IKRS.CubicBezierCurve.toJSON()] " + jsonString );
+    return jsonString;
+}
 
 
+IKRS.CubicBezierCurve.fromJSON = function( jsonString ) {
+    
+    var obj = JSON.parse( jsonString );
+    return IKRS.CubicBezierCurve.fromObject( obj );
+}
 
-                                                   
+
+IKRS.CubicBezierCurve.fromObject = function( obj ) {
+    
+    if( typeof obj !== "object" ) 
+	throw "[IKRS.CubicBezierCurve.fromArray] Can only build from object.";
+
+    //if( arr.length != 4 )
+    //	throw "[IKRS.CubicBezierCurve.fromArray] Array must have 4 elements (has " + arr.length +").";
+
+    // All elements must be two-element-arrays themselves.
+    /*
+    var points = [];
+    for( var i = 0; i < arr.length; i++ ) {
+	
+	if( typeof arr[i] !== "array" )
+	    throw "[IKRS.CubicBezierCurve.fromArray] All array elements must be arrays themselves. Element at index " + i + " is not.";
+	
+	// Each sub-array element MUST consist of two numbers
+	if( arr[i].length != 2 ) 
+	    throw  "[IKRS.CubicBezierCurve.fromArray] All array elements must be arrays with length 2. Element at index " + i + " has " + arr[i].length + " elements.";
+	
+    }
+    */
+
+    if( !obj.startPoint )
+	throw "[IKRS.CubicBezierCurve.fromObject] Object member \"startPoint\" missing.";
+    if( !obj.endPoint )
+	throw "[IKRS.CubicBezierCurve.fromObject] Object member \"endPoint\" missing.";
+    if( !obj.startControlPoint )
+	throw "[IKRS.CubicBezierCurve.fromObject] Object member \"startControlPoint\" missing.";
+    if( !obj.endControlPoint )
+	throw "[IKRS.CubicBezierCurve.fromObject] Object member \"endControlPoint\" missing.";
+    
+    //window.alert( "obj.startPoint=" + obj.startPoint );
+
+    return new IKRS.CubicBezierCurve( new THREE.Vector2(obj.startPoint[0],        obj.startPoint[1]),
+				      new THREE.Vector2(obj.endPoint[0],          obj.endPoint[1]),
+				      new THREE.Vector2(obj.startControlPoint[0], obj.startControlPoint[1]),
+				      new THREE.Vector2(obj.endControlPoint[0],   obj.endControlPoint[1])
+				    );
+}
+
+
+/*
+var tmpBC = new IKRS.CubicBezierCurve( new THREE.Vector2(10,20),
+				       new THREE.Vector2(40,40),
+				       new THREE.Vector2(60,40),
+				       new THREE.Vector2(80,20)
+				     );
+var tmpJSON = tmpBC.toJSON()
+window.alert( "toJSON(...)=" + tmpJSON );
+window.alert( "fromJSON(...)=" + IKRS.CubicBezierCurve.fromJSON(tmpJSON) );
+*/
+                                               
 
 //window.alert( "IKRS.CubicBezierCurve=" +IKRS.CubicBezierCurve );
 //window.alert( "IKRS.CubicBezierCurve.prototype=" + IKRS.CubicBezierCurve.prototype );

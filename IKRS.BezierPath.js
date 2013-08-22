@@ -317,4 +317,83 @@ IKRS.BezierPath.prototype.adjustNeighbourControlPoint = function( mainCurve,
 
 }
 
+
+IKRS.BezierPath.prototype.toJSON = function() {
+
+    //window.alert( "[IKRS.BezierPath.toJSON()] this.bezierCurves.length=" + this.bezierCurves.length );
+
+    var buffer = [];
+    buffer.push( "[" ); // array begin
+    for( var i = 0; i < this.bezierCurves.length; i++ ) {
+
+	if( i > 0 )
+	    buffer.push( "," );
+	buffer.push( " " );
+	
+	buffer.push( this.bezierCurves[i].toJSON() );
+
+    }
+    if( this.bezierCurves.length != 0 )
+	buffer.push( " " );
+    buffer.push( "]" ); // array end
+      
+    return buffer.join( "" ); // Convert to string, with empty separator.
+}
+
+IKRS.BezierPath.fromJSON = function( jsonString ) {
+
+    var obj = JSON.parse( jsonString );
+
+    return IKRS.BezierPath.fromArray( obj );
+}
+
+IKRS.BezierPath.fromArray = function( arr ) {
+
+    //window.alert( (typeof arr) + ", " + JSON.stringify( arr ) );
+    
+    if( !Array.isArray(arr) )
+	throw "[IKRS.BezierPath.fromArray] Passed object must be an array.";
+    
+    if( arr.length < 2 )
+	throw "[IKRS.BezierPath.fromArray] Passed array must contain at least two bezier curves (has " + arr.length + ").";
+    
+    // Create an empty bezier path
+    var bPath = new IKRS.BezierPath( null );
+    var lastCurve = null;
+    for( var i = 0; i < arr.length; i++ ) {
+	
+	// Convert object to bezier curve
+	var bCurve = IKRS.CubicBezierCurve.fromObject( arr[i] );
+	// Set curve start point?
+	// (avoid duplicate point instances!)
+	if( lastCurve )
+	    bCurve.startPoint = lastCurve.endPoint;
+	
+	// Add to path's internal list
+	bPath.bezierCurves.push( bCurve );
+	
+	
+	lastCurve = bCurve;
+    }
+    // Done
+    
+    return bPath;
+}
+
+/*
+// Try JSON conversion
+var tmpPoints = [];
+tmpPoints.push( new THREE.Vector2( -200, 200 ) );
+tmpPoints.push( new THREE.Vector2( 0,    40 ) );
+tmpPoints.push( new THREE.Vector2( 200,  -130 ) );
+var tmpBPath = new IKRS.BezierPath( tmpPoints );
+window.alert( "tmpBPath=" + tmpBPath );
+var tmpJSON  = tmpBPath.toJSON();
+window.alert( "tmpJSON=" + tmpJSON );
+// Re-construct path from JSON string
+var tmpBPath2 = IKRS.BezierPath.fromJSON( tmpJSON );
+window.alert( "tmpBPath2=" + tmpBPath2.toJSON() );
+*/
+
 //window.alert( "IKRS.BezierPath.prototype=" + IKRS.BezierPath.prototype );
+
