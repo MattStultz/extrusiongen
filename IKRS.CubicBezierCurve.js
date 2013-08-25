@@ -7,7 +7,7 @@
 IKRS.CubicBezierCurve = function ( p_startPoint,        // THREE.Vector2
 				   p_endPoint,          // THREE.Vector2
 				   p_startControlPoint, // THREE.Vector2
-				   p_endControlPoint   // THREE.Vector2
+				   p_endControlPoint    // THREE.Vector2
 				 ) {
     
     //window.alert( "[IKRS.CubicBezierCurve] constructor called." );
@@ -246,8 +246,54 @@ IKRS.CubicBezierCurve.prototype.getPoint = function( t ) {
 IKRS.CubicBezierCurve.prototype.getPointAt = function( u ) {  
     
     //return this.getPointAt( t * this.arcLength );
-    return this.getPoint( u/this.arcLength );
+    return this.getPoint( u / this.arcLength );
 };
+
+
+IKRS.CubicBezierCurve.prototype.getTangent = function( t ) {
+
+    var a = this.getStartPoint();
+    var b = this.getStartControlPoint();
+    var c = this.getEndControlPoint();
+    var d = this.getEndPoint();  
+    
+    // THIS IS CORRECT (it is the original formula with tons of arithmetic operations)
+    /* 
+    var tX = -3 * a.x * Math.pow( 1-t, 2 ) +
+	b.x * (3 * Math.pow(1-t,2) - 6 *(1-t)*t ) +
+	c.x * (6 *(1-t)*t - 3*t*t) +
+	3*d.x*t*t;
+    var tY = -3 * a.y * Math.pow( 1-t, 2 ) +
+	b.y * (3 * Math.pow(1-t,2) - 6 *(1-t)*t ) +
+	c.y * (6 *(1-t)*t - 3*t*t) +
+	3*d.y*t*t;	
+	*/
+
+    // This is the shortened one
+    var t2 = t * t;
+    var t3 = t * t2;
+    // (1 - t)^2 = (1-t)*(1-t) = 1 - t - t + t^2 = 1 - 2*t + t^2
+    var nt2 = 1 - 2*t + t2;
+
+    var tX = -3 * a.x * nt2 + 
+    b.x * (3 * nt2 - 6 *(t-t2) ) +
+	c.x * (6 *(t-t2) - 3*t2) +
+	3*d.x*t2;
+    var tY = -3 * a.y * nt2 + 
+	b.y * (3 * nt2 - 6 *(t-t2) ) +
+	c.y * (6 *(t-t2) - 3*t2) +
+	3*d.y*t2;
+    
+    // Note: my implementation does NOT normalize tangent vectors!
+    return new THREE.Vector2( tX, tY );
+    
+}
+
+IKRS.CubicBezierCurve.prototype.getTangentAt = function( u ) {
+
+    return this.getTangent( t / this.arcLength );
+
+}
 
 
 IKRS.CubicBezierCurve.prototype.getBoundingBox = function() {

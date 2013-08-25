@@ -129,15 +129,23 @@ tooltip:hover:before{
   <form name="bezier_form">
   <input type="checkbox" id="clear_on_repaint" name="clear_on_repaint" checked="checked" onchange="javascript:bezierCanvasHandler.redraw();" class="tooltip" title="Uncheck this, move some points. See what will happen ... it's kinda fun ;)" />
   <label for="clear_on_repaint">Clear on repaint</label>
+
   <br/>
   <input type="checkbox" id="draw_tangents" name="draw_tangents" checked="checked" onchange="javascript:bezierCanvasHandler.redraw();" class="tooltip" title="Disables the control points and tangents." />
   <label for="draw_tangents">Draw tangents</label>
+
+  <br/>
+  <input type="checkbox" id="draw_perpendiculars" name="draw_perpendiculars" checked="checked" onchange="javascript:bezierCanvasHandler.redraw();" class="tooltip" title="Draws a perpendicular hull that shows how the material thickness must be calculated." />
+  <label for="draw_perpendiculars">Draw perpendiculars</label>
+
   <br/>
   <input type="checkbox" id="draw_linear_path_segments" name="draw_linear_path_segments" onchange="javascript:bezierCanvasHandler.redraw();" class="tooltip" title="The outer shape is a sequence of cubic bezier curves connected with each other. Enabling this will draw the linear path between the start- and end-points." />
   <label for="draw_linear_path_segments">Draw linear path segments</label>
+
   <br/>
   <input type="checkbox" id="draw_coordinate_system" name="draw_coordinate_system" onchange="javascript:bezierCanvasHandler.redraw();" class="tooltip" title="Show the origin at (0,0) on the X-Y-plane." />
   <label for="draw_coordinate_system">Draw coordinate system</label>
+
   <br/>
   <input type="checkbox" id="draw_bounding_box" name="draw_bounding_box" checked="checked" onchange="javascript:bezierCanvasHandler.redraw();" class="tooltip" title="The curve's bounding box is the minimal rectangular area around the bezier path that encloses the path itself." />
   <label for="draw_bounding_box">Draw bounding box</label>
@@ -157,24 +165,10 @@ tooltip:hover:before{
 <form name="mesh_form">
 <table border="0">
 
-<!--
-<tr>
-  <td><label for="shape_size">Shape size (radius): </label></td>
-  <td><input type="number" id="shape_size" name="shape_size" value="400" />px</td>
-</tr>
--->
-
 <tr>
   <td><label for="shape_segments">Shape&nbsp;segments: </label></td>
   <td><input type="number" id="shape_segments" name="shape_segments" value="200" class="tooltip" title="The number of vertices on the vertical shape (on the circle). More vertices make the mesh more accurate but it renders slower." /></td>
 </tr>
-
-<!--
-<tr>
-  <td><label for="path_length">Path length: </label></td>
-  <td><input type="number" id="path_length" name="path_length" value="200" />px</td>
-</tr>
--->
 
 <tr>
   <td><label for="path_segments">Path&nbsp;segments: </label></td>

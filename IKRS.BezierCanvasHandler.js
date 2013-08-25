@@ -38,20 +38,10 @@ IKRS.BezierCanvasHandler = function() {
     this.canvas.onmouseup   = this.mouseUpHandler;
     this.canvas.onmousemove = this.mouseMoveHandler; 
 
-    /*
-      // This is the normal way (constructor) to create a new bezier path
-    var pathPoints = [];
-    pathPoints.push( new THREE.Vector2( -200, 200 ) );
-    pathPoints.push( new THREE.Vector2( 0, 40 ) );
-    pathPoints.push( new THREE.Vector2( 200, -130 ) );
-    this.bezierPath = new IKRS.BezierPath( pathPoints ); 
-    */
+    window.addEventListener( "keydown", this.keyDownHandler, false );
 
     // This is a new way: build from a JSON string
-    /*
-      var jsonString = "[ { \"startPoint\" : [-113,73], \"endPoint\" : [-58.454814814814796,4.460592592592583], \"startControlPoint\": [-110,13], \"endControlPoint\" : [-67.28766869253815,33.77964111961321] }, { \"startPoint\" : [-58.454814814814796,4.460592592592583], \"endPoint\" : [-41,-136], \"startControlPoint\": [-51.31974300727449,-19.222977798698675], \"endControlPoint\" : [-107.4320266593341,-79.6267965414431] }, { \"startPoint\" : [-41,-136], \"endPoint\" : [-2,-323], \"startControlPoint\": [-0.12927125352024404,-170.6822763505299], \"endControlPoint\" : [-72,-321] } ]";
-      */
-    var jsonString = "[ { \"startPoint\" : [-122,74], \"endPoint\" : [-57.454814814814796,5.460592592592583], \"startControlPoint\": [-119,14], \"endControlPoint\" : [-66.28766869253815,34.77964111961321] }, { \"startPoint\" : [-57.454814814814796,5.460592592592583], \"endPoint\" : [-47,-136], \"startControlPoint\": [-50.31974300727449,-18.222977798698675], \"endControlPoint\" : [-90.39852870089842,-53.03385508483299] }, { \"startPoint\" : [-47,-136], \"endPoint\" : [-51.66118578883062,-227.750293953586], \"startControlPoint\": [-23.468584251986567,-180.98564599883105], \"endControlPoint\" : [-56.750583998055625,-189.07086756347596] }, { \"startPoint\" : [-51.66118578883062,-227.750293953586], \"endPoint\" : [-2,-323], \"startControlPoint\": [-46.66118578883062,-265.75029395358604], \"endControlPoint\" : [-41,-324] } ]";
+    var jsonString = "[ { \"startPoint\" : [-122,74], \"endPoint\" : [-57.454814814814796,5.460592592592583], \"startControlPoint\": [-119,14], \"endControlPoint\" : [-66.28766869253815,34.77964111961321] }, { \"startPoint\" : [-57.454814814814796,5.460592592592583], \"endPoint\" : [-55,-139], \"startControlPoint\": [-50.31974300727449,-18.222977798698675], \"endControlPoint\" : [-84.38654635129569,-50.09980658609145] }, { \"startPoint\" : [-55,-139], \"endPoint\" : [-51.66118578883062,-227.750293953586], \"startControlPoint\": [-39.46858425198657,-185.98564599883105], \"endControlPoint\" : [-56.750583998055625,-189.07086756347596] }, { \"startPoint\" : [-51.66118578883062,-227.750293953586], \"endPoint\" : [-2,-323], \"startControlPoint\": [-46.66118578883062,-265.75029395358604], \"endControlPoint\" : [-40,-323] } ]";
     this.bezierPath = IKRS.BezierPath.fromJSON( jsonString );
 
     //window.alert( "IKRS.BezierCanvashandler.bezierPath=" + this.bezierPath );
@@ -213,14 +203,21 @@ IKRS.BezierCanvasHandler.prototype.drawBezierCurve = function( context,
     
     // Draw the end points
     if( drawStartPoint || drawEndPoint ) {
-	context.fillStyle = "#B400FF";
+	context.fillStyle   = "#B400FF";
+	context.strokeStyle = "#B400FF";
+	context.lineWidth   = 1;
 	// Start point?
 	if( drawStartPoint ) {
 	    if( startPointIsSelected ) {
 		//context.fillStyle = "#FF0000";
-		context.fillRect( bezierCurve.getStartPoint().x * zoomFactor - 2 + drawOffset.x,
-				  bezierCurve.getStartPoint().y * zoomFactor - 2 + drawOffset.y,
-				  5, 5 );
+		context.fillRect( bezierCurve.getStartPoint().x * zoomFactor - 1 + drawOffset.x,
+				  bezierCurve.getStartPoint().y * zoomFactor - 1 + drawOffset.y,
+				  3, 3 );
+				  
+		/*context.strokeRect( bezierCurve.getStartPoint().x * zoomFactor - 2 + drawOffset.x,
+				    bezierCurve.getStartPoint().y * zoomFactor - 2 + drawOffset.y,
+				    5, 5 );
+				    */
 	    } else {
                 //context.fillStyle = "#B400FF";
 		context.fillRect( bezierCurve.getStartPoint().x * zoomFactor - 1 + drawOffset.x,
@@ -232,9 +229,15 @@ IKRS.BezierCanvasHandler.prototype.drawBezierCurve = function( context,
 	if( drawEndPoint ) {
 	    if( endPointIsSelected ) {
 		//context.fillStyle = "#FF0000";
+		
 		context.fillRect( bezierCurve.getEndPoint().x * zoomFactor - 2 + drawOffset.x,
 				  bezierCurve.getEndPoint().y * zoomFactor - 2 + drawOffset.y,
 				  5, 5 );
+		/*		  
+		context.strokeRect( bezierCurve.getStartPoint().x * zoomFactor - 2 + drawOffset.x,
+				    bezierCurve.getStartPoint().y * zoomFactor - 2 + drawOffset.y,
+				    5, 5 );
+				    */
 	    } else {
                 //context.fillStyle = "#B400FF";
 		context.fillRect( bezierCurve.getEndPoint().x * zoomFactor - 1 + drawOffset.x,
@@ -242,6 +245,7 @@ IKRS.BezierCanvasHandler.prototype.drawBezierCurve = function( context,
 				  3, 3 );
 	    }
 	}
+	
     }
 
     // Draw the control points?
@@ -262,6 +266,38 @@ IKRS.BezierCanvasHandler.prototype.drawBezierCurve = function( context,
 	}
     }
 }
+
+
+IKRS.BezierCanvasHandler.prototype.drawPerpendiculars = function( context,
+								  bezierCurve,
+								  drawOffset,
+								  zoomFactor ) {
+
+    context.strokeStyle = "#a0a0fF";
+    context.lineWidth   = 0.5;
+
+    var pCount = 25;
+    for( var i = 0; i < pCount; i++ ) {
+	
+	var t             = i/(pCount-1);
+	var point         = bezierCurve.getPoint( t );
+	var tangentVector = bezierCurve.getTangent( t ).normalize();
+	var perpendicular = new THREE.Vector3( - tangentVector.y, tangentVector.x );
+	// Draw perpendiculars?
+	// Note: the perpendicular at the point is the tangent rotated by 90 deg
+	context.beginPath();
+	context.moveTo( point.x * zoomFactor + drawOffset.x,
+			point.y * zoomFactor + drawOffset.y 
+		      );
+	context.lineTo( point.x * zoomFactor + drawOffset.x + perpendicular.x*20,
+			point.y * zoomFactor + drawOffset.y + perpendicular.y*20
+		      );
+	context.stroke();
+
+    }
+
+}
+
 
 IKRS.BezierCanvasHandler.prototype.getBezierPath = function() {
     return this.bezierPath;
@@ -327,18 +363,7 @@ IKRS.BezierCanvasHandler.prototype.mouseDownHandler = function( e ) {
     this.bezierCanvasHandler.latestMouseDragPosition = new THREE.Vector2( e.pageX, e.pageY ); 
     this.bezierCanvasHandler.latestMouseDownTime = new Date().getTime();
     
-    //window.alert( this.bezierCanvasHandler.getBezierCurve() );
-    // Find relative coordinates
-    /*
-    var rect = this.getBoundingClientRect();
-    var left = e.clientX - rect.left - this.clientLeft + this.scrollLeft;
-    var top = e.clientY - rect.top - this.clientTop + this.scrollTop;
-    //window.alert( "left=" + left + ", top=" + top );
 
-    // Add draw offset :)
-    var relX = (left - this.bezierCanvasHandler.drawOffset.x) / this.bezierCanvasHandler.zoomFactor;
-    var relY = (top  - this.bezierCanvasHandler.drawOffset.y) / this.bezierCanvasHandler.zoomFactor;
-    */
     var relativeP = this.bezierCanvasHandler.translateMouseEventToRelativePosition( this, e );
 
     var clickTolerance = 10; // px
@@ -423,14 +448,6 @@ IKRS.BezierCanvasHandler.prototype.mouseUpHandler = function( e ) {
 	&& (currentTime - this.bezierCanvasHandler.latestClickTime) < 300 ) {
 	
 	//window.alert( "Double click at (" + e.pageX+ ", " + e.pageY + ")" );
-	/*
-	var relativeP = this.bezierCanvasHandler.translateMouseEventToRelativePosition( this, e );
-	var location = locateCachedBezierPointNearPosition = 
-	    this.bezierCanvasHandler.locateCachedBezierPointNearPosition( relativeP,  // point
-									  10.0        // tolerance
-									);
-	//window.alert( "Double click at (" + e.pageX+ ", " + e.pageY + "). Point nearby found: " + location );
-	*/
 	this.bezierCanvasHandler.doubleClickHandler( this, e );
 	
 
@@ -511,6 +528,24 @@ IKRS.BezierCanvasHandler.prototype.doubleClickHandler = function( parent,
 }
 
 
+IKRS.BezierCanvasHandler.prototype.keyDownHandler = function( e ) {
+    
+    // window.alert( "[IKRS.BezierCanvasHandler] Key down event. keyCode=" + e.keyCode );
+    
+    // The key code for 'delete' is 46
+    if( e.keyCode != 46 ) 
+	return;
+
+    // Are there any selected shape points at all?
+    if( this.bezierCanvasHandler.selectedPointIndices.length == 0 ) 
+	return;
+
+
+    window.alert( "Sorry. Deleting shape points is not yet supported. Please come back later." );
+
+}
+
+
 IKRS.BezierCanvasHandler.prototype.drawBezierPath = function( context,
 							      bezierPath,
 							      drawOffset,
@@ -523,7 +558,7 @@ IKRS.BezierCanvasHandler.prototype.drawBezierPath = function( context,
 							      drawTangents 
 							    ) { 
 
-    //window.alert( "# of bezier curves: " + bezierPath.getCurveCount() );   
+    // window.alert( "# of bezier curves: " + bezierPath.getCurveCount() );   
 
     // This way of rendering the curve uses the curves' internal
     // segment cache.
@@ -552,6 +587,49 @@ IKRS.BezierCanvasHandler.prototype.drawBezierPath = function( context,
 
 	}
 
+	// Draw tangent?
+	// Note: the tangentVector is NOT normalized in this implementation.
+	//       THREE.js normalizes tangents, my implementation does NOT!
+	var tangentVector = bCurve.getTangent( 0.5 );
+	var perpendicular = new THREE.Vector2( tangentVector.y, - tangentVector.x );
+	var tangentPoint  = bCurve.getPoint( 0.5 );
+	var tangentDrawLength = 200; // px
+	// Normalize tangent
+	tangentVector = tangentVector.normalize();
+	context.strokeStyle = "#0000FF";
+	context.lineWidth = 1;
+	/*
+	context.beginPath();
+	context.moveTo( tangentPoint.x * zoomFactor + drawOffset.x - tangentVector.x*tangentDrawLength/2.0,
+			tangentPoint.y * zoomFactor + drawOffset.y - tangentVector.y*tangentDrawLength/2.0
+		      );
+	context.lineTo( tangentPoint.x * zoomFactor + drawOffset.x + tangentVector.x*tangentDrawLength/2.0,
+			tangentPoint.y * zoomFactor + drawOffset.y + tangentVector.y*tangentDrawLength/2.0
+		      );
+	context.stroke();
+	*/
+	
+	// Draw perpendiculars?
+	/*
+	// Note: the perpendicular at the point is the tangent rotated by 90 deg
+	context.beginPath();
+	context.moveTo( tangentPoint.x * zoomFactor + drawOffset.x,
+			tangentPoint.y * zoomFactor + drawOffset.y 
+		      );
+	context.lineTo( tangentPoint.x * zoomFactor + drawOffset.x + perpendicular.x*0.5,
+			tangentPoint.y * zoomFactor + drawOffset.y + perpendicular.y*0.5
+		      );
+	context.stroke();
+	*/
+
+	if( document.forms["bezier_form"].elements["draw_perpendiculars"].checked ) {
+	    this.drawPerpendiculars( context,
+				     bCurve,
+				     drawOffset,
+				     zoomFactor
+			       );
+	}
+
 
 	// Draw the actual bezier curve
 	this.drawBezierCurve( context,
@@ -568,7 +646,6 @@ IKRS.BezierCanvasHandler.prototype.drawBezierPath = function( context,
 			      IKRS.Utils.inArray( this.selectedPointIndices, i ),               // startPointIsSelected
 			      IKRS.Utils.inArray( this.selectedPointIndices, i+1 )              // endPointIsSelected
 			    );
-
 
 	
 
