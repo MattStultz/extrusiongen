@@ -182,7 +182,7 @@ IKRS.BezierPath.prototype.getPoint = function( t ) {
 }
 
 
-IKRS.BezierPath.prototype.getBoundingBox = function() {
+IKRS.BezierPath.prototype.computeBoundingBox = function() {
 
     if( this.bezierCurves.length == 0 ) {
 	
@@ -192,10 +192,10 @@ IKRS.BezierPath.prototype.getBoundingBox = function() {
     }
 	
 
-    var boundingBox = this.bezierCurves[ 0 ].getBoundingBox();
+    var boundingBox = this.bezierCurves[ 0 ].computeBoundingBox();
     for( var i = 1; i < this.bezierCurves.length; i++ ) {
 
-	var tmpBounds = this.bezierCurves[ i ].getBoundingBox();
+	var tmpBounds = this.bezierCurves[ i ].computeBoundingBox();
 	boundingBox.xMin = Math.min( boundingBox.xMin, tmpBounds.xMin );
 	boundingBox.xMax = Math.max( boundingBox.xMax, tmpBounds.xMax );
 	boundingBox.yMin = Math.min( boundingBox.yMin, tmpBounds.yMin );

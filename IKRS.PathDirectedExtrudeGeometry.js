@@ -1,17 +1,17 @@
 
 /**
  * @author Ikaros Kappler
- * @date 2013-08-22
+ * @date 2013-08-26
  * @version 1.0.0
  **/
 
 
 
-IKRS.ShapedPathGeometry = function( shape,
-				    path,
-				    shapedPath,
-				    options
-				  ) {
+IKRS.PathDirectedExtrudeGeometry = function( shape,
+					     path,
+					     shapedPath,
+					     options
+					   ) {
 
 
     // Call super 'constructor'
@@ -29,6 +29,13 @@ IKRS.ShapedPathGeometry = function( shape,
     //var bendRatio = options.pathBend / MAX_BEND;
 
     var shapedPathBounds = shapedPath.computeBoundingBox();
+    // An object with 
+    //  - minX
+    //  - minY
+    //  - maxX
+    //  - maxY
+    var pathBounds       = path.getBoundingBox(); 
+
 
     // Iterate through path elements in n steps
     var vertexCount      = 0;
@@ -38,9 +45,16 @@ IKRS.ShapedPathGeometry = function( shape,
     var pathTangentSlope = 0.0;
     for( var i = 0; i <= options.curveSegments; i++ ) {
 
-	var t = i / options.curveSegments;
+	var tSegment        = i / options.curveSegments;
 	// This is a Vector2 (x,y)
-	var pathPoint = path.getPointAt( t );
+	var pathPoint       = path.getPointAt( tSegment );
+	var shapedPathPoint = shapedPath.getPoint( tSegment );
+	var tHeight         = Math.min( 1.0, 
+					(shapedPathBounds.getYMax() - shapedPathPoint.y) / shapedPathBounds.getHeight()
+				      );
+	
+	//window.alert( "pathPoint=(" + pathPoint.x + ", " + pathPoint.y + ")" );
+
 	if( i == 0 ) pathTangent = new THREE.Vector2( 0, 0 ); // No slope at first level
 	else         pathTangent = new THREE.Vector2( pathPoint.x-lastPathPoint.x, pathPoint.y-lastPathPoint.y );
 	
@@ -52,14 +66,14 @@ IKRS.ShapedPathGeometry = function( shape,
 	//window.alert( "pathTangentSlope=" + ((pathTangentSlope/Math.PI)*180) + " DEG (" + pathTangentSlope + " RAD)" );
 	
 	// Don't forget to make a path curve by 'options.pathBend'
-	var pathBendAmount = options.pathBend*t;
+	var pathBendAmount = options.pathBend * tHeight; // tSegment;
 	//pathPoint.x += Math.cos(pathBendAmount) * options.size;
 	
 
 	//if( !pathPoint )
 	//    window.alert( "pathPoint#" + i + " (t=" + t+ "): " + JSON.stringify(pathPoint) );
 
-	var shapedPathPoint = shapedPath.getPoint( t );
+	
 	var radiusFactor    = (shapedPathBounds.getXMax() - shapedPathPoint.x) / shapedPathBounds.getWidth();
 	var heightFactor    = (shapedPathBounds.getYMax() - shapedPathPoint.y) / shapedPathBounds.getHeight();
 
@@ -72,40 +86,40 @@ IKRS.ShapedPathGeometry = function( shape,
 	    
 	    var shapePoint2 = shapePoints.shape[s];
 	    
-	    
+	    /*
 	    var shapePoint3 = new THREE.Vector3( shapePoint2.x,
 						 shapePoint2.y,
 						 0  // t*options.size
 					       );
-					       
-	    //pathTangentSlope += Math.PI/2.0;
-	    /*
-	    var shapePoint3 = new THREE.Vector3( Math.sin(-pathTangentSlope) * shapePoint2.x * radiusFactor, // Math.sin(-pathTangentSlope) * shapePoint2.x,
-						 shapePoint2.y * radiusFactor,
-						 Math.cos(-pathTangentSlope) * shapePoint2.x * radiusFactor //0 //Math.cos(-pathTangentSlope) * shapePoint2.x
-					       );
-					       */
-	    
-	    var shapeBend   = options.pathBend * heightFactor;
+*/
 
-	    
-	    // var zBendAmount = options.pathBend * heightFactor;
-	    
-	    // Get the (x,y) point on the shape path (sould be a bezier curve)
-	    //  - use x as the radius factor
-	    //  - use y as the height factor
+
+	    var shapePoint3 = new THREE.Vector3( Math.sin(-pathTangentSlope) * shapePoint2.x,
+						 shapePoint2.y, 
+						 Math.cos(-pathTangentSlope) * shapePoint2.x
+					       );
+    
+	    //var shapeBend   = options.pathBend * heightFactor;
 	    
 	    
 	    shapePoint3.multiplyScalar( radiusFactor );
 	    
-	    
+	    // Translate along path		   
+	    /*
 	    shapePoint3.add( new THREE.Vector3( pathPoint.x, // Math.cos(pathBendAmount) * options.size, 
-						pathPoint.y, // pathPoint.y, 
-						- options.size/2.0 + heightFactor*options.size
+						0, // pathPoint.y, // pathPoint.y, 
+						pathPoint.y //- options.size/2.0 + heightFactor*options.size
 					      ) 
-			   ); // addSelf instead of add?!			  	    
-			   
+			   ); // addSelf instead of add?!
+	    */
+	    var pathHeightPoint = path.getPoint( tHeight );	    
+	    shapePoint3.add( new THREE.Vector3( pathHeightPoint.x, //pathPoint.x, // Math.cos(pathBendAmount) * options.size, 
+						0, // pathPoint.y, // pathPoint.y, 
+						pathHeightPoint.y // pathPoint.y //- options.size/2.0 + heightFactor*options.size
+					      ) 
+			   ); // addSelf instead of add?!
 
+			   
 	    // Add path point?	    
 	    // this.vertices.push( new THREE.Vertex(shapePoint3) ); 	    
 	    // ... Vertex was replaced by Vector3 (Vertex is DEPRECATED!)
@@ -180,7 +194,9 @@ IKRS.ShapedPathGeometry = function( shape,
     // return new THREE.ExtrudeGeometry( shape, options );
 };
 
-IKRS.ShapedPathGeometry.prototype = new THREE.Geometry();
-IKRS.ShapedPathGeometry.prototype.constructor = IKRS.ShapedPathGeometry;
+IKRS.PathDirectedExtrudeGeometry.prototype = new THREE.Geometry();
+IKRS.PathDirectedExtrudeGeometry.prototype.constructor = IKRS.PathDirectedExtrudeGeometry;
+
+//IKRS.PathDirectedExtrudeGeometry.prototype.computePathBounds
 
 // window.alert( "IKRS.ShapedPathGeometry=" + IKRS.ShapedPathGeometry );

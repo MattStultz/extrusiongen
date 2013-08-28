@@ -23,7 +23,7 @@ var latestMouseDragPosition;
 var preview_mesh; // will be initialized later
 var preview_scene = new THREE.Scene(); 
 var preview_camera = new THREE.PerspectiveCamera( 75, 
-						  preview_canvas_width/preview_canvas_height, // window.innerWidth / window.innerHeight, 
+						  preview_canvas_width/preview_canvas_height,  
 						  0.1, 
 						  2000 
 						); 
@@ -91,8 +91,8 @@ function preview_mouseUpHandler( e ) {
 
 
 //window.alert( "preview_canvas.width=" +  preview_canvas.width + ", preview_canvas.height=" + preview_canvas.height );
-preview_renderer.setSize( preview_canvas_width, // preview_canvas.width,  //  canvasWidth, // window.innerWidth, 
-			  preview_canvas_height // preview_canvas.height  // canvasHeight   // window.innerHeight 
+preview_renderer.setSize( preview_canvas_width, 
+			  preview_canvas_height 
 			); 
 
 document.body.appendChild( preview_renderer.domElement );
@@ -101,13 +101,19 @@ document.body.appendChild( preview_renderer.domElement );
 function preview_rebuild_model() {
     
     // Fetch bezier path from bezier canvas handler
-    var shapedPath       = this.bezierCanvasHandler.getBezierPath();
-    var shapedPathBounds = shapedPath.getBoundingBox();
+    var shapedPath         = this.bezierCanvasHandler.getBezierPath();
+    var shapedPathBounds   = shapedPath.computeBoundingBox();
 
     var shapePoints = [];
     // Make a circle
     var circleSegmentCount = document.forms["mesh_form"].elements["shape_segments"].value; // 8;
-    //var circleRadius       = document.forms["mesh_form"].elements["shape_size"].value;     // 100;
+    var pathSegments       = document.forms["mesh_form"].elements["path_segments"].value;
+
+    if( circleSegmentCount*pathSegments > 400*400 ) {
+	window.alert( "The total face count is more than 160000 with these settings and would render very slowly. Please enter lower values." );
+	return;
+    }
+
     var wireFrame          = document.forms["mesh_form"].elements["wireframe"].checked; 
     var triangulate        = document.forms["mesh_form"].elements["triangulate"].checked; 
     
@@ -125,38 +131,70 @@ function preview_rebuild_model() {
 
     var extrusionShape = new THREE.Shape( shapePoints );
 
-    //var pathLength   = document.forms["mesh_form"].elements["path_length"].value;
-    var pathLength     = shapedPath.getBoundingBox().getHeight();
+    // Extract visual path length (pixels) from bezier's bounding box.
+    var pathLength     = shapedPathBounds.getHeight();
 
-    var pathSegments = document.forms["mesh_form"].elements["path_segments"].value;
     // HINT: THREE.path points do not recognize the z component!
     var pathPoints = [];  
+    var pathBendAngle = document.getElementById( "preview_bend" ).value;
+    var buildCurvedPath = (pathBendAngle!=0);
     // Make a nice curve (for testing with sin/cos here)
-    /*
-    for( var i = 0; i < pathSegments; i++ ) {
-	var t     = i/pathSegments;
-	var sin   = Math.sin( Math.PI * 0.5 * t );
-	var cos   = Math.cos( Math.PI * 0.5 * t );
-	pathPoints.push( new THREE.Vector3( cos*100,
-					    sin*100,
-					    0 
-					  ) 
-		       );
-	// window.alert( "t=" + t + ", sin=" + sin + ", cos=" + cos );
-    }
-    */
-    // Make a liear path (for testing)
-    for( var i = 0; i < pathSegments; i++ ) {
-	var t     = i/pathSegments;
-	//var sin   = Math.sin( Math.PI * 0.5 * t );
-	//var cos   = Math.cos( Math.PI * 0.5 * t );
-	pathPoints.push( new THREE.Vector3( t, //t*100,
-					    0, //t*100,
-					    0
-					  ) 
-		       );
-	// window.alert( "t=" + t + ", sin=" + sin + ", cos=" + cos );
-    }
+    if( buildCurvedPath ) {
+
+	// How large must be the circle's radius so that the arc segment (with the given angle)
+	// has the desired path length (such as defined in the outer shape)?
+	// U = 2*PI*r
+	// r = U / (2*PI)
+	// 
+	// The actual segment size
+	//var tmpCircleRadius = pathLength / (Math.PI*2); // 110
+	
+	// The length of the circle arc must be exactly the shape's length
+	var tmpCircleRadius   = pathLength / ((pathBendAngle/180.0)*Math.PI);
+
+	for( var i = 0; i < pathSegments; i++ ) {
+	    var t     = i/pathSegments;
+	    //var angle = Math.PI * t * 0.75;
+	    var angle = Math.PI * (pathBendAngle/180.0) * t;
+	    var sin   = Math.sin( angle );
+	    var cos   = Math.cos( angle );
+	    /*
+	    pathPoints.push( new THREE.Vector3( cos * tmpCircleRadius, // 110, // shapedPathBounds.getHeight()/2,
+						sin * tmpCircleRadius, // 110, // shapedPathBounds.getHeight()/2,
+						0 
+					      ) 
+			   );
+			   */
+	    var pathPoint = new THREE.Vector3( cos * tmpCircleRadius, // 110, // shapedPathBounds.getHeight()/2,
+						sin * tmpCircleRadius, // 110, // shapedPathBounds.getHeight()/2,
+						0 
+					     );
+	    // translate to center
+	    pathPoint.add( new THREE.Vector3( -tmpCircleRadius,
+					      -pathLength/2, //-tmpCircleRadius/2,
+					      0
+					    )
+			 );
+	    pathPoints.push( pathPoint );
+	    // window.alert( "t=" + t + ", sin=" + sin + ", cos=" + cos );
+	}
+
+    } else {
+	
+	// Make a linear path (for testing)
+	for( var i = 0; i < pathSegments; i++ ) {
+	    var t     = i/pathSegments;
+	    //var sin   = Math.sin( Math.PI * 0.5 * t );
+	    //var cos   = Math.cos( Math.PI * 0.5 * t );
+	    pathPoints.push( new THREE.Vector3( t, //t*100,
+						0, //t*100,
+						0
+					      ) 
+			   );
+	    // window.alert( "t=" + t + ", sin=" + sin + ", cos=" + cos );
+	}
+    } // END else
+    
     
     var extrusionPath = new THREE.Path( pathPoints );
     
@@ -176,7 +214,7 @@ function preview_rebuild_model() {
 							    //extrudeMaterial: 1
 							  }
 							);
-    } else {
+    } else if( !buildCurvedPath ) {
 	
 	extrusionGeometry = new IKRS.ShapedPathGeometry( extrusionShape, 
 							 extrusionPath,
@@ -188,6 +226,18 @@ function preview_rebuild_model() {
 							  }
 							);	
 
+    } else {
+
+	extrusionGeometry = new IKRS.PathDirectedExtrudeGeometry( extrusionShape, 
+								  extrusionPath,
+								  shapedPath,
+								  { size: pathLength, // 300,
+								    height: 10,
+								    curveSegments: pathSegments, // 3,
+								    triangulate: triangulate
+								  }
+								);	
+	
     }
     /*
     var exrusionMaterial = new THREE.MeshLambertMaterial( 
@@ -266,13 +316,13 @@ function preview_render() {
 }
 
 function decreaseZoomFactor( redraw ) {
-    preview_mesh.scale.multiplyScalar( 0.5 );
+    preview_mesh.scale.multiplyScalar( 1/1.2 );
     if( redraw )
 	preview_render();
 }
 
 function increaseZoomFactor( redraw ) {
-    preview_mesh.scale.multiplyScalar( 2.0 );
+    preview_mesh.scale.multiplyScalar( 1.2 );
     if( redraw )
 	preview_render();
 }

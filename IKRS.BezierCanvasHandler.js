@@ -65,13 +65,13 @@ IKRS.BezierCanvasHandler.prototype.zoomFactor = 1.0;
 IKRS.BezierCanvasHandler.prototype.draggedPointID = -1; 
 
 IKRS.BezierCanvasHandler.prototype.increaseZoomFactor = function( redraw ) {
-    this.zoomFactor *= 2.0;
+    this.zoomFactor *= 1.2;
     if( redraw )
 	this.redraw();
 }
 
 IKRS.BezierCanvasHandler.prototype.decreaseZoomFactor = function( redraw ) {
-    this.zoomFactor /= 2.0;
+    this.zoomFactor /= 1.2;
     if( redraw )
 	this.redraw();
 }
@@ -123,7 +123,7 @@ IKRS.BezierCanvasHandler.prototype.redraw = function() {
     // Draw the bounding box?
     if( document.forms["bezier_form"].elements["draw_bounding_box"].checked ) {
 
-	var boundingBox = this.bezierPath.getBoundingBox();
+	var boundingBox = this.bezierPath.computeBoundingBox();
 	// window.alert( boundingBox.getWidth );
 	this.context.strokeStyle = "#888888";
 	this.context.lineWidth   = 0.5;
@@ -276,13 +276,22 @@ IKRS.BezierCanvasHandler.prototype.drawPerpendiculars = function( context,
     context.strokeStyle = "#a0a0fF";
     context.lineWidth   = 0.5;
 
-    var pCount = 25;
-    for( var i = 0; i < pCount; i++ ) {
+    //var pCount = 25;
+    var pDistance = 6; // px
+    var i = 0;
+    //for( var i = 0; i < pCount; i++ ) {
+    while( i*pDistance <= bezierCurve.getLength() ) {
 	
-	var t             = i/(pCount-1);
+	
+	
+	//var t             = i/(pCount-1);
+	var t             = (i*pDistance)/bezierCurve.getLength();
 	var point         = bezierCurve.getPoint( t );
 	var tangentVector = bezierCurve.getTangent( t ).normalize();
-	var perpendicular = new THREE.Vector3( - tangentVector.y, tangentVector.x );
+	// This draws the INNER perpendiculars
+	//var perpendicular = new THREE.Vector3( - tangentVector.y, tangentVector.x );
+	// This draws the OUTER perpendiculars
+	var perpendicular = new THREE.Vector3( tangentVector.y, - tangentVector.x );
 	// Draw perpendiculars?
 	// Note: the perpendicular at the point is the tangent rotated by 90 deg
 	context.beginPath();
@@ -293,6 +302,8 @@ IKRS.BezierCanvasHandler.prototype.drawPerpendiculars = function( context,
 			point.y * zoomFactor + drawOffset.y + perpendicular.y*20
 		      );
 	context.stroke();
+
+	i++;
 
     }
 

@@ -296,7 +296,7 @@ IKRS.CubicBezierCurve.prototype.getTangentAt = function( u ) {
 }
 
 
-IKRS.CubicBezierCurve.prototype.getBoundingBox = function() {
+IKRS.CubicBezierCurve.prototype.computeBoundingBox = function() {
 
     // Inspect all cached points
     var xMin = this.getStartPoint().x;
