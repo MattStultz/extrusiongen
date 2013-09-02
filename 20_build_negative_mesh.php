@@ -191,6 +191,13 @@ tooltip:hover:before{
   </td>			     
 </tr>
 
+<tr>
+  <td></td>
+  <td>
+        <input type="checkbox" id="build_negative_mesh" name="build_negative_mesh" />
+          <label for="build_negative_mesh">Build negative mesh</label>
+  </td>
+</tr>
 
 <tr>
   <td></td>

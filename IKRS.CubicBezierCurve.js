@@ -291,7 +291,7 @@ IKRS.CubicBezierCurve.prototype.getTangent = function( t ) {
 
 IKRS.CubicBezierCurve.prototype.getTangentAt = function( u ) {
 
-    return this.getTangent( t / this.arcLength );
+    return this.getTangent( u / this.arcLength );
 
 }
 

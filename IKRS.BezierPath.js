@@ -141,6 +141,8 @@ IKRS.BezierPath.prototype.splitAt = function( curveIndex,
     return true;
 }
 
+// IKRS.BezierPath.prototype.locate
+
 IKRS.BezierPath.prototype.getPointAt = function( u ) {
 
     if( u < 0 || u > this.totalArcLength ) {
@@ -179,6 +181,52 @@ IKRS.BezierPath.prototype.getPointAt = function( u ) {
 IKRS.BezierPath.prototype.getPoint = function( t ) {
     //window.alert( "IKRS.BezierPath.totalArcLength=" + this.totalArcLength );
     return this.getPointAt( t * this.totalArcLength );
+}
+
+IKRS.BezierPath.prototype.getTangent = function( t ) {
+
+    return this.getTangentAt( t * this.totalArcLength );
+
+}
+
+IKRS.BezierPath.prototype.getTangentAt = function( u ) {
+
+
+    if( u < 0 || u > this.totalArcLength ) {
+	console.log( "[IKRS.BezierPath.getPointAt(u)] u is out of bounds: " + u + "." );
+	return null;
+    }
+
+    // Find the spline to extract the value from
+    var i = 0;
+    var uTemp = 0.0;
+    
+    while( i < this.bezierCurves.length &&
+	   (uTemp + this.bezierCurves[i].getLength()) < u 
+	 ) {
+	
+	uTemp += this.bezierCurves[ i ].getLength();
+	i++;
+
+    }
+    
+    //window.alert( i );
+    
+    // if u == arcLength
+    //   -> i is max
+    //if( i >= this.bezierCurves.length )
+//	return this.bezierCurves[ this.bezierCurves.length-1 ].getEndPoint().clone();
+    
+    var bCurve    = this.bezierCurves[ i ];
+    var relativeU = u - uTemp;
+    
+    //window.alert( "relativeU=" + relativeU );
+
+    return bCurve.getTangentAt( relativeU );
+
+    // !!!
+    //return new THREE.Vector2( 0, 0 );
+
 }
 
 

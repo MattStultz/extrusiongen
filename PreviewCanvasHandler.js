@@ -101,21 +101,22 @@ document.body.appendChild( preview_renderer.domElement );
 function preview_rebuild_model() {
     
     // Fetch bezier path from bezier canvas handler
-    var shapedPath         = this.bezierCanvasHandler.getBezierPath();
-    var shapedPathBounds   = shapedPath.computeBoundingBox();
+    var shapedPath           = this.bezierCanvasHandler.getBezierPath();
+    var shapedPathBounds     = shapedPath.computeBoundingBox();
 
-    var shapePoints = [];
+    var shapePoints          = [];
     // Make a circle
-    var circleSegmentCount = document.forms["mesh_form"].elements["shape_segments"].value; // 8;
-    var pathSegments       = document.forms["mesh_form"].elements["path_segments"].value;
+    var circleSegmentCount   = document.forms["mesh_form"].elements["shape_segments"].value; // 8;
+    var pathSegments         = document.forms["mesh_form"].elements["path_segments"].value;
 
     if( circleSegmentCount*pathSegments > 400*400 ) {
 	window.alert( "The total face count is more than 160000 with these settings and would render very slowly. Please enter lower values." );
 	return;
     }
 
-    var wireFrame          = document.forms["mesh_form"].elements["wireframe"].checked; 
-    var triangulate        = document.forms["mesh_form"].elements["triangulate"].checked; 
+    var build_negative_mesh  = document.forms["mesh_form"].elements["build_negative_mesh"].checked;
+    var wireFrame            = document.forms["mesh_form"].elements["wireframe"].checked; 
+    var triangulate          = document.forms["mesh_form"].elements["triangulate"].checked; 
     
     // Use the x value (=radius) of the first path point as circle radius
     var circleRadius       = shapedPathBounds.getWidth(); //shapedPath.getPoint( 0.0 ).x;
@@ -181,13 +182,14 @@ function preview_rebuild_model() {
 
     } else {
 	
+	var pathStep = pathLength/pathSegments;
 	// Make a linear path (for testing)
 	for( var i = 0; i < pathSegments; i++ ) {
 	    var t     = i/pathSegments;
 	    //var sin   = Math.sin( Math.PI * 0.5 * t );
 	    //var cos   = Math.cos( Math.PI * 0.5 * t );
-	    pathPoints.push( new THREE.Vector3( t, //t*100,
-						0, //t*100,
+	    pathPoints.push( new THREE.Vector3( 0, // -i * pathStep, // t, //t*100,
+						- pathLength/2 + i * pathStep, //t*100,
 						0
 					      ) 
 			   );
@@ -214,7 +216,7 @@ function preview_rebuild_model() {
 							    //extrudeMaterial: 1
 							  }
 							);
-    } else if( !buildCurvedPath ) {
+    /*} else if( !buildCurvedPath ) {
 	
 	extrusionGeometry = new IKRS.ShapedPathGeometry( extrusionShape, 
 							 extrusionPath,
@@ -225,16 +227,19 @@ function preview_rebuild_model() {
 							    triangulate: triangulate
 							  }
 							);	
-
+							*/
     } else {
 
 	extrusionGeometry = new IKRS.PathDirectedExtrudeGeometry( extrusionShape, 
 								  extrusionPath,
 								  shapedPath,
-								  { size: pathLength, // 300,
-								    height: 10,
+								  { size:          pathLength, // 300,
+								    height:        10,
 								    curveSegments: pathSegments, // 3,
-								    triangulate: triangulate
+								    triangulate:   triangulate,
+								    hollow:        build_negative_mesh,
+								    closePathBegin: true,
+								    closePathEnd: true
 								  }
 								);	
 	
