@@ -275,6 +275,10 @@ IKRS.BezierCanvasHandler.prototype.drawPerpendiculars = function( context,
 
     context.strokeStyle = "#a0a0fF";
     context.lineWidth   = 0.5;
+    
+    // This is very ungly!
+    // TODO: pass as param
+    var perpendicularLength = document.forms["mesh_form"].elements["mesh_hull_strength"].value; // 20
 
     //var pCount = 25;
     var pDistance = 6; // px
@@ -287,19 +291,23 @@ IKRS.BezierCanvasHandler.prototype.drawPerpendiculars = function( context,
 	//var t             = i/(pCount-1);
 	var t             = (i*pDistance)/bezierCurve.getLength();
 	var point         = bezierCurve.getPoint( t );
-	var tangentVector = bezierCurve.getTangent( t ).normalize();
-	// This draws the INNER perpendiculars
+	//var tangentVector = bezierCurve.getTangent( t ).normalize();
+
+	// This draws the INNER perpendiculars?
 	//var perpendicular = new THREE.Vector3( - tangentVector.y, tangentVector.x );
+
 	// This draws the OUTER perpendiculars
-	var perpendicular = new THREE.Vector3( tangentVector.y, - tangentVector.x );
+	//var perpendicular = new THREE.Vector3( tangentVector.y, - tangentVector.x );
+	var perpendicular = bezierCurve.getPerpendicular( t ).normalize();
+	
 	// Draw perpendiculars?
 	// Note: the perpendicular at the point is the tangent rotated by 90 deg
 	context.beginPath();
 	context.moveTo( point.x * zoomFactor + drawOffset.x,
 			point.y * zoomFactor + drawOffset.y 
 		      );
-	context.lineTo( point.x * zoomFactor + drawOffset.x + perpendicular.x*20,
-			point.y * zoomFactor + drawOffset.y + perpendicular.y*20
+	context.lineTo( point.x * zoomFactor + drawOffset.x + perpendicular.x * (perpendicularLength*zoomFactor),
+			point.y * zoomFactor + drawOffset.y + perpendicular.y * (perpendicularLength*zoomFactor)
 		      );
 	context.stroke();
 

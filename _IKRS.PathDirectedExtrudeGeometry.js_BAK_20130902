@@ -16,10 +16,6 @@ IKRS.PathDirectedExtrudeGeometry = function( shape,
 
     // Call super 'constructor'
     THREE.Geometry.call( this );
-
-    // window.alert( "options.perpendicularHullStrength=" + options.perpendicularHullStrength );
-    if( !options.perpendicularHullStrength )
-	options.perpendicularHullStrength = 50;
     
     //var MAX_BEND = Math.PI;
     
@@ -55,13 +51,7 @@ IKRS.PathDirectedExtrudeGeometry = function( shape,
     if( options.hollow )
 	options.closePathEnd = false;
 
-    var innerPathResult = this.buildPathExtrusion( shape, 
-						   path, 
-						   shapedPath, 
-						   options, 
-						   pathBounds, 
-						   shapedPathBounds, 
-						   vertexCount );
+    var innerPathResult = this.buildPathExtrusion( shape, path, shapedPath, options, pathBounds, shapedPathBounds, vertexCount );
     
     if( options.hollow ) {
 
@@ -78,48 +68,22 @@ IKRS.PathDirectedExtrudeGeometry = function( shape,
 	//window.alert( "innerPathResult.perpendicularHullPoints=" + innerPathResult.perpendicularHullPoints );
 	//window.alert( "tmpShapePoints=" + tmpShapePoints );
 	var outerHullPath  = new THREE.Path( innerPathResult.perpendicularHullPoints );
-	// THERE IS A BUG IN THREE.js INSIDE THE PATH.getBounds() computation!
-	// Don't use it.
-	var outerHullPathBounds = IKRS.BoundingBox2.computeFromPoints( innerPathResult.perpendicularHullPoints );
-	//window.alert( "shapedPathBounds=" + shapedPathBounds.toString() + ", outerHullPathBounds=" + outerHullPathBounds.toString() );
-	
-
-	// Display difference between inner and outer shape path
-	/*
-	for( var i = 0; i <= options.curveSegments; i++ ) {
-
-	    var t = i / options.curveSegments;
-	    var tmpInner = shapedPath.getPoint( t );
-	    var tmpOuter = outerHullPath.getPoint( t );
-	    
-	    window.alert( "innerShapePoint["+i+"]=(" + tmpInner.x + ", " + tmpInner.y + "), innerShapePoint["+i+"]=(" + tmpOuter.x + ", " + tmpOuter.y + "), difference=(" + (tmpOuter.x-tmpInner.x) + ", " + (tmpOuter.y-tmpInner.y) + ")" );
-
-	}
-	*/
-
-	
-	//window.alert( "innerPathResult.extendedExtrusionPathPoints=" + innerPathResult.extendedExtrusionPathPoints );
-	var extendedExtrusionPath       = new THREE.Path( innerPathResult.extendedExtrusionPathPoints );
-	var extendedExtrusionPathBounds = IKRS.BoundingBox2.computeFromPoints( innerPathResult.extendedExtrusionPathPoints );
+	//window.alert( JSON.stringify(outerHullPath.getBoundingBox()) );
+	var outerHullPathBounds = new IKRS.BoundingBox2( outerHullPath.getBoundingBox().minX,
+							 outerHullPath.getBoundingBox().maxX,
+							 outerHullPath.getBoundingBox().minY,
+							 outerHullPath.getBoundingBox().maxY
+						       );
+	window.alert( "outerHullPathBounds=" + outerHullPathBounds.toString() );
 	
 	
-	options.hollow = false; // in-place
-	var outerPathResult = this.buildPerpendicularHull( shape, 
-							   extendedExtrusionPath, //  path, 
-							   outerHullPath, 
-							   options, 
-							   extendedExtrusionPathBounds, // pathBounds, 
-							   outerHullPathBounds, 
-							   innerPathResult.vertexCount );
-	/*
-	var outerPathResult = this.buildPerpendicularHull( shape, 
-							   path, 
-							   outerHullPath, // shapedPath, 
-							   options, 
-							   pathBounds, 
-							   outerHullPathBounds, // shapedPathBounds, 
-							   innerPathResult.vertexCount );
-	*/
+	  var outerPathResult = this.buildPerpendicularHull( shape, // outerHullShape, // shape, 
+							     path, 
+							     outerHullPath, // shapedPath, 
+							     options, 
+							     pathBounds, 
+							     shapedPathBounds, 
+							     innerPathResult.vertexCount );
 	/*
 	options.hollow = false; // in-place!
 	var outerPathResult = this.buildPathExtrusion( shape, 
@@ -203,39 +167,16 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPathExtrusion = function( shape,
     var result_outerPointIndices_right   = [];
     var result_outerPointIndices_begin   = [];
     var result_outerPointIndices_end     = [];
-    // Store the perpendicular shaped path for the case the mesh should be hollow
-    // (required for the outer mesh)
-    var result_extendedExtrusionPathPoints  = [];
     
 
-    
-    // Extend the extrusion path at begin and end.
-    // Reason: otherwise the distance between inner and outer mesh at the path begin
-    //         and -end would be 0 (zero).
-    var pathBeginTangent = path.getTangent( 0.0 );
-    // window.alert( "pathBeginTangent=(" + pathBeginTangent.x + ", " + pathBeginTangent.y + ")" );
-    // Normalize tangent
-    pathBeginTangent.normalize();
-    // Set the hull-strength
-    //pathBeginTangent.multiplyScalar( options.perpendicularHullStrength/2 );
-    // Fetch old extrusion path point (at begin)
-    //var pathBeginPoint   = path.getPoint( 0.0 );
-    // Extend path by hull-strength (along the tangent)
-    //pathBeginPoint.sub( pathBeginTangent );
-    // And store as first path point :)
-    //result_extendedExtrusionPathPoints.push( pathBeginPoint );
-    // Note: The same will be done with the end-point after the for-loop
-
-
-    //if( !options.pathBend )
-    //	options.pathBend = Math.PI/4.0;  // 45 degrees for testing:)
+    if( !options.pathBend )
+	options.pathBend = Math.PI/4.0;  // 45 degrees for testing:)
 
     var lastPathPoint    = null;
     var pathTangent      = null;
     var pathTangentSlope = 0.0;
     
     // for( var i = 0; i <= options.curveSegments; i++ ) {
-    var lastPerpendicularHullPoint = null;
     for( var i = options.curveSegments; i >= 0; i-- ) {
 
 	var tSegment        = i / options.curveSegments;
@@ -246,33 +187,23 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPathExtrusion = function( shape,
 					(shapedPathBounds.getYMax() - shapedPathPoint.y) / shapedPathBounds.getHeight()
 				      );
 	
-	
 	// Remember perpendicular path points.
-	//var shapedPathTangent = shapedPath.getTangent( 1-tSegment );
+	var shapedPathTangent = shapedPath.getTangent( tSegment );
 	// Normalize tangent?
-	//shapedPathTangent = shapedPathTangent.normalize();
+	shapedPathTangent = shapedPathTangent.normalize();
 	// Convert tangent to perpendicular
-	//var shapedPathPerpendicular = new THREE.Vector2( shapedPathTangent.y, -shapedPathTangent.x );
-	var shapedPathPerpendicular = shapedPath.getPerpendicular( 1-tSegment );
-	//if( i == options.curveSegments )
-	//    shapedPathPerpendicular = new THREE.Vector2( -1, 0 );
+	var shapedPathPerpendicular = new THREE.Vector2( shapedPathTangent.y, -shapedPathTangent.x );
 	// Normalize vector?
-	//window.alert( "shapedPathPerpendicular[" + i +"]=(" + shapedPathPerpendicular.x + ", " + shapedPathPerpendicular.y + "), t=" + tSegment + ", 1-t=" + (1-tSegment) );
+	//window.alert( "shapedPathPerpendicular=(" + shapedPathPerpendicular.x + ", " + shapedPathPerpendicular.y + ")" );
 	// Normalize directive vector
-	shapedPathPerpendicular.normalize();
+	//shapedPathPerpendicular = shapedPathPerpendicular.normalize();
 	// And set to the default hull size
-	shapedPathPerpendicular.multiplyScalar( options.perpendicularHullStrength ); //50.0 );
-	var perpendicularHullPoint  = shapedPath.getPoint( 1-tSegment ); // shapedPathPoint.clone();
-	/*
-	if( i == 0 ) {
-	    window.alert( "shapedPathPerpendicular[" + i +"]=(" + shapedPathPerpendicular.x + ", " + shapedPathPerpendicular.y + "), t=" + tSegment + ", 1-t=" + (1-tSegment) );
-	    //shapedPathPerpendicular = new THREE.Vector2( -options.perpendicularHullStrength, 0 );
-	}
-	*/
+	shapedPathPerpendicular.multiplyScalar( 50.0 );
+	var perpendicularHullPoint  = shapedPathPoint.clone();
+	//perpendicularHullPoint = perpendicularHullPoint.multiplyScalar( 50.0 );
 	perpendicularHullPoint.add( shapedPathPerpendicular );
 	//var tmpX = shapedPathPoint.clone(); tmpX.add( new THREE.Vector3( 100, 100, 100 ) );
 	result_perpendicularPathPoints.push( perpendicularHullPoint );
-	
 	
 	/*
 	result_perpendicularPathPoints.push( shapedPath.getPoint( 1-tSegment ) );
@@ -281,18 +212,14 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPathExtrusion = function( shape,
 	
 	//window.alert( "shapedPathPoint=(" + shapedPathPoint.x + ", " + shapedPathPoint.y + "), perpendicularHullPoint=(" + perpendicularHullPoint.x + ", " + perpendicularHullPoint.y + ")" );
 
-
-	// Store path-point in extended path
-	result_extendedExtrusionPathPoints.push( path.getPoint(1-tSegment) ); // pathPoint );
-
 	
 	//window.alert( "pathPoint=(" + pathPoint.x + ", " + pathPoint.y + ")" );
 
-	if( i == options.curveSegments ) pathTangent = new THREE.Vector2( 0, 0 ); // No slope at first level?
+	if( i == options.curveSegments ) pathTangent = new THREE.Vector2( 0, 0 ); // No slope at first level
 	else                             pathTangent = new THREE.Vector2( pathPoint.x-lastPathPoint.x, pathPoint.y-lastPathPoint.y );
 	
 	// Calculate slope from tangent
-	if( pathTangent.x == 0 ) pathTangentSlope = -Math.PI/2.0; // -90 deg
+	if( pathTangent.x == 0 ) pathTangentSlope = -Math.PI/2.0; // 90 deg
 	else                     pathTangentSlope = Math.atan( pathTangent.y/pathTangent.x );
 	
 	// Don't forget to make a path curve by 'options.pathBend'
@@ -402,12 +329,11 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPathExtrusion = function( shape,
 						      firstShapePointIndex
 						    ) 
 				   );
-				   
 		} else if( i == 0 && options.closePathEnd ) {
 		    
 		    //!!! !!!
 		    
-		    // First segment		    
+		    // First segment
 		    this.faces.push( new THREE.Face3( firstShapePointIndex,
 						      vertexCount-1,
 						      vertexCount
@@ -441,39 +367,8 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPathExtrusion = function( shape,
 
 	    vertexCount++;
 	    lastPathPoint = pathPoint;
-	    lastPerpendicularHullPoint = perpendicularHullPoint;
 	} // END for [shape points]
     }
-    
-    // PROBLEM: the THREE.js Path implementation does not calculate the path tangent
-    //          in a proper way at t=0 :(
-    // SOLUTION: Add an additional path point with one pixel difference ;)
-    // ???
-    //var additionalPerpendicularHullPoint = lastPerpendicularHullPoint.clone();
-    //additionalPerpendicularHullPoint.add( new THREE.Vector2(1,1) );
-    //result_perpendicularPathPoints.push( additionalPerpendicularHullPoint );
-
-    //result_perpendicularPathPoints.push( shapedPath.getPoint(0) );
-
-    
-    // Extend the extrusion path at begin and end.
-    // Reason: otherwise the distance between inner and outer mesh at the path begin
-    //         and -end would be 0 (zero).
-    // Note: the begin-point was already added before the for-loop.
-    var pathEndTangent = path.getTangent( 1.0 );
-    // Normalize tangent
-    pathEndTangent.normalize();
-    // Set the hull-strength
-    pathEndTangent.multiplyScalar( options.perpendicularHullStrength/2 );
-    //window.alert( "pathEndTangent=(" + pathEndTangent.x + ", " + pathEndTangent.y + ")" );
-    // Fetch old extrusion path point (at begin)
-    var pathEndPoint   = path.getPoint( 1.0 );
-    // Extend path by hull-strength (along the tangent)
-    pathEndPoint.add( pathEndTangent );
-    // And store as first path point :)
-    result_extendedExtrusionPathPoints.push( pathEndPoint );
-
-
     
     //result_perpendicularPathPoints.push( shapedPath.getPoint(0) );
     
@@ -483,8 +378,7 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPathExtrusion = function( shape,
 				  end:   result_outerPointIndices_end,
 				  left:  result_outerPointIndices_left,
 				  right: result_outerPointIndices_right
-				},
-	     extendedExtrusionPathPoints: result_extendedExtrusionPathPoints
+				}
 	   };
     //this.computeCentroids();
     //this.computeFaceNormals();

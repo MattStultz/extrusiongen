@@ -36,14 +36,14 @@ position: absolute;
 top: 10px;
 left: 1054px;
 width: 400px;
-height: 360px;
+height: 410px;
 border: 1px solid #000000;
 padding: 10px;
 }
 
 div#shape_controls {
 position: absolute;
-top: 400px;
+top: 450px;
 left: 1054px;
 width: 400px;
 height: 200px;
@@ -53,10 +53,10 @@ padding: 10px;
 
 div#stl_builder {
 position: absolute;
-top: 630px;
+top: 680px;
 left: 1054px;
 width: 400px;
-height: 128px;
+height: 78px;
 border: 1px solid #000000;
 padding: 10px;
 }
@@ -196,6 +196,32 @@ tooltip:hover:before{
   <td>
         <input type="checkbox" id="build_negative_mesh" name="build_negative_mesh" />
           <label for="build_negative_mesh">Build negative mesh</label>
+  </td>
+</tr>
+
+<tr>
+  <td> <label for="mesh_hull_strength">Mesh&nbsp;hull&nbsp;strength</label><br/>
+					     (only if hollow)
+  </td>
+  <td valign="top">
+        <input type="number" id="mesh_hull_strength" name="mesh_hull_strength" value="50" class="tooltip" title="..." onchange="javascript:bezierCanvasHandler.redraw();" onkeyup="javascript:bezierCanvasHandler.redraw();" />px
+         
+  </td>
+</tr>
+
+<tr>
+  <td></td>
+  <td>
+        <input type="checkbox" id="mesh_close_path_begin" name="mesh_close_path_begin" disabled="disabled" />
+          <label for="mesh_close_path_begin">Close path begin</label>
+  </td>
+</tr>
+
+<tr>
+  <td></td>
+  <td>
+        <input type="checkbox" id="mesh_close_path_end" name="mesh_close_path_end" checked="checked" />
+          <label for="mesh_close_path_end">Close path end</label>
   </td>
 </tr>
 

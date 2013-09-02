@@ -289,9 +289,42 @@ IKRS.CubicBezierCurve.prototype.getTangent = function( t ) {
     
 }
 
+IKRS.CubicBezierCurve.prototype.convertU2T = function( u ) {
+
+    return Math.max( 0.0, 
+		     Math.min( 1.0, 
+			       ( u / this.arcLength ) 
+			     )
+		   );
+
+}
+
 IKRS.CubicBezierCurve.prototype.getTangentAt = function( u ) {
 
-    return this.getTangent( u / this.arcLength );
+    /*
+    return this.getTangent( Math.max( 0.0, 
+				      Math.min( 1.0, 
+						( u / this.arcLength) 
+					      )
+				    )
+			  );
+    */
+    return this.getTangent( this.convertU2T(u) );
+
+}
+
+IKRS.CubicBezierCurve.prototype.getPerpendicularAt = function( u ) {
+
+    return this.getPerpendicular( this.convertU2T(u) );
+							
+
+}
+
+IKRS.CubicBezierCurve.prototype.getPerpendicular = function( t ) {
+
+    var tangentVector = this.getTangent( t );
+    var perpendicular = new THREE.Vector3( tangentVector.y, - tangentVector.x );
+    return perpendicular;
 
 }
 
@@ -299,6 +332,7 @@ IKRS.CubicBezierCurve.prototype.getTangentAt = function( u ) {
 IKRS.CubicBezierCurve.prototype.computeBoundingBox = function() {
 
     // Inspect all cached points
+    /*
     var xMin = this.getStartPoint().x;
     var xMax = this.getStartPoint().x;
     var yMin = this.getStartPoint().y;
@@ -315,6 +349,9 @@ IKRS.CubicBezierCurve.prototype.computeBoundingBox = function() {
     }
 
     return new IKRS.BoundingBox2( xMin, xMax, yMin, yMax );
+    */
+    
+    return IKRS.BoundingBox2.computeFromPoints( this.segmentCache );
 }
 
 

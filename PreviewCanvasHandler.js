@@ -114,9 +114,14 @@ function preview_rebuild_model() {
 	return;
     }
 
-    var build_negative_mesh  = document.forms["mesh_form"].elements["build_negative_mesh"].checked;
-    var wireFrame            = document.forms["mesh_form"].elements["wireframe"].checked; 
-    var triangulate          = document.forms["mesh_form"].elements["triangulate"].checked; 
+    var build_negative_mesh   = document.forms["mesh_form"].elements["build_negative_mesh"].checked;
+    var mesh_hull_strength    = document.forms["mesh_form"].elements["mesh_hull_strength"].value;
+    var mesh_close_path_begin = document.forms["mesh_form"].elements["mesh_close_path_begin"].checked;
+    var mesh_close_path_end   = document.forms["mesh_form"].elements["mesh_close_path_end"].checked;
+    var wireFrame             = document.forms["mesh_form"].elements["wireframe"].checked; 
+    var triangulate           = document.forms["mesh_form"].elements["triangulate"].checked; 
+    
+    // window.alert( "mesh_close_path_begin=" + mesh_close_path_begin );
     
     // Use the x value (=radius) of the first path point as circle radius
     var circleRadius       = shapedPathBounds.getWidth(); //shapedPath.getPoint( 0.0 ).x;
@@ -138,7 +143,7 @@ function preview_rebuild_model() {
     // HINT: THREE.path points do not recognize the z component!
     var pathPoints = [];  
     var pathBendAngle = document.getElementById( "preview_bend" ).value;
-    var buildCurvedPath = (pathBendAngle!=0);
+    var buildCurvedPath = false; // (pathBendAngle!=0);
     // Make a nice curve (for testing with sin/cos here)
     if( buildCurvedPath ) {
 
@@ -154,7 +159,7 @@ function preview_rebuild_model() {
 	var tmpCircleRadius   = pathLength / ((pathBendAngle/180.0)*Math.PI);
 
 	for( var i = 0; i < pathSegments; i++ ) {
-	    var t     = i/pathSegments;
+	    var t     = i/ (pathSegments);
 	    //var angle = Math.PI * t * 0.75;
 	    var angle = Math.PI * (pathBendAngle/180.0) * t;
 	    var sin   = Math.sin( angle );
@@ -233,13 +238,14 @@ function preview_rebuild_model() {
 	extrusionGeometry = new IKRS.PathDirectedExtrudeGeometry( extrusionShape, 
 								  extrusionPath,
 								  shapedPath,
-								  { size:          pathLength, // 300,
-								    height:        10,
-								    curveSegments: pathSegments, // 3,
-								    triangulate:   triangulate,
-								    hollow:        build_negative_mesh,
-								    closePathBegin: true,
-								    closePathEnd: true
+								  { size:           pathLength, // 300,
+								    height:         10,
+								    curveSegments:  pathSegments, // 3,
+								    triangulate:    triangulate,
+								    hollow:         build_negative_mesh,
+								    closePathBegin: mesh_close_path_begin,
+								    closePathEnd:   mesh_close_path_end,
+								    perpendicularHullStrength: mesh_hull_strength
 								  }
 								);	
 	

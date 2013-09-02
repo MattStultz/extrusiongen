@@ -21,6 +21,10 @@ IKRS.BoundingBox2 = function( _xMin,
 IKRS.BoundingBox2.prototype = new IKRS.Object();
 IKRS.BoundingBox2.prototype.constructor = IKRS.BoundingBox2;
 
+IKRS.BoundingBox2.prototype.toString = function() {
+    return "IKRS.BoundingBox2={ xMin: " + this.xMin + ", xMax: " + this.xMax + ", yMin: " + this.yMin + ", yMax: " + this.yMax + ", width: " + this.getWidth() + ", height: " + this.getHeight() + " }";
+}
+
 
 IKRS.BoundingBox2.prototype.getXMax = function() {
     return this.xMax;
@@ -44,6 +48,34 @@ IKRS.BoundingBox2.prototype.getWidth = function() {
 
 IKRS.BoundingBox2.prototype.getHeight = function() {
     return this.yMax - this.yMin;
+}
+
+// A static function
+IKRS.BoundingBox2.computeFromPoints = function( points ) {
+
+    if( !points )
+	points = [];
+    
+    if( points.length == 0 )
+	return new IKRS.BoundingBox2( 0, 0, 0, 0 );
+
+    var xMin = points[0].x;
+    var xMax = points[0].x;
+    var yMin = points[0].y;
+    var yMax = points[0].y;
+    
+    for( var i = 1; i < points.length; i++ ) {
+
+	var point = points[ i ];
+	xMin = Math.min( xMin, point.x );
+	xMax = Math.max( xMax, point.x );
+	yMin = Math.min( yMin, point.y );
+	yMax = Math.max( yMax, point.y );
+
+    }
+
+    return new IKRS.BoundingBox2( xMin, xMax, yMin, yMax );
+
 }
 
 

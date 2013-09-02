@@ -193,7 +193,7 @@ IKRS.BezierPath.prototype.getTangentAt = function( u ) {
 
 
     if( u < 0 || u > this.totalArcLength ) {
-	console.log( "[IKRS.BezierPath.getPointAt(u)] u is out of bounds: " + u + "." );
+	console.log( "[IKRS.BezierPath.getTangentAt(u)] u is out of bounds: " + u + "." );
 	return null;
     }
 
@@ -220,9 +220,56 @@ IKRS.BezierPath.prototype.getTangentAt = function( u ) {
     var bCurve    = this.bezierCurves[ i ];
     var relativeU = u - uTemp;
     
-    //window.alert( "relativeU=" + relativeU );
+    //window.alert( "relativeU["+i+"]=" + relativeU );
 
     return bCurve.getTangentAt( relativeU );
+
+    // !!!
+    //return new THREE.Vector2( 0, 0 );
+
+}
+
+
+IKRS.BezierPath.prototype.getPerpendicular = function( t ) {
+
+    return this.getPerpendicularAt( t * this.totalArcLength );
+
+}
+
+IKRS.BezierPath.prototype.getPerpendicularAt = function( u ) {
+
+
+    if( u < 0 || u > this.totalArcLength ) {
+	console.log( "[IKRS.BezierPath.getPerpendicularAt(u)] u is out of bounds: " + u + "." );
+	return null;
+    }
+
+    // Find the spline to extract the value from
+    var i = 0;
+    var uTemp = 0.0;
+    
+    while( i < this.bezierCurves.length &&
+	   (uTemp + this.bezierCurves[i].getLength()) < u 
+	 ) {
+	
+	uTemp += this.bezierCurves[ i ].getLength();
+	i++;
+
+    }
+    
+    //window.alert( i );
+    
+    // if u == arcLength
+    //   -> i is max
+    //if( i >= this.bezierCurves.length )
+//	return this.bezierCurves[ this.bezierCurves.length-1 ].getEndPoint().clone();
+    
+    var bCurve    = this.bezierCurves[ i ];
+    var relativeU = u - uTemp;
+    
+    //window.alert( "relativeU["+i+"]=" + relativeU );
+
+    return bCurve.getPerpendicularAt( relativeU );
 
     // !!!
     //return new THREE.Vector2( 0, 0 );
