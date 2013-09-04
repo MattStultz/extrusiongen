@@ -121,7 +121,10 @@ function preview_rebuild_model() {
     var wireFrame             = document.forms["mesh_form"].elements["wireframe"].checked; 
     var triangulate           = document.forms["mesh_form"].elements["triangulate"].checked; 
     
-    // window.alert( "mesh_close_path_begin=" + mesh_close_path_begin );
+    // Convert text values to numbers!
+    mesh_hull_strength = parseInt( mesh_hull_strength );
+    
+    //window.alert( "mesh_close_path_begin=" + mesh_close_path_begin );
     
     // Use the x value (=radius) of the first path point as circle radius
     var circleRadius       = shapedPathBounds.getWidth(); //shapedPath.getPoint( 0.0 ).x;
@@ -142,8 +145,13 @@ function preview_rebuild_model() {
 
     // HINT: THREE.path points do not recognize the z component!
     var pathPoints = [];  
-    var pathBendAngle = document.getElementById( "preview_bend" ).value;
-    var buildCurvedPath = false; // (pathBendAngle!=0);
+    // Note: the new implementation ALWAYS uses the curved path.
+    //       As a curve bend of 0 DEG is not allowd (division by zereo) use a minimal
+    //       non-zero angle (e.g. 0.01 DEG).
+    var pathBendAngle = Math.max( document.getElementById( "preview_bend" ).value,
+				  0.01
+				);
+    var buildCurvedPath = true; // (pathBendAngle!=0);
     // Make a nice curve (for testing with sin/cos here)
     if( buildCurvedPath ) {
 

@@ -12,24 +12,26 @@ IKRS.PathDirectedExtrudeGeometry = function( shape,
 					     shapedPath,
 					     options
 					   ) {
-
+    
 
     // Call super 'constructor'
     THREE.Geometry.call( this );
+ 
 
-    // window.alert( "options.perpendicularHullStrength=" + options.perpendicularHullStrength );
-    if( !options.perpendicularHullStrength )
+    //window.alert( "options.perpendicularHullStrength=" + options.perpendicularHullStrength + ", options.closePathEnd=" + options.closePathEnd );
+    if( options.hollow && !options.perpendicularHullStrength )
 	options.perpendicularHullStrength = 50;
     
     //var MAX_BEND = Math.PI;
     
     //window.alert( "hollow=" + options.hollow );
 
-    /*
+    
     // Fetch the points from the shape
-    var shapePoints = shape.extractAllPoints();
-    shape = shapePoints.shape;
-
+    //var shapePoints = shape.extractAllPoints();
+    //shape = shapePoints.shape;
+    
+    /*
     if( !options.pathBend )
 	options.pathBend = Math.PI/4.0;  // 45 degrees for testing:)
 	*/
@@ -43,6 +45,8 @@ IKRS.PathDirectedExtrudeGeometry = function( shape,
     //  - maxX
     //  - maxY
     var pathBounds       = path.getBoundingBox(); 
+    
+    
 
 
     // Iterate through path elements in n steps
@@ -52,8 +56,11 @@ IKRS.PathDirectedExtrudeGeometry = function( shape,
     //var pathTangent      = null;
     //var pathTangentSlope = 0.0;
 
+    var old_closePathEnd = options.closePathEnd;
     if( options.hollow )
 	options.closePathEnd = false;
+    
+    options.buildPerpendicularHull = true;
 
     var innerPathResult = this.buildPathExtrusion( shape, 
 						   path, 
@@ -62,8 +69,42 @@ IKRS.PathDirectedExtrudeGeometry = function( shape,
 						   pathBounds, 
 						   shapedPathBounds, 
 						   vertexCount );
+    // Restore old closePathEnd option?
+    //window.alert( options.closePathEnd );
     
     if( options.hollow ) {
+
+	// Fetch the points from the shape
+	var shapePoints        = shape.extractAllPoints().shape;
+
+	// This is new
+	var shapeBounds        = IKRS.BoundingBox2.computeFromPoints( shapePoints );
+	
+	// window.alert( (shapeBounds.getWidth()  + options.perpendicularHullStrength) );
+	// Scale shape
+	var shapeScaleX        = (shapeBounds.getWidth()  + options.perpendicularHullStrength) / shapeBounds.getWidth();   // 1.2
+	var shapeScaleY        = (shapeBounds.getHeight() + options.perpendicularHullStrength) / shapeBounds.getHeight();  // 1.2
+	
+	/*
+	window.alert( "shapeBounds.width=" + shapeBounds.getWidth() + 
+		      ", shapeBounds.height=" + shapeBounds.getHeight() + 
+		      ", shapeScaleX=" + shapeScaleX + 
+		      ", shapeScaleY=" + shapeScaleY + 
+		      ", options.perpendicularHullStrength=" + options.perpendicularHullStrength 
+		    );
+		    */
+	
+	var scaledShapePoints  = [];
+	for( var i = 0; i < shapePoints.length; i++ ) {
+
+	    var scaledPoint = new THREE.Vector2( shapePoints[ i ].x * shapeScaleX,
+						 shapePoints[ i ].y * shapeScaleY
+					       );
+	    scaledShapePoints.push( scaledPoint );
+
+	}
+	var scaledShape        = new THREE.Shape( scaledShapePoints );
+
 
 	// Build the outer hull
 	/*var tmpShapePoints = shape.extractAllPoints().shape;
@@ -97,20 +138,33 @@ IKRS.PathDirectedExtrudeGeometry = function( shape,
 	}
 	*/
 
+	// Scale the shape!
+	
+
 	
 	//window.alert( "innerPathResult.extendedExtrusionPathPoints=" + innerPathResult.extendedExtrusionPathPoints );
 	var extendedExtrusionPath       = new THREE.Path( innerPathResult.extendedExtrusionPathPoints );
 	var extendedExtrusionPathBounds = IKRS.BoundingBox2.computeFromPoints( innerPathResult.extendedExtrusionPathPoints );
 	
 	
-	options.hollow = false; // in-place
-	var outerPathResult = this.buildPerpendicularHull( shape, 
-							   extendedExtrusionPath, //  path, 
+	options.hollow                 = false; // in-place
+	options.buildPerpendicularHull = false;
+	var outerPathResult = this.buildPathExtrusion( scaledShape, // shape, 
+							   extendedExtrusionPath, 
 							   outerHullPath, 
 							   options, 
-							   extendedExtrusionPathBounds, // pathBounds, 
+							   extendedExtrusionPathBounds, 
 							   outerHullPathBounds, 
 							   innerPathResult.vertexCount );
+	/*
+	var outerPathResult = this.buildPerpendicularHull( scaledShape, // shape, 
+							   extendedExtrusionPath, 
+							   outerHullPath, 
+							   options, 
+							   extendedExtrusionPathBounds, 
+							   outerHullPathBounds, 
+							   innerPathResult.vertexCount );
+							   */
 	/*
 	var outerPathResult = this.buildPerpendicularHull( shape, 
 							   path, 
@@ -133,8 +187,10 @@ IKRS.PathDirectedExtrudeGeometry = function( shape,
 
 	
 	// Build connection between outer and inner hull?
-	
-	if( options.closePathEnd ) {
+	//window.alert( "options.closePathEnd=" + options.closePathEnd );
+	if( old_closePathEnd ) { // options.closePathEnd ) {
+
+	    //window.alert( "Closing path end ..." );
 	    // Note: outerPathResult.outerPointIndices.begin and innerPathResult.outerPointIndices.end
 	    //       have the same lengths!
 	    for( var i = 1; i < outerPathResult.outerPointIndices.begin.length; i++ ) {
@@ -247,31 +303,37 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPathExtrusion = function( shape,
 				      );
 	
 	
-	// Remember perpendicular path points.
-	//var shapedPathTangent = shapedPath.getTangent( 1-tSegment );
-	// Normalize tangent?
-	//shapedPathTangent = shapedPathTangent.normalize();
-	// Convert tangent to perpendicular
-	//var shapedPathPerpendicular = new THREE.Vector2( shapedPathTangent.y, -shapedPathTangent.x );
-	var shapedPathPerpendicular = shapedPath.getPerpendicular( 1-tSegment );
-	//if( i == options.curveSegments )
-	//    shapedPathPerpendicular = new THREE.Vector2( -1, 0 );
-	// Normalize vector?
-	//window.alert( "shapedPathPerpendicular[" + i +"]=(" + shapedPathPerpendicular.x + ", " + shapedPathPerpendicular.y + "), t=" + tSegment + ", 1-t=" + (1-tSegment) );
-	// Normalize directive vector
-	shapedPathPerpendicular.normalize();
-	// And set to the default hull size
-	shapedPathPerpendicular.multiplyScalar( options.perpendicularHullStrength ); //50.0 );
-	var perpendicularHullPoint  = shapedPath.getPoint( 1-tSegment ); // shapedPathPoint.clone();
-	/*
-	if( i == 0 ) {
-	    window.alert( "shapedPathPerpendicular[" + i +"]=(" + shapedPathPerpendicular.x + ", " + shapedPathPerpendicular.y + "), t=" + tSegment + ", 1-t=" + (1-tSegment) );
-	    //shapedPathPerpendicular = new THREE.Vector2( -options.perpendicularHullStrength, 0 );
-	}
-	*/
-	perpendicularHullPoint.add( shapedPathPerpendicular );
-	//var tmpX = shapedPathPoint.clone(); tmpX.add( new THREE.Vector3( 100, 100, 100 ) );
-	result_perpendicularPathPoints.push( perpendicularHullPoint );
+	// This only works with bezier curves!!!
+	// (other paths have no perpendicular calculation implemented)
+	if( options.buildPerpendicularHull ) {
+
+	    // Remember perpendicular path points.
+	    //var shapedPathTangent = shapedPath.getTangent( 1-tSegment );
+	    // Normalize tangent?
+	    //shapedPathTangent = shapedPathTangent.normalize();
+	    // Convert tangent to perpendicular
+	    //var shapedPathPerpendicular = new THREE.Vector2( shapedPathTangent.y, -shapedPathTangent.x );
+	    var shapedPathPerpendicular = shapedPath.getPerpendicular( 1-tSegment );
+	    //if( i == options.curveSegments )
+	    //    shapedPathPerpendicular = new THREE.Vector2( -1, 0 );
+	    // Normalize vector?
+	    //window.alert( "shapedPathPerpendicular[" + i +"]=(" + shapedPathPerpendicular.x + ", " + shapedPathPerpendicular.y + "), t=" + tSegment + ", 1-t=" + (1-tSegment) );
+	    // Normalize directive vector
+	    shapedPathPerpendicular.normalize();
+	    // And set to the default hull size
+	    shapedPathPerpendicular.multiplyScalar( options.perpendicularHullStrength ); //50.0 );
+	    var perpendicularHullPoint  = shapedPath.getPoint( 1-tSegment ); // shapedPathPoint.clone();
+	    /*
+	      if( i == 0 ) {
+	      window.alert( "shapedPathPerpendicular[" + i +"]=(" + shapedPathPerpendicular.x + ", " + shapedPathPerpendicular.y + "), t=" + tSegment + ", 1-t=" + (1-tSegment) );
+	      //shapedPathPerpendicular = new THREE.Vector2( -options.perpendicularHullStrength, 0 );
+	      }
+	    */
+	    perpendicularHullPoint.add( shapedPathPerpendicular );
+	    //var tmpX = shapedPathPoint.clone(); tmpX.add( new THREE.Vector3( 100, 100, 100 ) );
+	    result_perpendicularPathPoints.push( perpendicularHullPoint );
+
+	} // END if [buildPerpendicularHull]
 	
 	
 	/*
