@@ -6,7 +6,7 @@
  **/
 
 
-function saveTextFile( stringData, filename, mimeType ){
+function saveTextFile( stringData, filename, mimeType ) {
 
     if( !filename )
 	filename = "stringData.txt";

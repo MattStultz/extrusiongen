@@ -10,62 +10,66 @@
  * @version 1.0.0
  **/
 
-function saveSTL( geometry, filename ){
+STLBuilder = {
 
-    if( !filename )
-	filename = "extrusion.stl";
-    
-    var stlString = buildSTL( geometry );  
-    var blob = new Blob([stlString], {type: 'text/plain'});
-    saveAs(blob, filename);
-    
-}
+    saveSTL: function( geometry, filename ) {
 
-function buildSTL( geometry ) {
-
-    var vertices = geometry.vertices;
-    // Warning!
-    // The faces may be Face4 and not Face3!
-    var tris     = geometry.faces;
-    
-    // Use an array as StringBuffer (concatenation is extremely slow in IE6).
-    var stl = [];
-    stl.push( "solid pixel\n" );
-    for(var i = 0; i < tris.length; i++) {
-
-	stl.push( " facet normal "+stringifyVector( tris[i].normal )+"\n");
-	stl.push("  outer loop\n");
-	stl.push("   " + stringifyVertex( vertices[ tris[i].a ] ) );
-	stl.push("   " + stringifyVertex( vertices[ tris[i].b ] ) );
-	stl.push("   " + stringifyVertex( vertices[ tris[i].c ] ) );
-	stl.push("  endloop \n");
-	stl.push(" endfacet \n");
+	if( !filename )
+	    filename = "extrusion.stl";
 	
-	// Is the facet a Face4 instance?
-	/*
-	if( tris[i].d ) {
-	    stl += (" facet normal "+stringifyVector( tris[i].normal )+"\n");
-	    stl += ("  outer loop\n");
-	    stl += "   " + stringifyVertex( vertices[ tris[i].a ] );
-	    stl += "   " + stringifyVertex( vertices[ tris[i].b ] );
-	    stl += "   " + stringifyVertex( vertices[ tris[i].c ] );
-	    stl += ("  endloop \n");
-	    stl += (" endfacet \n");
+	var stlString = STLBuilder.buildSTL( geometry );  
+	var blob = new Blob([stlString], {type: 'text/plain'});
+	window.saveAs(blob, filename);
+	
+    },
+
+    buildSTL: function( geometry ) {
+
+	var vertices = geometry.vertices;
+	// Warning!
+	// The faces may be Face4 and not Face3!
+	var tris     = geometry.faces;
+	
+	// Use an array as StringBuffer (concatenation is extremely slow in IE6).
+	var stl = [];
+	stl.push( "solid pixel\n" );
+	for(var i = 0; i < tris.length; i++) {
+
+	    stl.push( " facet normal "+ STLBuilder._stringifyVector( tris[i].normal )+"\n");
+	    stl.push("  outer loop\n");
+	    stl.push("   " + STLBuilder._stringifyVertex( vertices[ tris[i].a ] ) );
+	    stl.push("   " + STLBuilder._stringifyVertex( vertices[ tris[i].b ] ) );
+	    stl.push("   " + STLBuilder._stringifyVertex( vertices[ tris[i].c ] ) );
+	    stl.push("  endloop \n");
+	    stl.push(" endfacet \n");
+	    
+	    // Is the facet a Face4 instance?
+	    /*
+	      if( tris[i].d ) {
+	      stl += (" facet normal "+stringifyVector( tris[i].normal )+"\n");
+	      stl += ("  outer loop\n");
+	      stl += "   " + stringifyVertex( vertices[ tris[i].a ] );
+	      stl += "   " + stringifyVertex( vertices[ tris[i].b ] );
+	      stl += "   " + stringifyVertex( vertices[ tris[i].c ] );
+	      stl += ("  endloop \n");
+	      stl += (" endfacet \n");
+	      }
+	    */
 	}
-	*/
+	stl.push("endsolid");
+	
+	// Convert array to string
+	return stl.join("");
+    },
+
+
+
+    _stringifyVector: function(vec) {
+	return ""+vec.x+" "+vec.y+" "+vec.z;
+    },
+
+    _stringifyVertex: function(vec) {
+	return "vertex " + STLBuilder._stringifyVector(vec) + " \n";
     }
-    stl.push("endsolid");
-		
-    // Convert array to string
-    return stl.join("");
-}
 
-
-
-function stringifyVector(vec){
-  return ""+vec.x+" "+vec.y+" "+vec.z;
-}
-
-function stringifyVertex(vec){
-  return "vertex "+stringifyVector(vec)+" \n";
-}
+} // END STLBuilder

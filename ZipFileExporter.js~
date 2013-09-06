@@ -1,0 +1,72 @@
+/**
+ * This script requires jszip.js
+ *
+ * @author Ikaros Kappler
+ * @date 2013-09-05
+ * @version 1.0.0
+ **/
+
+
+function exportZipFile( stringData, filename ) {
+
+    /*
+    if( !filename )
+	filename = "zipData.zip";
+    if( !mimeType )
+	mimeType = "application/zip";
+    
+    var blob = new Blob([stringData], {type: mimeType});
+    saveAs(blob, filename);
+    */
+
+    var zip = new JSZip();
+    //zip.file("Hello.txt", "Comment ...\n" ); // "Hello World\n");
+    //var img = zip.folder("images");
+    //img.file("smile.gif", imgData, {base64: true});
+    
+    // Remember: btoa() converts string data to base64, 
+    //           atob() converts base64 data to string.
+
+    stringData = "{ test: \"true\" }";
+    //b64        = btoa( stringData );
+    //window.alert( "base64=" + b64 );
+
+    /*
+    zip.file( "test.dat", 
+	      b64, // new Blob( [ btoa("blubber_bla") ], 
+	      //{ type: "text/plain",
+	      // base64: true }
+	    //)
+	      { //type: "text/plain",
+		base64: true }
+	    );
+*/
+    zip.file( "test.json",
+	      stringData,
+	      { base64: false,
+		binary: false,
+		type: "application/json"
+	      }
+	    );
+    
+    
+
+    // The generate-function returns a base64 string
+    var zipData = zip.generate( { type: "base64" } ); 
+    window.alert( "zipData=" + zipData );
+
+    //location.href="data:application/zip;base64,"+content;
+    
+    //window.alert( content );
+    
+    var blob = new Blob( [zipData], 
+			 {type: "application/zip; base64"}
+		       );
+    window.saveAs(blob, filename);
+    /*
+    var writer = new FileWriter();
+    writer.write( blob );
+    */
+    //saveTextFile( content, filename, "application/zip" );
+
+}

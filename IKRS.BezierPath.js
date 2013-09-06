@@ -453,7 +453,7 @@ IKRS.BezierPath.prototype.adjustNeighbourControlPoint = function( mainCurve,
 }
 
 
-IKRS.BezierPath.prototype.toJSON = function() {
+IKRS.BezierPath.prototype.toJSON = function( prettyFormat ) {
 
     //window.alert( "[IKRS.BezierPath.toJSON()] this.bezierCurves.length=" + this.bezierCurves.length );
 
@@ -461,11 +461,15 @@ IKRS.BezierPath.prototype.toJSON = function() {
     buffer.push( "[" ); // array begin
     for( var i = 0; i < this.bezierCurves.length; i++ ) {
 
-	if( i > 0 )
+	if( i > 0 ) 
 	    buffer.push( "," );
-	buffer.push( " " );
+
+	if( prettyFormat)
+	    buffer.push( "\n\t" );
+	else
+	    buffer.push( " " );
 	
-	buffer.push( this.bezierCurves[i].toJSON() );
+	buffer.push( this.bezierCurves[i].toJSON( prettyFormat ) );
 
     }
     if( this.bezierCurves.length != 0 )

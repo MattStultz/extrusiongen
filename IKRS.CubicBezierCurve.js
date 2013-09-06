@@ -355,14 +355,19 @@ IKRS.CubicBezierCurve.prototype.computeBoundingBox = function() {
 }
 
 
-IKRS.CubicBezierCurve.prototype.toJSON = function() {
+IKRS.CubicBezierCurve.prototype.toJSON = function( prettyFormat ) {
     
     //window.alert( "[IKRS.CubicBezierCurve.toJSON()]" );
     var jsonString = "{ " + // begin object
+        ( prettyFormat ? "\n\t" : "" ) +
 	"\"startPoint\" : [" + this.getStartPoint().x + "," + this.getStartPoint().y + "], " +
+	( prettyFormat ? "\n\t" : "" ) +
 	"\"endPoint\" : [" + this.getEndPoint().x + "," + this.getEndPoint().y + "], " +
+	( prettyFormat ? "\n\t" : "" ) +
 	"\"startControlPoint\": [" + this.getStartControlPoint().x + "," + this.getStartControlPoint().y + "], " +
+	( prettyFormat ? "\n\t" : "" ) +
 	"\"endControlPoint\" : [" + this.getEndControlPoint().x + "," + this.getEndControlPoint().y + "]" +
+	( prettyFormat ? "\n\t" : "" ) +
 	" }";  // end object
     
     //window.alert( "[IKRS.CubicBezierCurve.toJSON()] " + jsonString );
