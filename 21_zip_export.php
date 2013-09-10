@@ -374,9 +374,47 @@ tooltip:hover:before{
   //window.alert( "AA" );
   this.bezierCanvasHandler = new IKRS.BezierCanvasHandler();
 
+  
+
 </script>
 
-<script language="Javascript" type="text/javascript" src="PreviewCanvasHandler.js"></script>
+<script language="Javascript" type="text/javascript" src="IKRS.PreviewCanvasHandler.js"></script>
+
+<script>
+
+    var previewCanvasHandler = new IKRS.PreviewCanvasHandler( this.bezierCanvasHandler,
+							      512, 
+							      768 
+							      );
+
+previewCanvasHandler.preview_rebuild_model();
+previewCanvasHandler.preview_camera.position.z = 500;
+
+
+
+function preview_render() {
+  // window.alert( "X" );
+  requestAnimationFrame( this.preview_render ); 
+  previewCanvasHandler.render( this.preview_scene, this.preview_camera ); 
+}
+
+function decreaseZoomFactor( redraw ) {
+    this.previewCanvasHandler.preview_mesh.scale.multiplyScalar( 1/1.2 );
+    if( redraw )
+	preview_render();
+}
+
+function increaseZoomFactor( redraw ) {
+    this.previewCanvasHandler.preview_mesh.scale.multiplyScalar( 1.2 );
+    if( redraw )
+	preview_render();
+}
+
+
+window.onload = preview_render;
+
+
+</script>
 
 </body> 
 </html>
