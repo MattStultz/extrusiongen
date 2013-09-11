@@ -15,17 +15,7 @@ IKRS.PreviewCanvasHandler = function( bezierCanvasHandler,
     this.bezierCanvasHandler = bezierCanvasHandler;
 
     this.preview_canvas   = document.getElementById("preview_canvas");
-    this.preview_renderer = new THREE.WebGLRenderer( { "canvas" : this.preview_canvas } ); 
-    if( !this.preview_renderer.context )
-	window.alert( "ERR" );
-    
-    // These are MouseEvent locations
-    //this.latestMouseDownPosition = null;
-    //this.latestMouseDragPosition = null;
-    
-    // This is a THREE.Vector3 rotation (euklid)
-    //var currentRotation;
-
+    this.preview_renderer = new THREE.WebGLRenderer( { "canvas" : this.preview_canvas } );
 
     this.preview_mesh; // will be initialized later
     this.preview_scene = new THREE.Scene(); 
@@ -47,11 +37,6 @@ IKRS.PreviewCanvasHandler = function( bezierCanvasHandler,
     // add to the scene
     this.preview_scene.add( this.preview_pointLight );
     
-
-    // This is not required as the pass the camera again during rendering
-    // scene.add( camera ); 
-    //var canvas = document.getElementById("my_canvas");
-    // alert( "Canvas=" + canvas );
     this.preview_canvas.onmousedown = this.preview_mouseDownHandler;
     this.preview_canvas.onmouseup   = this.preview_mouseUpHandler;
     this.preview_canvas.onmousemove = this.preview_mouseMoveHandler;
@@ -80,18 +65,6 @@ IKRS.PreviewCanvasHandler.prototype.preview_mouseMoveHandler = function ( e ) {
   // window.alert( "clicked. Event: " + e + ", e.pageX=" + e.pageX + ", e.pageY=" + e.pageY );
   
   if( this.previewCanvasHandler.latestMouseDownPosition ) {
-    //window.alert( "jo" );
-    // In each loop alter the cube's rotation
-     
-    /*
-    if( !this.currentRotation )
-      this.currentRotation = new THREE.Vector3();
-    this.currentRotation.y += (0.01 * (this.latestMouseDragPosition.x - e.pageX)); 
-    this.currentRotation.x += (0.01 * (this.latestMouseDragPosition.y - e.pageY));
-    
-    preview_mesh.rotation.y = this.currentRotation.y;
-    preview_mesh.rotation.x = this.currentRotation.x;
-    */
       
     this.previewCanvasHandler.preview_mesh.rotation.y += (0.01 * (this.previewCanvasHandler.latestMouseDragPosition.x - e.pageX)); 
     this.previewCanvasHandler.preview_mesh.rotation.x += (0.01 * (this.previewCanvasHandler.latestMouseDragPosition.y - e.pageY)); 
