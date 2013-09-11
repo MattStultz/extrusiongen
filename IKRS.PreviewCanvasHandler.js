@@ -321,7 +321,7 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
     
     // Remove old mesh?
     if( this.preview_mesh ) {
-	preview_scene.remove( this.preview_mesh );
+	this.preview_scene.remove( this.preview_mesh );
 
 	// Keep old rotation
 	new_mesh.rotation.x = this.preview_mesh.rotation.x;

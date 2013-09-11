@@ -411,6 +411,11 @@ function increaseZoomFactor( redraw ) {
 }
 
 
+function preview_rebuild_model() {
+  this.previewCanvasHandler.preview_rebuild_model();
+}
+
+
 window.onload = preview_render;
 
 
