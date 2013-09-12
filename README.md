@@ -9,9 +9,19 @@ Path Extrusion Generator
 
 TODO
 ----
+[2013-09-12]
+ - Add dummy console for older browsers
+
 [2013-09-11]
- - Zip file import
+ - [DONE 2013-09-11] 
+   Zip file import
  - Add ruler/measurements
+ - Implement split mesh
+ - Implement second inner perpendicular hull (for wax)
+ - [DONE 2013-09-12] 
+   Implement a better bezier curve splitting
+ - Add an undo-function to the bezier editor
+ - Shape scaling by moving bounding box nodes
 
 
 

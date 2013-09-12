@@ -43,8 +43,24 @@ IKRS.BezierCanvasHandler = function() {
     // This is a new way: build from a JSON string
     var jsonString = "[ { \"startPoint\" : [-122,74], \"endPoint\" : [-57.454814814814796,5.460592592592583], \"startControlPoint\": [-119,14], \"endControlPoint\" : [-66.28766869253815,34.77964111961321] }, { \"startPoint\" : [-57.454814814814796,5.460592592592583], \"endPoint\" : [-55,-139], \"startControlPoint\": [-50.31974300727449,-18.222977798698675], \"endControlPoint\" : [-84.38654635129569,-50.09980658609145] }, { \"startPoint\" : [-55,-139], \"endPoint\" : [-51.66118578883062,-227.750293953586], \"startControlPoint\": [-39.46858425198657,-185.98564599883105], \"endControlPoint\" : [-56.750583998055625,-189.07086756347596] }, { \"startPoint\" : [-51.66118578883062,-227.750293953586], \"endPoint\" : [-2,-323], \"startControlPoint\": [-46.66118578883062,-265.75029395358604], \"endControlPoint\" : [-40,-323] } ]";
     this.bezierPath = IKRS.BezierPath.fromJSON( jsonString );
+    
+    /*
+    this._undoCapacity   = 32;
+    this._undoHistory    = [ this._undoCapacity ];
+    this._undoHistory[0] = this.bezierPath.clone(); // One history entry into the past :)
+    this._undoHistory[1] = this.bezierPath;         // The current path to work on
+    this._undoFront      = 0;
+    this._undoLength     = 2;
+    this._undoPointer    = 1;
+    */
+    
+    this.undoHistory = new IKRS.UndoHistory( this.bezierPath,
+					     32
+					   );
+    //this.undoHistory.createHistoryEntry();
+    //window.alert( "bezierPath=" + JSON.stringify(this.bezierPath) + ",\n current_state: " + JSON.stringify(this.undoHistory.getCurrentState()) + ",\n equal=" + this.bezierPath.equals(this.undoHistory.getCurrentState()) );
+    this.bezierPath  = this.undoHistory.getCurrentState().clone();
 
-    //window.alert( "IKRS.BezierCanvashandler.bezierPath=" + this.bezierPath );
     // Store a reverse reference inside the handler so the mousehandlers can access this object
     this.canvas.bezierCanvasHandler = this;
         
@@ -76,10 +92,40 @@ IKRS.BezierCanvasHandler.prototype.decreaseZoomFactor = function( redraw ) {
 	this.redraw();
 }
 
+IKRS.BezierCanvasHandler.prototype.undo = function() {
+
+    if( !this.undoHistory.undo() )
+	return false;
+     
+    // this.undoHistory.createHistoryEntry();
+    this.bezierPath = this.undoHistory.getCurrentState(); 
+    this.redraw();
+    
+    return true;
+
+}
+
+/*
+IKRS.BezierCanvasHandler.prototype.redo = function() {
+
+    if( !this.undoHistory.redo() )
+	return false;
+   
+    this.bezierPath = this.undoHistory.getCurrentState();    
+    this.redraw();
+    
+    return true;
+
+}
+*/
+
+
 IKRS.BezierCanvasHandler.prototype.redraw = function() {
 
     // Clear screen?
-    if( document.forms["bezier_form"].elements["clear_on_repaint"].checked ) {
+    if( !document.forms["bezier_form"] ||
+	!document.forms["bezier_form"].elements["clear_on_repaint"] ||
+	document.forms["bezier_form"].elements["clear_on_repaint"].checked ) {
 
 	this.context.fillStyle = "#FFFFFF";
 	this.context.fillRect( 0, 0, 512, 768 );
@@ -134,6 +180,37 @@ IKRS.BezierCanvasHandler.prototype.redraw = function() {
 			       );
 
     }
+}
+
+IKRS.BezierCanvasHandler.prototype._drawSelectedPoint = function( context,
+								  point,
+								  zoomFactor,
+								  drawOffset
+								) {
+
+    context.beginPath();
+    context.arc( point.x * zoomFactor + drawOffset.x,  // centerX
+		 point.y * zoomFactor + drawOffset.y,  // centerY
+		 3,          // radius,
+		 0.0,         // start angle
+		 2.0*Math.PI, // end angle
+		 true         // anti clock wise
+	       );
+    context.fillStyle   = "#FF0000";
+    context.fill();
+    
+    
+    context.beginPath();
+    context.arc( point.x * zoomFactor + drawOffset.x,  // centerX
+		 point.y * zoomFactor + drawOffset.y,  // centerY
+		 8,          // radius,
+		 0.0,         // start angle
+		 2.0*Math.PI, // end angle
+		 true         // anti clock wise 
+	       );
+    context.strokeStyle = "#FF0000";
+    context.stroke();
+
 }
 
 IKRS.BezierCanvasHandler.prototype.drawBezierCurve = function( context,
@@ -209,17 +286,27 @@ IKRS.BezierCanvasHandler.prototype.drawBezierCurve = function( context,
 	// Start point?
 	if( drawStartPoint ) {
 	    if( startPointIsSelected ) {
-		//context.fillStyle = "#FF0000";
+		
+		
+		/*
 		context.fillRect( bezierCurve.getStartPoint().x * zoomFactor - 1 + drawOffset.x,
 				  bezierCurve.getStartPoint().y * zoomFactor - 1 + drawOffset.y,
 				  3, 3 );
 				  
-		/*context.strokeRect( bezierCurve.getStartPoint().x * zoomFactor - 2 + drawOffset.x,
-				    bezierCurve.getStartPoint().y * zoomFactor - 2 + drawOffset.y,
-				    5, 5 );
-				    */
+		context.strokeRect( bezierCurve.getStartPoint().x * zoomFactor - 3 + drawOffset.x,
+				    bezierCurve.getStartPoint().y * zoomFactor - 3 + drawOffset.y,
+				    7, 7 );
+		*/
+		
+		this._drawSelectedPoint( context,
+					 bezierCurve.getStartPoint(),
+					 zoomFactor, 
+					 drawOffset );
+					
+				    
 	    } else {
-                //context.fillStyle = "#B400FF";
+                context.fillStyle   = "#B400FF";
+		context.strokeStyle = "#B400FF";
 		context.fillRect( bezierCurve.getStartPoint().x * zoomFactor - 1 + drawOffset.x,
 				  bezierCurve.getStartPoint().y * zoomFactor - 1 + drawOffset.y,
 				  3, 3 );
@@ -228,18 +315,26 @@ IKRS.BezierCanvasHandler.prototype.drawBezierCurve = function( context,
 	// End point?
 	if( drawEndPoint ) {
 	    if( endPointIsSelected ) {
-		//context.fillStyle = "#FF0000";
-		
-		context.fillRect( bezierCurve.getEndPoint().x * zoomFactor - 2 + drawOffset.x,
-				  bezierCurve.getEndPoint().y * zoomFactor - 2 + drawOffset.y,
-				  5, 5 );
-		/*		  
-		context.strokeRect( bezierCurve.getStartPoint().x * zoomFactor - 2 + drawOffset.x,
-				    bezierCurve.getStartPoint().y * zoomFactor - 2 + drawOffset.y,
-				    5, 5 );
+		context.fillStyle   = "#FF0000";
+		context.strokeStyle = "#FF0000";
+		/*
+		context.fillRect( bezierCurve.getEndPoint().x * zoomFactor - 1 + drawOffset.x,
+				  bezierCurve.getEndPoint().y * zoomFactor - 1 + drawOffset.y,
+				  3, 3 );
+				  
+		context.strokeRect( bezierCurve.getEndPoint().x * zoomFactor - 3 + drawOffset.x,
+				    bezierCurve.getEndPoint().y * zoomFactor - 3 + drawOffset.y,
+				    7, 7 );
 				    */
+
+		this._drawSelectedPoint( context,
+					 bezierCurve.getEndPoint(),
+					 zoomFactor, 
+					 drawOffset );
+				    
 	    } else {
-                //context.fillStyle = "#B400FF";
+                context.fillStyle   = "#B400FF";
+		context.strokeStyle = "#B400FF";
 		context.fillRect( bezierCurve.getEndPoint().x * zoomFactor - 1 + drawOffset.x,
 				  bezierCurve.getEndPoint().y * zoomFactor - 1 + drawOffset.y,
 				  3, 3 );
@@ -317,6 +412,16 @@ IKRS.BezierCanvasHandler.prototype.drawPerpendiculars = function( context,
 
 }
 
+IKRS.BezierCanvasHandler.prototype.setBezierPath = function( path ) {
+    if( !path ) {
+	console.log( "Error: cannot set bezier path to null." );
+	return false;
+    }
+    
+    this.bezierPath = path;
+    this.undoHistory.addHistoryEntry( path );
+    this.repaint();
+}
 
 IKRS.BezierCanvasHandler.prototype.getBezierPath = function() {
     return this.bezierPath;
@@ -456,37 +561,35 @@ IKRS.BezierCanvasHandler.prototype.mouseDownHandler = function( e ) {
 IKRS.BezierCanvasHandler.prototype.mouseUpHandler = function( e ) {
     //window.alert( "mouse up. Event: " + e + ", e.pageX=" + e.pageX + ", e.pageY=" + e.pageY + ", latestMouseDragPosition=(" + this.bezierCanvasHandler.latestMouseDragPosition.x + ", " + bezierCanvasHandler.latestMouseDragPosition.y + ")");
 
-    // A click: a mouse-down followed by a mouse-up WITHOUT any mouse-move event in-between
-    //if( this.bezierCanvasHandler.latestMouseDownPosition.x == e.pageX &&
-	//this.bezierCanvasHandler.latestMouseDownPosition.y == e.pageY ) {
-
     var currentTime = new Date().getTime();
     // It is a click (mouse down and -up at the same position)
     // Check if not more than n milliseconds have passed
     if( this.bezierCanvasHandler.latestClickTime 
 	&& (currentTime - this.bezierCanvasHandler.latestClickTime) < 300 ) {
 	
-	//window.alert( "Double click at (" + e.pageX+ ", " + e.pageY + ")" );
 	this.bezierCanvasHandler.doubleClickHandler( this, e );
 	
 
     } else if( this.bezierCanvasHandler.latestClickTime &&
 	       (currentTime-this.bezierCanvasHandler.latestMouseDownTime) < 300 ) {
 	
-	// window.alert( "Single click at (" + e.pageX+ ", " + e.pageY + ")" );
 	this.bezierCanvasHandler.latestClickTime = currentTime;
 
-	if( this.bezierCanvasHandler.currentDraggedPointIndex != -1 )
+	if( this.bezierCanvasHandler.currentDraggedPointIndex != -1 ) {
 	    this.bezierCanvasHandler.selectedPointIndices = [ this.bezierCanvasHandler.currentDraggedPointIndex ];
-	else
+	} else {
 	    this.bezierCanvasHandler.selectedPointIndices = [];
+	}
 
-	//window.alert( "this.bezierCanvasHandler.selectedPoints=" + this.bezierCanvasHandler.selectedPoints );
+
     } 
 	
-   // }
 
     this.bezierCanvasHandler.latestClickTime = currentTime;
+
+    // If any points were dragged: create a history entry
+    if( this.bezierCanvasHandler.draggedPointID != -1 )
+	this.bezierCanvasHandler.undoHistory.createHistoryEntry();
 
     // Clear mouse down position
     this.bezierCanvasHandler.latestMouseDownPosition = null; 
@@ -501,7 +604,6 @@ IKRS.BezierCanvasHandler.prototype.mouseUpHandler = function( e ) {
 } // END mouseUpHandler
 
 IKRS.BezierCanvasHandler.prototype.mouseMoveHandler = function( e ) {
-   //window.alert( "mouse move. Event: " + e + ", e.pageX=" + e.pageX + ", e.pageY=" + e.pageY + ", lastMouseDownPosition=" + this.bezierCanvasHandler.latestMouseDownPosition + ", currentDragPoint=" + this.bezierCanvasHandler.currentDragPoint );
     
     if( this.bezierCanvasHandler.latestMouseDownPosition ) {
 
@@ -536,20 +638,19 @@ IKRS.BezierCanvasHandler.prototype.doubleClickHandler = function( parent,
 	this.locateCachedBezierPointNearPosition( relativeP,  // point
 						  10.0        // tolerance
 						);
-    // window.alert( "Double click at (" + e.pageX+ ", " + e.pageY + "); relative (" + relativeP.x + ", " + relativeP.y + "). Point nearby found: " + location );
     
     // Will return false if any index is out of (valid) bounds
     var splitSucceeded = this.bezierPath.splitAt( location[0],   // curveIndex
 						  location[1]    // segmentIndex
 						);
-    if( splitSucceeded )
+    if( splitSucceeded ) {
+	this.undoHistory.createHistoryEntry();
 	this.redraw();
+    }
 }
 
 
 IKRS.BezierCanvasHandler.prototype.keyDownHandler = function( e ) {
-    
-    // window.alert( "[IKRS.BezierCanvasHandler] Key down event. keyCode=" + e.keyCode );
     
     // The key code for 'delete' is 46
     if( e.keyCode != 46 ) 
@@ -576,8 +677,6 @@ IKRS.BezierCanvasHandler.prototype.drawBezierPath = function( context,
 							    
 							      drawTangents 
 							    ) { 
-
-    // window.alert( "# of bezier curves: " + bezierPath.getCurveCount() );   
 
     // This way of rendering the curve uses the curves' internal
     // segment cache.
@@ -617,29 +716,7 @@ IKRS.BezierCanvasHandler.prototype.drawBezierPath = function( context,
 	tangentVector = tangentVector.normalize();
 	context.strokeStyle = "#0000FF";
 	context.lineWidth = 1;
-	/*
-	context.beginPath();
-	context.moveTo( tangentPoint.x * zoomFactor + drawOffset.x - tangentVector.x*tangentDrawLength/2.0,
-			tangentPoint.y * zoomFactor + drawOffset.y - tangentVector.y*tangentDrawLength/2.0
-		      );
-	context.lineTo( tangentPoint.x * zoomFactor + drawOffset.x + tangentVector.x*tangentDrawLength/2.0,
-			tangentPoint.y * zoomFactor + drawOffset.y + tangentVector.y*tangentDrawLength/2.0
-		      );
-	context.stroke();
-	*/
-	
-	// Draw perpendiculars?
-	/*
-	// Note: the perpendicular at the point is the tangent rotated by 90 deg
-	context.beginPath();
-	context.moveTo( tangentPoint.x * zoomFactor + drawOffset.x,
-			tangentPoint.y * zoomFactor + drawOffset.y 
-		      );
-	context.lineTo( tangentPoint.x * zoomFactor + drawOffset.x + perpendicular.x*0.5,
-			tangentPoint.y * zoomFactor + drawOffset.y + perpendicular.y*0.5
-		      );
-	context.stroke();
-	*/
+
 
 	if( document.forms["bezier_form"].elements["draw_perpendiculars"].checked ) {
 	    this.drawPerpendiculars( context,
@@ -655,9 +732,9 @@ IKRS.BezierCanvasHandler.prototype.drawBezierPath = function( context,
 			      bCurve,
 			      drawOffset,
 			      zoomFactor,
-			      drawStartPoint,
+			      drawStartPoint && i == 0,  // avoid to double-paint start and end points
 			      drawEndPoint,
-			      drawStartControlPoint,
+			      drawStartControlPoint,  
 			      drawEndControlPoint,
 
 			      drawTangents,  // drawTangents

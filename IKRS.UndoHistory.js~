@@ -1,0 +1,21 @@
+/**
+ * @author Ikaros Kappler
+ * @date 2013-09-12
+ * @version 1.0.0
+ **/
+
+
+IKRS.UndoHistory = function( initialValue,
+			     capacity 
+			   ) {
+
+    if( !capacity )
+	capacity = 32;
+
+    this._undoCapacity   = 32;
+    this._undoHistory    = [ this._undoCapacity ];
+    this._undoHistory[0] = this.bezierPath.clone(); // One history entry into the past :)
+    this._undoHistory[1] = this.bezierPath;         // The current path to work on
+    this._undoFront      = 0;
+    this._undoLength     = 2;
+    this._undoPointer    = 1;

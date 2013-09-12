@@ -90,52 +90,6 @@ IKRS.CubicBezierCurve.prototype.moveCurvePoint = function( pointID,           //
 IKRS.CubicBezierCurve.prototype.getLength = function() {
     return this.arcLength;
 }
-
-/*
-IKRS.CubicBezierCurve.prototype.setCurvePoint = function( pointID,           // int
-							  newPosition,       // THREE.Vector2
-							  moveControlPoint,  // boolean
-							  updateArcLengths   // boolean
-					      ) {
-
-    if( pointID == this.START_POINT ) {
-
-	var moveAmount = new THREE.Vector2( newPosition.x - this.getStartPoint().x, //  - newPosition.x,
-					    newPosition.y - this.getStartPoint().y  // - newPosition.y 
-					  );
-	this.getStartPoint().set( newPosition );	
-	if( moveControlPoint ) 
-	    this.getStartControlPoint().add( moveAmount );
-
-    } else if( pointID == this.START_CONTROL_POINT ) {
-
-	this.getStartControlPoint().set( newPosition );
-
-    } else if( pointID == this.END_CONTROL_POINT ) {
-	
-	this.getEndControlPoint().set( newPosition );
-
-    } else if( pointID == this.END_POINT ) {
-
-	var moveAmount = new THREE.Vector2( newPosition.x - this.getEndPoint().x, // - newPosition.x,
-					    newPosition.y - this.getEndPoint().y  //  - newPosition.y 
-					  );
-	this.getEndPoint().set( newPosition );
-	if( moveControlPoint )
-	    this.getEndControlPoint().add( moveAmount );
-
-    } else {
-
-	console.log( "[IKRS.CubicBezierCurve.setCurvePoint] pointID '" + pointID +"' invalid." );
-
-    }
-
-
-    
-    if( updateArcLengths )
-	this.updateArcLengths();
-}
-*/
     
 IKRS.CubicBezierCurve.prototype.updateArcLengths = function() {
     var 
@@ -226,14 +180,6 @@ IKRS.CubicBezierCurve.prototype.getEndControlPoint = function() {
 IKRS.CubicBezierCurve.prototype.getPoint = function( t ) {
     
     // Perform some powerful math magic
-    /*
-    var x = this.startPoint.x * Math.pow(1.0-u,3) + this.startControlPoint.x*3*u*Math.pow(1.0-u,2)
-	+ this.endControlPoint.x*3*Math.pow(u,2)*(1.0-u)+this.endPoint.x*Math.pow(u,3);
-    
-    var y = this.startPoint.y*Math.pow(1.0-u,3)+this.startControlPoint.y*3*u*Math.pow(1.0-u,2)
-	+ this.endControlPoint.y*3*Math.pow(u,2)*(1.0-u)+this.endPoint.y*Math.pow(u,3);
-	*/
-
     var x = this.startPoint.x * Math.pow(1.0-t,3) + this.startControlPoint.x*3*t*Math.pow(1.0-t,2)
 	+ this.endControlPoint.x*3*Math.pow(t,2)*(1.0-t)+this.endPoint.x*Math.pow(t,3);
     
@@ -301,14 +247,6 @@ IKRS.CubicBezierCurve.prototype.convertU2T = function( u ) {
 
 IKRS.CubicBezierCurve.prototype.getTangentAt = function( u ) {
 
-    /*
-    return this.getTangent( Math.max( 0.0, 
-				      Math.min( 1.0, 
-						( u / this.arcLength) 
-					      )
-				    )
-			  );
-    */
     return this.getTangent( this.convertU2T(u) );
 
 }
@@ -331,33 +269,43 @@ IKRS.CubicBezierCurve.prototype.getPerpendicular = function( t ) {
 
 IKRS.CubicBezierCurve.prototype.computeBoundingBox = function() {
 
-    // Inspect all cached points
-    /*
-    var xMin = this.getStartPoint().x;
-    var xMax = this.getStartPoint().x;
-    var yMin = this.getStartPoint().y;
-    var yMax = this.getStartPoint().y;
-    
-    for( var i = 1; i < this.segmentCache.length; i++ ) {
-
-	var point = this.segmentCache[ i ];
-	xMin = Math.min( xMin, point.x );
-	xMax = Math.max( xMax, point.x );
-	yMin = Math.min( yMin, point.y );
-	yMax = Math.max( yMax, point.y );
-
-    }
-
-    return new IKRS.BoundingBox2( xMin, xMax, yMin, yMax );
-    */
-    
     return IKRS.BoundingBox2.computeFromPoints( this.segmentCache );
+}
+
+
+IKRS.CubicBezierCurve.prototype.clone = function() {
+
+    var curve = new IKRS.CubicBezierCurve( this.getStartPoint().clone(),
+					   this.getEndPoint().clone(),
+					   this.getStartControlPoint().clone(),
+					   this.getEndControlPoint().clone()
+					 );
+    //curve.updateArcLengths();
+    return curve;
+}
+
+IKRS.CubicBezierCurve.prototype.equals = function( curve ) {
+    
+    if( !curve )
+	return false;
+    
+    if( !curve.startPoint ||
+	!curve.endPoint ||
+	!curve.startControlPoint ||
+	!curve.endControlPoint )
+	return false;
+
+ 
+    return this.startPoint.equals(curve.startPoint) 
+	&& this.endPoint.equals(curve.endPoint)
+	&& this.startControlPoint.equals(curve.startControlPoint)
+	&& this.endControlPoint.equals(curve.endControlPoint);
+	
 }
 
 
 IKRS.CubicBezierCurve.prototype.toJSON = function( prettyFormat ) {
     
-    //window.alert( "[IKRS.CubicBezierCurve.toJSON()]" );
     var jsonString = "{ " + // begin object
         ( prettyFormat ? "\n\t" : "" ) +
 	"\"startPoint\" : [" + this.getStartPoint().x + "," + this.getStartPoint().y + "], " +
@@ -370,7 +318,6 @@ IKRS.CubicBezierCurve.prototype.toJSON = function( prettyFormat ) {
 	( prettyFormat ? "\n\t" : "" ) +
 	" }";  // end object
     
-    //window.alert( "[IKRS.CubicBezierCurve.toJSON()] " + jsonString );
     return jsonString;
 }
 
@@ -387,23 +334,6 @@ IKRS.CubicBezierCurve.fromObject = function( obj ) {
     if( typeof obj !== "object" ) 
 	throw "[IKRS.CubicBezierCurve.fromArray] Can only build from object.";
 
-    //if( arr.length != 4 )
-    //	throw "[IKRS.CubicBezierCurve.fromArray] Array must have 4 elements (has " + arr.length +").";
-
-    // All elements must be two-element-arrays themselves.
-    /*
-    var points = [];
-    for( var i = 0; i < arr.length; i++ ) {
-	
-	if( typeof arr[i] !== "array" )
-	    throw "[IKRS.CubicBezierCurve.fromArray] All array elements must be arrays themselves. Element at index " + i + " is not.";
-	
-	// Each sub-array element MUST consist of two numbers
-	if( arr[i].length != 2 ) 
-	    throw  "[IKRS.CubicBezierCurve.fromArray] All array elements must be arrays with length 2. Element at index " + i + " has " + arr[i].length + " elements.";
-	
-    }
-    */
 
     if( !obj.startPoint )
 	throw "[IKRS.CubicBezierCurve.fromObject] Object member \"startPoint\" missing.";
@@ -414,8 +344,6 @@ IKRS.CubicBezierCurve.fromObject = function( obj ) {
     if( !obj.endControlPoint )
 	throw "[IKRS.CubicBezierCurve.fromObject] Object member \"endControlPoint\" missing.";
     
-    //window.alert( "obj.startPoint=" + obj.startPoint );
-
     return new IKRS.CubicBezierCurve( new THREE.Vector2(obj.startPoint[0],        obj.startPoint[1]),
 				      new THREE.Vector2(obj.endPoint[0],          obj.endPoint[1]),
 				      new THREE.Vector2(obj.startControlPoint[0], obj.startControlPoint[1]),

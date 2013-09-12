@@ -113,16 +113,44 @@ IKRS.BezierPath.prototype.splitAt = function( curveIndex,
 	
     }
 
+    // Accumulate segment lengths
+    var u = 0;
+    for( var i = 0; i < segmentIndex; i++ )
+	u += oldCurve.segmentLengths[i];
+    var tangent = oldCurve.getTangentAt( u );
+    //tangent = tangent.normalize(); 
+    //window.alert( JSON.stringify(tangent) );
+    tangent = tangent.multiplyScalar( 0.25 ); 
+
+    var leftEndControlPoint = oldCurve.segmentCache[ segmentIndex ].clone();
+    leftEndControlPoint.sub( tangent );
+    
+    //tangent.negate();
+    var rightStartControlPoint = oldCurve.segmentCache[ segmentIndex ].clone();
+    rightStartControlPoint.add( tangent );
+    
+    // Make the old existing handles half that long
+    var leftStartControlPoint = oldCurve.getStartControlPoint().clone();
+    // move to (0,0)
+    leftStartControlPoint.sub( oldCurve.getStartPoint() );
+    leftStartControlPoint.multiplyScalar( 0.25 );
+    leftStartControlPoint.add( oldCurve.getStartPoint() );
+
+    var rightEndControlPoint = oldCurve.getEndControlPoint().clone(); // oldCurve.getStartControlPoint().clone();
+    // move to (0,0)
+    rightEndControlPoint.sub( oldCurve.getEndPoint() );
+    rightEndControlPoint.multiplyScalar( 0.25 );
+    rightEndControlPoint.add( oldCurve.getEndPoint() );
 
     var newLeft  = new IKRS.CubicBezierCurve( oldCurve.getStartPoint(),                      // old start point
 					      oldCurve.segmentCache[ segmentIndex ],         // new end point
-					      oldCurve.getStartControlPoint(),               // old start control point ?
-					      oldCurve.segmentCache[ segmentIndex ].clone()  // new end control point !!! ???
+					      leftStartControlPoint, // oldCurve.getStartControlPoint(),               // old start control point ?
+					      leftEndControlPoint // oldCurve.segmentCache[ segmentIndex ].clone()  // new end control point !!! ???
 					    );
     var newRight = new IKRS.CubicBezierCurve( oldCurve.segmentCache[ segmentIndex ],         // new start point
 					      oldCurve.getEndPoint(),                        // old end point
-					      oldCurve.segmentCache[ segmentIndex ].clone(), // new start control point ???
-					      oldCurve.getEndControlPoint()                  // old end control point
+					      rightStartControlPoint, // oldCurve.segmentCache[ segmentIndex ].clone(), // new start control point ???
+					      rightEndControlPoint // oldCurve.getEndControlPoint()                  // old end control point
 					    );
 				    
 
@@ -452,6 +480,49 @@ IKRS.BezierPath.prototype.adjustNeighbourControlPoint = function( mainCurve,
 
 }
 
+
+IKRS.BezierPath.prototype.clone = function() {
+
+    var path = new IKRS.BezierPath( null );
+    for( var i = 0; i < this.bezierCurves.length; i++ ) {
+	
+	path.bezierCurves.push( this.bezierCurves[i].clone() );
+	
+	// Connect splines
+	if( i > 0 )
+	    path.bezierCurves[i-1].endPoint = path.bezierCurves[i].startPoint;
+	
+    }
+
+    path.updateArcLengths();
+
+    return path;
+}
+
+IKRS.BezierPath.prototype.equals = function( path ) {
+
+    if( !path )
+	return false;
+    
+    // Check if path contains the credentials
+    if( !path.bezierCurves )
+	return false;
+
+    if( typeof path.bezierCurves.length == "undefined" )
+	return false;
+
+    if( path.bezierCurves.length != this.bezierCurves.length )
+	return false;
+
+    for( var i = 0; i < this.bezierCurves.length; i++ ) {
+
+	if( !this.bezierCurves[i].equals(path.bezierCurves[i]) )
+	    return false;
+
+    }
+
+    return true;
+}
 
 IKRS.BezierPath.prototype.toJSON = function( prettyFormat ) {
 
