@@ -87,6 +87,102 @@ IKRS.BezierPath.prototype.getCurveAt = function( curveIndex ) {
     return this.bezierCurves[ curveIndex ];
 }
 
+IKRS.BezierPath.prototype.removeEndPoint = function() {
+
+    if( this.bezierCurves.length <= 1 )
+	return false;
+
+    var newArray = [ this.bezierCurves.length-1 ];
+    for( var i = 0; i < this.bezierCurves.length-1; i++ ) {
+
+	newArray[i] = this.bezierCurves[i];
+
+    }
+    
+    // Update arc length
+    this.totalArcLength -= this.bezierCurves[ this.bezierCurves.length-1 ].getLength();
+    this.bezierCurves = newArray;
+    
+    return true;
+}
+
+IKRS.BezierPath.prototype.removeStartPoint = function() {
+
+    if( this.bezierCurves.length <= 1 )
+	return false;
+
+    var newArray = [ this.bezierCurves.length-1 ];
+    for( var i = 1; i < this.bezierCurves.length; i++ ) {
+
+	newArray[i-1] = this.bezierCurves[i];
+
+    }
+    
+    // Update arc length
+    this.totalArcLength -= this.bezierCurves[ 0 ].getLength();
+    this.bezierCurves = newArray;
+    
+    return true;
+}
+
+/**
+ * This function joins the bezier curve at the given index with
+ * its predecessor.
+ **/
+IKRS.BezierPath.prototype.joinAt = function( curveIndex ) {
+
+    //window.alert( "curveIndex=" + curveIndex );
+    
+    if( curveIndex < 0 || curveIndex+1 >= this.bezierCurves.length )
+	return false;
+
+    
+    var leftCurve  = this.bezierCurves[ curveIndex-1 ];
+    var rightCurve = this.bezierCurves[ curveIndex ];
+
+
+    // Make the length of the new handle double that long
+    var leftControlPoint = leftCurve.getStartControlPoint().clone();
+    leftControlPoint.sub( leftCurve.getStartPoint() );
+    leftControlPoint.multiplyScalar( 2.0 );
+    leftControlPoint.add( leftCurve.getStartPoint() );
+    
+    var rightControlPoint = rightCurve.getEndControlPoint().clone();
+    rightControlPoint.sub( rightCurve.getEndPoint() );
+    rightControlPoint.multiplyScalar( 2.0 );
+    rightControlPoint.add( rightCurve.getEndPoint() );
+    
+
+    var newCurve = new IKRS.CubicBezierCurve( leftCurve.getStartPoint(),
+					      rightCurve.getEndPoint(),
+					      leftControlPoint,
+					      rightControlPoint 
+					    );
+    
+    // Place into array
+    var newArray = [ this.bezierCurves.length - 1 ];
+
+    for( var i = 0; i < curveIndex-1; i++ ) {
+	newArray[ i ] = this.bezierCurves[i];
+    }
+
+    newArray[ curveIndex-1 ] = newCurve;
+    
+    // Shift trailing curves left
+    for( var i = curveIndex; i+1 < this.bezierCurves.length; i++ ) {
+
+	newArray[ i ] = this.bezierCurves[ i+1 ];
+
+    }
+    
+   
+    this.bezierCurves = newArray;
+    this.updateArcLengths();
+
+    return true;
+
+}
+
 IKRS.BezierPath.prototype.splitAt = function( curveIndex,
 					      segmentIndex 
 					    ) {
@@ -129,7 +225,7 @@ IKRS.BezierPath.prototype.splitAt = function( curveIndex,
     var rightStartControlPoint = oldCurve.segmentCache[ segmentIndex ].clone();
     rightStartControlPoint.add( tangent );
     
-    // Make the old existing handles half that long
+    // Make the old existing handles a quarter that long
     var leftStartControlPoint = oldCurve.getStartControlPoint().clone();
     // move to (0,0)
     leftStartControlPoint.sub( oldCurve.getStartPoint() );
@@ -144,13 +240,13 @@ IKRS.BezierPath.prototype.splitAt = function( curveIndex,
 
     var newLeft  = new IKRS.CubicBezierCurve( oldCurve.getStartPoint(),                      // old start point
 					      oldCurve.segmentCache[ segmentIndex ],         // new end point
-					      leftStartControlPoint, // oldCurve.getStartControlPoint(),               // old start control point ?
-					      leftEndControlPoint // oldCurve.segmentCache[ segmentIndex ].clone()  // new end control point !!! ???
+					      leftStartControlPoint,                         // old start control point 
+					      leftEndControlPoint                            // new end control point
 					    );
     var newRight = new IKRS.CubicBezierCurve( oldCurve.segmentCache[ segmentIndex ],         // new start point
 					      oldCurve.getEndPoint(),                        // old end point
-					      rightStartControlPoint, // oldCurve.segmentCache[ segmentIndex ].clone(), // new start control point ???
-					      rightEndControlPoint // oldCurve.getEndControlPoint()                  // old end control point
+					      rightStartControlPoint,                        // new start control point 
+					      rightEndControlPoint                           // old end control point
 					    );
 				    
 

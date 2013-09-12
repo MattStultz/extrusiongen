@@ -13,7 +13,6 @@ IKRS.BezierCanvasHandler = function() {
     this.latestMouseDragPosition;
     this.latestMouseDownTime = null; // ms
     
-    //this.latestClickPosition;
     this.latestClickTime = null;
 
     this.currentDragPoint;
@@ -44,22 +43,15 @@ IKRS.BezierCanvasHandler = function() {
     var jsonString = "[ { \"startPoint\" : [-122,74], \"endPoint\" : [-57.454814814814796,5.460592592592583], \"startControlPoint\": [-119,14], \"endControlPoint\" : [-66.28766869253815,34.77964111961321] }, { \"startPoint\" : [-57.454814814814796,5.460592592592583], \"endPoint\" : [-55,-139], \"startControlPoint\": [-50.31974300727449,-18.222977798698675], \"endControlPoint\" : [-84.38654635129569,-50.09980658609145] }, { \"startPoint\" : [-55,-139], \"endPoint\" : [-51.66118578883062,-227.750293953586], \"startControlPoint\": [-39.46858425198657,-185.98564599883105], \"endControlPoint\" : [-56.750583998055625,-189.07086756347596] }, { \"startPoint\" : [-51.66118578883062,-227.750293953586], \"endPoint\" : [-2,-323], \"startControlPoint\": [-46.66118578883062,-265.75029395358604], \"endControlPoint\" : [-40,-323] } ]";
     this.bezierPath = IKRS.BezierPath.fromJSON( jsonString );
     
-    /*
-    this._undoCapacity   = 32;
-    this._undoHistory    = [ this._undoCapacity ];
-    this._undoHistory[0] = this.bezierPath.clone(); // One history entry into the past :)
-    this._undoHistory[1] = this.bezierPath;         // The current path to work on
-    this._undoFront      = 0;
-    this._undoLength     = 2;
-    this._undoPointer    = 1;
-    */
-    
+    // THE UNDO-HISTORY IS REALLY BUGGY AND CURRENTLY NOT IN USE.
+    // THIS IS STILL TO BE FIXED!!!
     this.undoHistory = new IKRS.UndoHistory( this.bezierPath,
 					     32
 					   );
     //this.undoHistory.createHistoryEntry();
     //window.alert( "bezierPath=" + JSON.stringify(this.bezierPath) + ",\n current_state: " + JSON.stringify(this.undoHistory.getCurrentState()) + ",\n equal=" + this.bezierPath.equals(this.undoHistory.getCurrentState()) );
     this.bezierPath  = this.undoHistory.getCurrentState().clone();
+    
 
     // Store a reverse reference inside the handler so the mousehandlers can access this object
     this.canvas.bezierCanvasHandler = this;
@@ -661,8 +653,32 @@ IKRS.BezierCanvasHandler.prototype.keyDownHandler = function( e ) {
 	return;
 
 
-    window.alert( "Sorry. Deleting shape points is not yet supported. Please come back later." );
+    // window.alert( "Sorry. Deleting shape points is not yet supported. Please come back later." );
 
+    // Join in the middle or return begin/end point?
+    var pointIndex = this.bezierCanvasHandler.selectedPointIndices[0];
+    //window.alert( "pointIndex=" + pointIndex + ", bezierCount=" + this.bezierCanvasHandler.getBezierPath().getCurveCount() );
+    
+    this.bezierCanvasHandler.selectedPointIndices = [];
+    if( pointIndex == 0 ) {
+
+	if( this.bezierCanvasHandler.getBezierPath().removeStartPoint() )
+	    this.bezierCanvasHandler.redraw();
+
+    } else if( pointIndex == this.bezierCanvasHandler.getBezierPath().getCurveCount() ) {
+	
+	if( this.bezierCanvasHandler.getBezierPath().removeEndPoint() )
+	    this.bezierCanvasHandler.redraw();
+
+    } else {
+
+	this.bezierCanvasHandler.bezierPath.joinAt( pointIndex );  // Join the curve at given index with predecessor
+	this.bezierCanvasHandler.redraw();
+    }
+
+
+    //this.bezierCanvasHandler.selectedPointIndices = [];
+    //this.bezierCanvasHandler.redraw();
 }
 
 
