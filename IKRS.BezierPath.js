@@ -133,7 +133,7 @@ IKRS.BezierPath.prototype.joinAt = function( curveIndex ) {
 
     //window.alert( "curveIndex=" + curveIndex );
     
-    if( curveIndex < 0 || curveIndex+1 >= this.bezierCurves.length )
+    if( curveIndex < 0 || curveIndex >= this.bezierCurves.length )
 	return false;
 
     

@@ -135,7 +135,7 @@ tooltip:hover:before{
   -->
 
 <canvas 
-  title="Double click onto the curve to add new control points."
+  title="Double click onto the curve to add new control points. Press [Delete] to remove selected points."
   class="tooltip"
   id="bezier_canvas" 
   width="512px" 
