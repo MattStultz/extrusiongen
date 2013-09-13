@@ -450,6 +450,61 @@ function preview_rebuild_model() {
 window.onload = preview_render;
 
 
+
+
+function mouseWheelHandler( e ) {
+  
+  //this.previewCanvasHandler.handleMouseWheelEvent( e );
+  
+  var delta = 0;
+  if (!e) /* For IE. */
+    e = window.event;
+  if (e.wheelDelta) { /* IE/Opera. */
+    delta = e.wheelDelta/120;
+  } else if (e.detail) { /** Mozilla case. */
+    /** In Mozilla, sign of delta is different than in IE.
+     * Also, delta is multiple of 3.
+     */
+    delta = -e.detail/3;
+  }
+  /** If delta is nonzero, handle it.
+   * Basically, delta is now positive if wheel was scrolled up,
+   * and negative, if wheel was scrolled down.
+   */
+  if (delta) {
+    
+    if( delta < 0 )
+      decreaseZoomFactor( true ); // redraw
+    else
+      increaseZoomFactor( true ); // redraw
+    
+
+  }
+  /** Prevent default actions caused by mouse wheel.
+   * That might be ugly, but we handle scrolls somehow
+   * anyway, so don't bother here..
+   */
+  if (e.preventDefault)
+    e.preventDefault();
+  e.returnValue = false;
+
+}
+
+
+
+// Install a mouse wheel listener
+if( window.addEventListener ) {
+
+  // For Mozilla 
+  window.addEventListener( 'DOMMouseScroll', mouseWheelHandler, false );
+}
+    
+// IE and Opera
+window.onmousewheel = document.onmousewheel = mouseWheelHandler;
+// window.previewCanvasHandler = this;
+
+
+
 </script>
 
 </body> 

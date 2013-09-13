@@ -41,7 +41,7 @@ IKRS.PreviewCanvasHandler = function( bezierCanvasHandler,
     this.preview_canvas.onmouseup   = this.preview_mouseUpHandler;
     this.preview_canvas.onmousemove = this.preview_mouseMoveHandler;
 
-
+    
     //window.alert( "preview_canvas.width=" +  preview_canvas.width + ", preview_canvas.height=" + preview_canvas.height );
     this.preview_renderer.setSize( preview_canvas_width, 
 				   preview_canvas_height 
@@ -105,9 +105,16 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
     var circleSegmentCount   = document.forms["mesh_form"].elements["shape_segments"].value; // 8;
     var pathSegments         = document.forms["mesh_form"].elements["path_segments"].value;
 
+
     if( circleSegmentCount*pathSegments > 400*400 ) {
-	window.alert( "The total face count is more than 160000 with these settings and would render very slowly. Please enter lower values." );
-	return;
+	//window.alert( "The total face count is more than 160000 with these settings and would render very slowly. Please enter lower values." );
+	var confirmed = window.confirm( "The total face count is more than 160000 with these settings.\n" +
+					"This might render and process VERY slowly.\n" +
+					"\n" +
+					"Do you want to continue though?" );
+	
+	if( !confirmed )
+	    return;
     }
 
     var build_negative_mesh   = document.forms["mesh_form"].elements["build_negative_mesh"].checked;
@@ -168,25 +175,19 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 	    var angle = Math.PI * (pathBendAngle/180.0) * t;
 	    var sin   = Math.sin( angle );
 	    var cos   = Math.cos( angle );
-	    /*
-	    pathPoints.push( new THREE.Vector3( cos * tmpCircleRadius, // 110, // shapedPathBounds.getHeight()/2,
-						sin * tmpCircleRadius, // 110, // shapedPathBounds.getHeight()/2,
-						0 
-					      ) 
-			   );
-			   */
-	    var pathPoint = new THREE.Vector3( cos * tmpCircleRadius, // 110, // shapedPathBounds.getHeight()/2,
-						sin * tmpCircleRadius, // 110, // shapedPathBounds.getHeight()/2,
+
+	    var pathPoint = new THREE.Vector3( cos * tmpCircleRadius,  // 110?
+						sin * tmpCircleRadius, // 110?
 						0 
 					     );
 	    // translate to center
 	    pathPoint.add( new THREE.Vector3( -tmpCircleRadius,
-					      -pathLength/2, //-tmpCircleRadius/2,
+					      -pathLength/2, 
 					      0
 					    )
 			 );
 	    pathPoints.push( pathPoint );
-	    // window.alert( "t=" + t + ", sin=" + sin + ", cos=" + cos );
+
 	}
 
     } else {
@@ -202,7 +203,7 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 						0
 					      ) 
 			   );
-	    // window.alert( "t=" + t + ", sin=" + sin + ", cos=" + cos );
+
 	}
     } // END else
     
@@ -225,18 +226,6 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 							    //extrudeMaterial: 1
 							  }
 							);
-    /*} else if( !buildCurvedPath ) {
-	
-	extrusionGeometry = new IKRS.ShapedPathGeometry( extrusionShape, 
-							 extrusionPath,
-							 shapedPath,
-							 { size: pathLength, // 300,
-							    height: 10,
-							    curveSegments: pathSegments, // 3,
-							    triangulate: triangulate
-							  }
-							);	
-							*/
     } else {
 
 	extrusionGeometry = new IKRS.PathDirectedExtrudeGeometry( extrusionShape, 
@@ -287,10 +276,6 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
     new_mesh.position.z  = -250;
     new_mesh.overdraw    = true;
     new_mesh.doubleSided = false;  // true
-
-    // Keep old rotation ?
-    //preview_mesh.rotation.y = currentRotation.y;
-    //preview_mesh.rotation.x = currentRotation.x;
     
     // Remove old mesh?
     if( this.preview_mesh ) {
@@ -299,8 +284,6 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 	// Keep old rotation
 	new_mesh.rotation.x = this.preview_mesh.rotation.x;
 	new_mesh.rotation.y = this.preview_mesh.rotation.y;
-	
-	// window.alert( "mesh.rotation=(" + new_mesh.rotation.x + ", " + new_mesh.rotation.y + ", " + new_mesh.rotation.z + ", " + new_mesh.rotation.w + ")" );
 	
 	new_mesh.scale.x    = this.preview_mesh.scale.x;
 	new_mesh.scale.y    = this.preview_mesh.scale.y;
@@ -318,33 +301,13 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
     this.preview_mesh = new_mesh;
 }
 
-// preview_rebuild_model();
 
 IKRS.PreviewCanvasHandler.prototype.render = function() {
     this.preview_renderer.render( this.preview_scene, this.preview_camera ); 
 }
 
 
-// preview_camera.position.z = 500;
 
-/*
-IKRS.PreviewCanvasHandler.prototype.preview_render = function() {
-  requestAnimationFrame( this.preview_render ); 
-  this.preview_renderer.render( this.preview_scene, this.preview_camera ); 
-}
-
-IKRS.PreviewCanvasHandler.prototype.decreaseZoomFactor = function( redraw ) {
-    preview_mesh.scale.multiplyScalar( 1/1.2 );
-    if( redraw )
-	preview_render();
-}
-
-IKRS.PreviewCanvasHandler.prototype.increaseZoomFactor = function( redraw ) {
-    preview_mesh.scale.multiplyScalar( 1.2 );
-    if( redraw )
-	preview_render();
-}
-*/
 
 // Render first time only if the DOM is fully loaded!
 //window.onload = preview_render;
