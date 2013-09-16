@@ -17,7 +17,8 @@ IKRS.PreviewCanvasHandler = function( bezierCanvasHandler,
     this.preview_canvas   = document.getElementById("preview_canvas");
     this.preview_renderer = new THREE.WebGLRenderer( { "canvas" : this.preview_canvas } );
 
-    this.preview_mesh; // will be initialized later
+    //this.preview_mesh; // will be initialized later
+    this.preview_meshes = [];
     this.preview_scene = new THREE.Scene(); 
     this.preview_camera = new THREE.PerspectiveCamera( 75, 
 						       preview_canvas_width/preview_canvas_height,  
@@ -60,14 +61,23 @@ IKRS.PreviewCanvasHandler = function( bezierCanvasHandler,
 IKRS.PreviewCanvasHandler.prototype = new IKRS.Object();
 IKRS.PreviewCanvasHandler.prototype.constructor = IKRS.PreviewCanvasHandler;
 
+IKRS.PreviewCanvasHandler.prototype.getMeshes = function() {
+    return this.preview_meshes;
+}
 
 IKRS.PreviewCanvasHandler.prototype.preview_mouseMoveHandler = function ( e ) {
   // window.alert( "clicked. Event: " + e + ", e.pageX=" + e.pageX + ", e.pageY=" + e.pageY );
   
   if( this.previewCanvasHandler.latestMouseDownPosition ) {
       
-    this.previewCanvasHandler.preview_mesh.rotation.y += (0.01 * (this.previewCanvasHandler.latestMouseDragPosition.x - e.pageX)); 
-    this.previewCanvasHandler.preview_mesh.rotation.x += (0.01 * (this.previewCanvasHandler.latestMouseDragPosition.y - e.pageY)); 
+      //this.previewCanvasHandler.preview_mesh.rotation.y += (0.01 * (this.previewCanvasHandler.latestMouseDragPosition.x - e.pageX)); 
+      //this.previewCanvasHandler.preview_mesh.rotation.x += (0.01 * (this.previewCanvasHandler.latestMouseDragPosition.y - e.pageY)); 
+      for( var i = 0; i < previewCanvasHandler.preview_meshes.length; i++ ) {
+
+	  this.previewCanvasHandler.preview_meshes[i].rotation.y += (0.01 * (this.previewCanvasHandler.latestMouseDragPosition.x - e.pageX)); 
+	  this.previewCanvasHandler.preview_meshes[i].rotation.x += (0.01 * (this.previewCanvasHandler.latestMouseDragPosition.y - e.pageY)); 
+
+      }
 
 
     this.previewCanvasHandler.latestMouseDragPosition = new THREE.Vector2( e.pageX, e.pageY ); 
@@ -126,6 +136,15 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
  
     var split_shape           = document.forms["mesh_form"].elements["split_shape"].checked;
     
+    // The shape offset on the lower plane.
+    // This will be the (x,y) translation of the final mesh; default is (0,0) if non-split.
+    var mesh_offset;
+    if( split_shape )
+	mesh_offset = new THREE.Vector2( 0, 100 );
+    else
+	mesh_offset = new THREE.Vector2( 0, 0 );
+    
+    
     // Convert text values to numbers!
     mesh_hull_strength = parseInt( mesh_hull_strength );
     
@@ -137,8 +156,9 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
     for( i = 0; i <= circleSegmentCount; i++ ) {
 	var pct = i * (1.0/circleSegmentCount);
 	var angle;
-	if( split_shape )  angle = Math.PI/2.0 + Math.PI * pct;
-	else               angle = Math.PI/2.0 + Math.PI * pct * 2.0;
+	if( split_shape ) angle = Math.PI/2.0 + Math.PI * pct;
+	else              angle = Math.PI/2.0 + Math.PI * pct * 2.0;
+	   
 	    
 	shapePoints.push( new THREE.Vector3( Math.sin( angle ) * circleRadius,
 					     Math.cos( angle ) * circleRadius,
@@ -252,7 +272,8 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 								    closePathBegin:             mesh_close_path_begin,
 								    closePathEnd:               mesh_close_path_end,
 								    perpendicularHullStrength:  mesh_hull_strength,
-								    closeShape:                 !split_shape
+								    closeShape:                 !split_shape,
+								    meshOffset:                 mesh_offset
 								  }
 								);	
 	
@@ -293,16 +314,35 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
     new_mesh.doubleSided = false;  // true
     
     // Remove old mesh?
-    if( this.preview_mesh ) {
-	this.preview_scene.remove( this.preview_mesh );
+    //if( this.preview_mesh ) {
+    if( this.preview_meshes.length != 0 ) {
+	
+	var old_mesh = this.preview_meshes[ 0 ];
+	//this.preview_scene.remove( this.preview_mesh );
+	
+	for( var i = 0; i < this.preview_meshes.length; i++ ) {
+	    
+	    this.preview_scene.remove( this.preview_meshes[i] );
+
+	}
+	this.preview_meshes =[];
 
 	// Keep old rotation
+	/*
 	new_mesh.rotation.x = this.preview_mesh.rotation.x;
 	new_mesh.rotation.y = this.preview_mesh.rotation.y;
 	
 	new_mesh.scale.x    = this.preview_mesh.scale.x;
 	new_mesh.scale.y    = this.preview_mesh.scale.y;
 	new_mesh.scale.z    = this.preview_mesh.scale.z;
+	*/
+	
+	new_mesh.rotation.x = old_mesh.rotation.x;
+	new_mesh.rotation.y = old_mesh.rotation.y;
+	
+	new_mesh.scale.x    = old_mesh.scale.x;
+	new_mesh.scale.y    = old_mesh.scale.y;
+	new_mesh.scale.z    = old_mesh.scale.z;
     } else {
 
 	// Scale a bit bigger than 1.0 (looks better with the bezier view)
@@ -313,7 +353,8 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
     }
 
     this.preview_scene.add( new_mesh );
-    this.preview_mesh = new_mesh;
+    //this.preview_mesh = new_mesh;
+    this.preview_meshes.push( new_mesh );
 }
 
 

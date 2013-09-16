@@ -315,7 +315,7 @@ tooltip:hover:before{
 <form name="stl_form">
   <label for="stl_filename">Filename</label>
   <input type="text" id="stl_filename" name="stl_filename" value="my_extrusion.stl" />
-  <input type="button" value="Save STL ..." onclick="STLBuilder.saveSTL( getPreviewMesh().geometry, document.forms['stl_form'].elements['stl_filename'].value );" /> 
+  <input type="button" value="Save STL ..." onclick="STLBuilder.saveSTL( getPreviewMeshes(), document.forms['stl_form'].elements['stl_filename'].value );" /> 
 </form>
 </div>
 
@@ -379,9 +379,10 @@ tooltip:hover:before{
   /**
    * ...
    **/
-  function getPreviewMesh() {
+  function getPreviewMeshes() {
 	//return preview_mesh;
-	return previewCanvasHandler.preview_mesh;
+	//return previewCanvasHandler.preview_mesh;
+        return previewCanvasHandler.getMeshes();
   }
 
   function bezier_undo() {

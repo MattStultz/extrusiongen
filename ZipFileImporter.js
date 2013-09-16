@@ -12,7 +12,7 @@ ZipFileImporter = {
 
 	/*
 	return { 
-	    geometry:          getPreviewMesh().geometry,
+	    geometry:          getPreviewMesh().geometry,	    
 	    bezierPath:        getBezierPath(),
 	    meshSettings:      {
 		shapeSegments:     document.forms[ "mesh_form" ].elements[ "shape_segments" ].value,

@@ -12,15 +12,76 @@
 
 STLBuilder = {
 
+    /*
     saveSTL: function( geometry, filename ) {
 
 	if( !filename )
 	    filename = "extrusion.stl";
 	
-	var stlString = STLBuilder.buildSTL( geometry );  
+	// It is possible to pass an array or a single gerometry
+	if( typeof geometry.length === "undefined" )
+	    geometry = [ geometry ];
+	
+	//var stlString = STLBuilder.buildSTL( geometry );  
+
+	var buffer = [];
+	for( var i = 0; i < buffer.length; i++ ) {
+
+	    buffer[i] = buildSTL( geometry[i] );
+
+	}
+
+	var stlString = buffer.join( "\n\n" );
+
 	var blob = new Blob([stlString], {type: 'text/plain'});
 	window.saveAs(blob, filename);
 	
+    },
+    */
+
+    saveSTL: function( meshes, filename ) {
+
+	//window.alert( meshes.length );
+
+	if( !filename )
+	    filename = "extrusion.stl";
+	
+	//window.alert( meshes.length );
+
+	// It is possible to pass an array or a single gerometry
+	if( typeof meshes.length === "undefined" )
+	    meshes = [ meshes ];
+	
+	//var stlString = STLBuilder.buildSTL( geometry );  
+
+	var buffer = [];
+	for( var i = 0; i < meshes.length; i++ ) {
+
+	    //window.alert( meshes[i].geometry );
+	    buffer[i] = STLBuilder.buildSTL( meshes[i].geometry );
+
+	}
+
+	var stlString = buffer.join( "\n\n" );
+
+	var blob = new Blob([stlString], {type: 'text/plain'});
+	window.saveAs(blob, filename);
+	
+    },
+
+    buildSTLFromMeshArray: function( meshes ) {
+
+	var buffer = [];
+	for( var i = 0; i < meshes.length; i++ ) {
+
+	    //window.alert( meshes[i].geometry );
+	    buffer[i] = STLBuilder.buildSTL( meshes[i].geometry );
+
+	}
+
+	var stlString = buffer.join( "\n\n" );
+	return stlString;
+
     },
 
     buildSTL: function( geometry ) {

@@ -10,9 +10,19 @@ ZipFileExporter = {
 
     _build_export_data: function() {
 
+	    // Build a geometry-array
+	//var geoms = [];
+	//var meshes = getPreviewMeshes();
+	//	for( var i = 0; i < meshes.length; i++ ) {
+	//geoms[i] = meshes[i].geometry;
+	//}
+	
+	var msh = getPreviewMeshes();
+
 	return { 
-	    geometry:          getPreviewMesh().geometry,
-	    bezierPath:        getBezierPath(),
+	    //geometry:          getPreviewMesh().geometry,
+	    meshes:              msh,
+	    bezierPath:          getBezierPath(),
 	    meshSettings:      {
 		shapeSegments:     document.forms[ "mesh_form" ].elements[ "shape_segments" ].value,
 		pathSegments:      document.forms[ "mesh_form" ].elements[ "path_segments" ].value,
@@ -31,7 +41,7 @@ ZipFileExporter = {
 
     /**
      * data must be an object with the members
-     *  - geometry (a THREE.js geometry)
+     *  - geometries (a THREE.js geometry array)
      *  - bezierPath
      *  - meshSettings { shapeSegments, 
      *                   pathSegments, 
@@ -49,11 +59,14 @@ ZipFileExporter = {
 	data = data || ZipFileExporter._build_export_data();
 
 
-	//window.alert( "data.meshSettings=" + JSON.stringify(data.meshSettings) );
+	// OK, also allow to pass a single geometry ... for downward compatibility.
+	//if( data.geoy && !data.geometries )
+	//    data.geometries = [ data.geometry ];
 
 
 	// Convert THREE.js geometry (object) to STL (string)
-	var stlData = STLBuilder.buildSTL( data.geometry );
+	//var stlData = STLBuilder.buildSTL( data.geometry );
+	var stlData = STLBuilder.buildSTLFromMeshArray( data.meshes ); 
 
 	var zip = new JSZip();
 	

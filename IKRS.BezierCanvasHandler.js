@@ -411,8 +411,8 @@ IKRS.BezierCanvasHandler.prototype.setBezierPath = function( path ) {
     }
     
     this.bezierPath = path;
-    this.undoHistory.addHistoryEntry( path );
-    this.repaint();
+    this.undoHistory.createHistoryEntry( path );
+    this.redraw();
 }
 
 IKRS.BezierCanvasHandler.prototype.getBezierPath = function() {

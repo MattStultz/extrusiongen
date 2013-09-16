@@ -24,6 +24,10 @@ IKRS.PathDirectedExtrudeGeometry = function( shape,
     if( typeof options.closeShape === "undefined" )
 	options.closeShape = true;
     
+    if( typeof options.meshOffset === "undefined" )
+	options.meshOffset = new THREE.Vector2( 0, 0 );
+
+    
     //window.alert( "options.closeShape=" + options.closeShape );
 
     var shapedPathBounds = shapedPath.computeBoundingBox();
@@ -325,6 +329,13 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPathExtrusion = function( shape,
 					      ) 
 			   ); // addSelf instead of add?!
 
+	    // Add the passed mesh offset before adding.
+	    shapePoint3.add( new THREE.Vector3( 0, // options.meshOffset.x,
+						options.meshOffset.y,
+						options.meshOffset.x
+					      )
+			   );
+	    
 			   
 	    // Add path point?	    	    
 	    // ... Vertex was replaced by Vector3 (Vertex is DEPRECATED!)
