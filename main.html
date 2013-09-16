@@ -190,6 +190,7 @@ tooltip:hover:before{
 <form name="mesh_form">
 <table border="0">
 
+<!--
 <tr>
   <td><label for="shape_segments">Shape&nbsp;segments: </label></td>
   <td><input type="number" id="shape_segments" name="shape_segments" value="80" class="tooltip" title="The number of vertices on the vertical shape (on the circle). More vertices make the mesh more accurate but it renders slower." /></td>
@@ -198,6 +199,26 @@ tooltip:hover:before{
 <tr>
   <td><label for="path_segments">Path&nbsp;segments: </label></td>
   <td><input type="number" id="path_segments" name="path_segments" value="80" class="tooltip" title="The number of vertices on the horizontal shape (on the outer path). More vertices make the mesh more accurate but it renders slower."/></td>
+</tr>
+-->
+
+<tr>
+  <td>Segments:</td>
+  <td>
+    <table border="0" style="padding: 0px; spacing: 0px;" width="100%">
+      <tr>
+	<td align="left"><input type="number" id="shape_segments" name="shape_segments" value="80" class="tooltip" title="The number of vertices on the vertical shape (on the circle). More vertices make the mesh more accurate but it renders slower." size="4" />
+	  <label for="shape_segments">Shape</label>
+	</td>
+
+	<td align="right"><input type="number" id="path_segments" name="path_segments" value="80" class="tooltip" title="The number of vertices on the horizontal shape (on the outer path). More vertices make the mesh more accurate but it renders slower." size="4"/>
+	  <label for="path_segments">Path</label>
+	</td>
+	
+      </tr>
+    </table>
+	
+  </td>
 </tr>
 
 <tr>
@@ -226,15 +247,16 @@ tooltip:hover:before{
 </tr>
 
 <tr>
-  <td> <label for="mesh_hull_strength">Mesh&nbsp;hull&nbsp;strength</label><br/>
+  <td> <label for="mesh_hull_strength">Mesh&nbsp;hull&nbsp;strength:</label><br/>
 					     (only if hollow)
   </td>
   <td valign="top">
-        <input type="number" id="mesh_hull_strength" name="mesh_hull_strength" value="25" class="tooltip" title="..." onchange="javascript:bezierCanvasHandler.redraw();" onkeyup="javascript:bezierCanvasHandler.redraw();" />px
+        <input type="number" id="mesh_hull_strength" name="mesh_hull_strength" value="25" class="tooltip" title="..." onchange="javascript:bezierCanvasHandler.redraw();" onkeyup="javascript:bezierCanvasHandler.redraw();" size="4" />px
          
   </td>
 </tr>
 
+<!--
 <tr>
   <td></td>
   <td>
@@ -248,6 +270,23 @@ tooltip:hover:before{
   <td>
         <input type="checkbox" id="mesh_close_path_end" name="mesh_close_path_end" checked="checked" />
           <label for="mesh_close_path_end">Close path end</label>
+  </td>
+</tr>
+-->
+
+<tr>
+  <td>Close path</td>
+  <td>
+    <table border="0" style="padding: 0px; spacing: 0px;">
+      <tr><td style="padding: 0px; spacing: 0px; margin: 0px;">
+        <input type="checkbox" id="mesh_close_path_begin" name="mesh_close_path_begin" disabled="disabled" />
+          <label for="mesh_close_path_begin">begin</label>
+	  </td>
+          <td>
+	  <input type="checkbox" id="mesh_close_path_end" name="mesh_close_path_end" checked="checked" />
+          <label for="mesh_close_path_end">end</label>
+	  </td></tr>
+      </table>
   </td>
 </tr>
 
@@ -271,6 +310,14 @@ tooltip:hover:before{
         <div style="margin-left: 35px;">*quad faces render faster but only triangulated meshes are STL compatible</div>
 -->
       
+  </td>
+</tr>
+
+<tr>
+  <td></td>
+  <td>
+        <input type="checkbox" id="split_shape" name="split_shape" />
+          <label for="split_shape">Split shape/mesh</label>
   </td>
 </tr>
 

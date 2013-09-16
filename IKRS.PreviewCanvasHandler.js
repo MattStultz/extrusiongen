@@ -122,7 +122,9 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
     var mesh_close_path_begin = document.forms["mesh_form"].elements["mesh_close_path_begin"].checked;
     var mesh_close_path_end   = document.forms["mesh_form"].elements["mesh_close_path_end"].checked;
     var wireFrame             = document.forms["mesh_form"].elements["wireframe"].checked; 
-    var triangulate           = document.forms["mesh_form"].elements["triangulate"].checked; 
+    var triangulate           = document.forms["mesh_form"].elements["triangulate"].checked;
+ 
+    var split_shape           = document.forms["mesh_form"].elements["split_shape"].checked;
     
     // Convert text values to numbers!
     mesh_hull_strength = parseInt( mesh_hull_strength );
@@ -134,8 +136,12 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 
     for( i = 0; i <= circleSegmentCount; i++ ) {
 	var pct = i * (1.0/circleSegmentCount);
-	shapePoints.push( new THREE.Vector3( Math.sin( Math.PI*2*pct ) * circleRadius,
-					     Math.cos( Math.PI*2*pct ) * circleRadius,
+	var angle;
+	if( split_shape )  angle = Math.PI/2.0 + Math.PI * pct;
+	else               angle = Math.PI/2.0 + Math.PI * pct * 2.0;
+	    
+	shapePoints.push( new THREE.Vector3( Math.sin( angle ) * circleRadius,
+					     Math.cos( angle ) * circleRadius,
 					     0
 					   )
 			);
@@ -156,7 +162,10 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 				);
     var buildCurvedPath = true; // (pathBendAngle!=0);
     // Make a nice curve (for testing with sin/cos here)
-    if( buildCurvedPath ) {
+    // HINT: THE NEW IMPLEMENTATION ALWAYS USES A CURVED PATH!
+    //       But when there is no curve angle (bend=0.0) an infinite circle radius 
+    //       is assumed which will make the path nearly linear ;)
+    //if( buildCurvedPath ) {
 
 	// How large must be the circle's radius so that the arc segment (with the given angle)
 	// has the desired path length (such as defined in the outer shape)?
@@ -190,6 +199,7 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 
 	}
 
+    /*
     } else {
 	
 	var pathStep = pathLength/pathSegments;
@@ -206,12 +216,14 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 
 	}
     } // END else
+    */
     
     
     var extrusionPath = new THREE.Path( pathPoints );
     
     
     var extrusionGeometry;
+    /*
     if( !shapedPath ) {
 	extrusionGeometry = new IKRS.ExtrudePathGeometry( extrusionShape, 
 							  extrusionPath,
@@ -227,22 +239,25 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 							  }
 							);
     } else {
+    */
 
 	extrusionGeometry = new IKRS.PathDirectedExtrudeGeometry( extrusionShape, 
 								  extrusionPath,
 								  shapedPath,
-								  { size:           pathLength, // 300,
-								    height:         10,
-								    curveSegments:  pathSegments, // 3,
-								    triangulate:    triangulate,
-								    hollow:         build_negative_mesh,
-								    closePathBegin: mesh_close_path_begin,
-								    closePathEnd:   mesh_close_path_end,
-								    perpendicularHullStrength: mesh_hull_strength
+								  { size:                       pathLength,   // 300,
+								    height:                     10,
+								    curveSegments:              pathSegments, // 3,
+								    triangulate:                triangulate,
+								    hollow:                     build_negative_mesh,
+								    closePathBegin:             mesh_close_path_begin,
+								    closePathEnd:               mesh_close_path_end,
+								    perpendicularHullStrength:  mesh_hull_strength,
+								    closeShape:                 !split_shape
 								  }
 								);	
 	
-    }
+    //}
+
     /*
     var exrusionMaterial = new THREE.MeshLambertMaterial( 
 	{ color: 0x2D303D, 

@@ -299,9 +299,9 @@ IKRS.BezierCanvasHandler.prototype.drawBezierCurve = function( context,
 	    } else {
                 context.fillStyle   = "#B400FF";
 		context.strokeStyle = "#B400FF";
-		context.fillRect( bezierCurve.getStartPoint().x * zoomFactor - 1 + drawOffset.x,
-				  bezierCurve.getStartPoint().y * zoomFactor - 1 + drawOffset.y,
-				  3, 3 );
+		context.fillRect( bezierCurve.getStartPoint().x * zoomFactor - 2 + drawOffset.x,
+				  bezierCurve.getStartPoint().y * zoomFactor - 2 + drawOffset.y,
+				  5, 5 );
 	    }
 	}
 	// End point?
@@ -327,9 +327,9 @@ IKRS.BezierCanvasHandler.prototype.drawBezierCurve = function( context,
 	    } else {
                 context.fillStyle   = "#B400FF";
 		context.strokeStyle = "#B400FF";
-		context.fillRect( bezierCurve.getEndPoint().x * zoomFactor - 1 + drawOffset.x,
-				  bezierCurve.getEndPoint().y * zoomFactor - 1 + drawOffset.y,
-				  3, 3 );
+		context.fillRect( bezierCurve.getEndPoint().x * zoomFactor - 2 + drawOffset.x,
+				  bezierCurve.getEndPoint().y * zoomFactor - 2 + drawOffset.y,
+				  5, 5 );
 	    }
 	}
 	
@@ -341,15 +341,15 @@ IKRS.BezierCanvasHandler.prototype.drawBezierCurve = function( context,
 	context.fillStyle = "#B8D438";
 	// Start control point?
 	if( drawStartControlPoint ) {
-	    context.fillRect( bezierCurve.getStartControlPoint().x * zoomFactor - 1 + drawOffset.x,
-			      bezierCurve.getStartControlPoint().y * zoomFactor - 1 + drawOffset.y,
-			      3, 3 );
+	    context.fillRect( bezierCurve.getStartControlPoint().x * zoomFactor - 2 + drawOffset.x,
+			      bezierCurve.getStartControlPoint().y * zoomFactor - 2 + drawOffset.y,
+			      5, 5 );
 	}
 	// End control point?
 	if( drawEndControlPoint ) {
-	    context.fillRect( bezierCurve.getEndControlPoint().x * zoomFactor - 1 + drawOffset.x,
-			      bezierCurve.getEndControlPoint().y * zoomFactor - 1 + drawOffset.y,
-			      3, 3 );
+	    context.fillRect( bezierCurve.getEndControlPoint().x * zoomFactor - 2 + drawOffset.x,
+			      bezierCurve.getEndControlPoint().y * zoomFactor - 2 + drawOffset.y,
+			      5, 5 );
 	}
     }
 }
@@ -748,8 +748,8 @@ IKRS.BezierCanvasHandler.prototype.drawBezierPath = function( context,
 			      bCurve,
 			      drawOffset,
 			      zoomFactor,
-			      drawStartPoint && i == 0,  // avoid to double-paint start and end points
-			      drawEndPoint,
+			      drawStartPoint, 
+			      drawEndPoint && i+1 == bezierPath.getCurveCount(), // avoid to double-paint start and end points
 			      drawStartControlPoint,  
 			      drawEndControlPoint,
 

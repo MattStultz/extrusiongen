@@ -9,6 +9,12 @@ Path Extrusion Generator
 
 TODO
 ----
+[2013-09-13]
+ - Fix Safari incompatibility
+ - Add CSS message box for errors and warnings
+ - Add process bar
+ - Add a compatibility check with error message
+
 [2013-09-12]
  - Add dummy console for older browsers
 
