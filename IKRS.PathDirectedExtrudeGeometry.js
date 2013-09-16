@@ -182,10 +182,35 @@ IKRS.PathDirectedExtrudeGeometry = function( shape,
 	    }
 
 
-	}
+	} // END if [options.closeShape]
 
 
     } // END if [options.hollow]
+    else if( !options.closeShape ) {
+
+	// The shape is NOT closed, but the mesh isn't hollow.
+	//  -> Make a plane of faces along the cut to close the mesh.
+	// NOTE: THIS ALGORITHM HAS TO BE OPTIMIZED, BECAUSE THIS IS _NOT_
+	//       A CLEAN SHAPE TRIANGULATION.
+	//       (on non-convex bezier shapes this algorithm heavily fails on the 
+	//        concave parts!).
+	// Note 2: there is not outer path result, as there is no outer path.
+	for( var i = 1; i < innerPathResult.outerPointIndices.left.length; i++ ) {
+
+	    // Triangulate yes or no?
+	    // Connect the left with the right side.
+	    this.faces.push( new THREE.Face3( innerPathResult.outerPointIndices.left[i-1],
+					      innerPathResult.outerPointIndices.left[i],
+					      innerPathResult.outerPointIndices.right[i]
+					    ) );
+	    this.faces.push( new THREE.Face3( innerPathResult.outerPointIndices.right[i],
+					      innerPathResult.outerPointIndices.right[i-1],
+					      innerPathResult.outerPointIndices.left[i-1]
+					    ) );
+
+	}
+
+    }
 
     this.computeCentroids();
     this.computeFaceNormals();
@@ -212,7 +237,6 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPathExtrusion = function( shape,
     shape = shapePoints.shape;
 
     var result_perpendicularPathPoints        = [];
-    //result_perpendicularPathPoints.push( shapedPath.getPoint(1) );
     var result_outerPointIndices_left         = [];
     var result_outerPointIndices_right        = [];
     var result_outerPointIndices_begin        = [];
@@ -220,8 +244,6 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPathExtrusion = function( shape,
     // Store the perpendicular shaped path for the case the mesh should be hollow
     // (required for the outer mesh)
     var result_extendedExtrusionPathPoints    = [];
-    // Also store the vertical start- and end-points.
-    //var result_verticalStartPoints            = [];
     
     
     
@@ -280,13 +302,9 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPathExtrusion = function( shape,
 	if( pathTangent.x == 0 ) pathTangentSlope = -Math.PI/2.0; // -90 deg
 	else                     pathTangentSlope = Math.atan( pathTangent.y/pathTangent.x );
 	
-	// Don't forget to make a path curve by 'options.pathBend'
-	//var pathBendAmount = options.pathBend * tHeight; // tSegment;
-	
 	var radiusFactor    = (shapedPathBounds.getXMax() - shapedPathPoint.x) / shapedPathBounds.getWidth();
 	var heightFactor    = (shapedPathBounds.getYMax() - shapedPathPoint.y) / shapedPathBounds.getHeight();
 
-	//for( var s = 0; s < shape.length; s++ ) { 
 	var firstShapePointIndex = vertexCount;
 	for( var s in shape ) {
 
@@ -406,7 +424,7 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPathExtrusion = function( shape,
 				   
 		} else if( i == 0 && options.closePathEnd ) {
 		    
-		    //!!! !!!
+		    // !!! The respective checkbox is currently disabled, so review this !!!
 		    
 		    // First segment		    
 		    this.faces.push( new THREE.Face3( firstShapePointIndex,
@@ -466,7 +484,6 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPathExtrusion = function( shape,
     pathEndTangent.normalize();
     // Set the hull-strength
     pathEndTangent.multiplyScalar( options.perpendicularHullStrength/2 );
-    //window.alert( "pathEndTangent=(" + pathEndTangent.x + ", " + pathEndTangent.y + ")" );
     // Fetch old extrusion path point (at begin)
     var pathEndPoint   = path.getPoint( 1.0 );
     // Extend path by hull-strength (along the tangent)
@@ -487,6 +504,7 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPathExtrusion = function( shape,
 				},
 	     extendedExtrusionPathPoints: result_extendedExtrusionPathPoints
 	   };
+    
     //this.computeCentroids();
     //this.computeFaceNormals();
    
@@ -517,7 +535,6 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPerpendicularHull = function( sh
     var pathTangent      = null;
     var pathTangentSlope = 0.0;
     
-    // for( var i = 0; i <= options.curveSegments; i++ ) {
     for( var i = options.curveSegments; i >= 0; i-- ) {
 
 	var tSegment        = i / options.curveSegments;
@@ -525,17 +542,10 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPerpendicularHull = function( sh
 	var pathPoint       = path.getPointAt( tSegment );	
 	var shapedPathPoint = shapedPath.getPoint( tSegment );
 
-	//var shapedPathTangent = shapedPath.getTangent( tSegment );
-	// Convert tangent to perpendicular
-	//var shapedPathPerpendicular = new THREE.Vector2( shapedPathTangent.y, -shapedPathTangent.x );
-	//shapedPathPoint.add( shapedPathPerpendicular );
-
 	var tHeight         = Math.min( 1.0, 
 					(shapedPathBounds.getYMax() - shapedPathPoint.y) / shapedPathBounds.getHeight()
 				      );
 	
-	//window.alert( "pathPoint=(" + pathPoint.x + ", " + pathPoint.y + ")" );
-
 	if( i == options.curveSegments ) pathTangent = new THREE.Vector2( 0, 0 ); // No slope at first level
 	else                             pathTangent = new THREE.Vector2( pathPoint.x-lastPathPoint.x, pathPoint.y-lastPathPoint.y );
 	
@@ -543,13 +553,9 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPerpendicularHull = function( sh
 	if( pathTangent.x == 0 ) pathTangentSlope = -Math.PI/2.0; // 90 deg
 	else                     pathTangentSlope = Math.atan( pathTangent.y/pathTangent.x );
 	
-	// Don't forget to make a path curve by 'options.pathBend'
-	//var pathBendAmount = options.pathBend * tHeight; // tSegment;
-	
 	var radiusFactor    = (shapedPathBounds.getXMax() - shapedPathPoint.x) / shapedPathBounds.getWidth();
 	var heightFactor    = (shapedPathBounds.getYMax() - shapedPathPoint.y) / shapedPathBounds.getHeight();
-
-	//for( var s = 0; s < shape.length; s++ ) { 
+ 
 	var firstShapePointIndex = vertexCount;
 	for( var s in shape ) {
 
@@ -633,32 +639,6 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPerpendicularHull = function( sh
 		} // END else [triangulate]
 
 	    } 
-
-	    // Close first and last shape/level (if at least 3 vertices are present: s > 1)
-	    /*
-	    if( s > 1 ) {
-
-		// If the mesh should be build hollow this is not yet the last segment
-		if( i == options.curveSegments ) { //&& !options.hollow ) {
-
-		    // Last segment
-		    this.faces.push( new THREE.Face3( vertexCount,
-						      vertexCount-1,
-						      firstShapePointIndex
-						    ) 
-				   );
-		} else if( i == 0 && !options.hollow) {
-
-		    // First segment
-		    this.faces.push( new THREE.Face3( firstShapePointIndex,
-						      vertexCount-1,
-						      vertexCount
-						    ) 
-				   );
-		}
-		
-	    }
-	    */
 
 	    vertexCount++;
 	    lastPathPoint = pathPoint;
