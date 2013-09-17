@@ -23,7 +23,10 @@ ZipFileImporter = {
 		closePathBegin:    document.forms[ "mesh_form" ].elements[ "mesh_close_path_begin" ].checked,
 		closePathEnd:      document.forms[ "mesh_form" ].elements[ "mesh_close_path_end" ].checked,
 		wireframe:         document.forms[ "mesh_form" ].elements[ "wireframe" ].checked,
-		triangulate:       document.forms[ "mesh_form" ].elements[ "triangulate" ].checked
+		triangulate:       document.forms[ "mesh_form" ].elements[ "triangulate" ].checked,
+		
+		// This is new since 2013-09-16
+		splitShape:        document.forms[ "mesh_form" ].elements[ "split_shape" ].checked
 	    },
 	    compress:          document.forms[ "zip_form" ].elements[ "compress_zip" ].checked
 	}; // END object
@@ -68,6 +71,11 @@ ZipFileImporter = {
 	    document.forms[ "mesh_form" ].elements[ "triangulate" ].checked = "checked";
 	else
 	    document.forms[ "mesh_form" ].elements[ "triangulate" ].checked = false;
+
+	if( meshSettings.splitShape )
+	    document.forms[ "mesh_form" ].elements[ "split_shape" ].checked = "checked";
+	else
+	    document.forms[ "mesh_form" ].elements[ "split_shape" ].checked = false;
 
 	
 	return false;

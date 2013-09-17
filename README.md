@@ -9,6 +9,11 @@ Path Extrusion Generator
 
 TODO
 ----
+[2013-09-16]
+ - Add an enhanced polygon triangulation algorithm for the case
+   the mesh is split; the cut is not yet properly filled. Vertically
+   non-convex bezier curves cause errors in the mesh.
+
 [2013-09-13]
  - Fix Safari incompatibility
  - Add CSS message box for errors and warnings

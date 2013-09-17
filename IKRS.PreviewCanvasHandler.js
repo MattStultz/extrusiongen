@@ -140,7 +140,7 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
     // This will be the (x,y) translation of the final mesh; default is (0,0) if non-split.
     var mesh_offset;
     if( split_shape )
-	mesh_offset = new THREE.Vector2( 0, 100 );
+	mesh_offset = new THREE.Vector2( 0, 0 ); //-100 );
     else
 	mesh_offset = new THREE.Vector2( 0, 0 );
     
@@ -153,8 +153,11 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
     // Use the x value (=radius) of the first path point as circle radius
     var circleRadius       = shapedPathBounds.getWidth(); //shapedPath.getPoint( 0.0 ).x;
 
-    for( i = 0; i <= circleSegmentCount; i++ ) {
-	var pct = i * (1.0/circleSegmentCount);
+    // If the mesh is split, the shape will be split into two halfs. 
+    // -> eventually divide the shape's segment count by two.
+    var localSegmentCount = ( split_shape ? circleSegmentCount/2 : circleSegmentCount );
+    for( i = 0; i <= localSegmentCount; i++ ) {
+	var pct = i * (1.0/localSegmentCount);
 	var angle;
 	if( split_shape ) angle = Math.PI/2.0 + Math.PI * pct;
 	else              angle = Math.PI/2.0 + Math.PI * pct * 2.0;
