@@ -109,12 +109,23 @@ tooltip:hover:before{
     font-size: 10pt;
 }
 
+#version_tag {
+    position: absolute;
+    top: 10px;
+    left: 390px;
+    font-size: 7pt;
+
+}
+
 </style> 
 
 </head> 
 
 <body> 
 
+<div id="version_tag">
+  v0.1.0 built 20130916#0
+</div>
 
 <canvas 
   title="Click, hold and drag to rotate the view."
@@ -145,11 +156,6 @@ tooltip:hover:before{
 <div style="position: absolute; left: 532px; top: 788px; width: 256px;">
   <div>
   <form name="bezier_form">
-  <!--
-  <input type="checkbox" id="clear_on_repaint" name="clear_on_repaint" checked="checked" onchange="javascript:bezierCanvasHandler.redraw();" class="tooltip" title="Uncheck this, move some points. See what will happen ... it's kinda fun ;)" />
-  <label for="clear_on_repaint">Clear on repaint</label>
-  -->
-
   <br/>
   <input type="checkbox" id="draw_tangents" name="draw_tangents" checked="checked" onchange="javascript:bezierCanvasHandler.redraw();" class="tooltip" title="Disables the control points and tangents." />
   <label for="draw_tangents">Draw tangents</label>
@@ -176,10 +182,7 @@ tooltip:hover:before{
   <button onclick="bezierCanvasHandler.decreaseZoomFactor(true);">-</button>
   <button onclick="bezierCanvasHandler.increaseZoomFactor(true);">+</button>
   <br/>
-<!--
-  <button id="bezier_undo" onclick="bezier_undo();">Undo</button>
-  <button id="bezier_redo" onclick="bezier_redo();">Redo</button>
--->
+
   </div>
 </div>
 
@@ -229,8 +232,8 @@ tooltip:hover:before{
 <tr>
   <td></td>
   <td>
-        <input type="checkbox" id="build_negative_mesh" name="build_negative_mesh" />
-          <label for="build_negative_mesh">Build negative mesh</label>
+        <input type="checkbox" id="build_negative_mesh" name="build_negative_mesh" onchange="preview_rebuild_model();" />
+          <label for="build_negative_mesh">Hollow</label>
   </td>
 </tr>
 
@@ -239,7 +242,7 @@ tooltip:hover:before{
 					     (only if hollow)
   </td>
   <td valign="top">
-        <input type="number" id="mesh_hull_strength" name="mesh_hull_strength" value="25" class="tooltip" title="..." onchange="javascript:bezierCanvasHandler.redraw();" onkeyup="javascript:bezierCanvasHandler.redraw();" size="4" />px
+        <input type="number" id="mesh_hull_strength" name="mesh_hull_strength" value="25" class="tooltip" title="..." onchange="javascript:bezierCanvasHandler.redraw();" onkeyup="javascript:bezierCanvasHandler.redraw();preview_rebuild_model();" size="4" onchange="preview_rebuild_model();" />px
          
   </td>
 </tr>
@@ -247,13 +250,13 @@ tooltip:hover:before{
 <tr>
   <td>Close path</td>
   <td>
-    <table border="0" style="padding: 0px; spacing: 0px;">
-      <tr><td style="padding: 0px; spacing: 0px; margin: 0px;">
-        <input type="checkbox" id="mesh_close_path_begin" name="mesh_close_path_begin" disabled="disabled" />
+    <table border="0" style="padding: 0px; spacing: 0px;" width="100%">
+      <tr><td align="left">
+        <input type="checkbox" id="mesh_close_path_begin" name="mesh_close_path_begin" onchange="preview_rebuild_model();" disabled="disabled" />
           <label for="mesh_close_path_begin">begin</label>
 	  </td>
-          <td>
-	  <input type="checkbox" id="mesh_close_path_end" name="mesh_close_path_end" checked="checked" />
+          <td align="right">
+	  <input type="checkbox" id="mesh_close_path_end" name="mesh_close_path_end" onchange="preview_rebuild_model();" checked="checked" />
           <label for="mesh_close_path_end">end</label>
 	  </td></tr>
       </table>
@@ -263,7 +266,7 @@ tooltip:hover:before{
 <tr>
   <td></td>
   <td>
-        <input type="checkbox" id="wireframe" name="wireframe" />
+        <input type="checkbox" id="wireframe" name="wireframe" onchange="preview_rebuild_model();" />
           <label for="wireframe">Wireframe</label>
   </td>
 </tr>
@@ -272,7 +275,7 @@ tooltip:hover:before{
   <td></td>
   <td>
 	<div style="position: relative; top: -12px;">
-        <input type="checkbox" id="triangulate" name="triangulate" checked="checked" />
+        <input type="checkbox" id="triangulate" name="triangulate" onchange="preview_rebuild_model();" checked="checked" />
 	<label for="triangulate">Triangulate</label> 
 	<span class="tooltip" title="Note: quad faces render faster but only triangulated meshes are STL compatible!" style="font-size: 22pt;">&#x26a0;</a><br/>
 	</div>
@@ -283,7 +286,7 @@ tooltip:hover:before{
 <tr>
   <td></td>
   <td>
-        <input type="checkbox" id="split_shape" name="split_shape" />
+        <input type="checkbox" id="split_shape" name="split_shape" onchange="preview_rebuild_model();" />
           <label for="split_shape">Split shape/mesh</label>
   </td>
 </tr>
@@ -446,13 +449,20 @@ function preview_render() {
 }
 
 function decreaseZoomFactor( redraw ) {
-    this.previewCanvasHandler.preview_mesh.scale.multiplyScalar( 1/1.2 );
+    //this.previewCanvasHandler.preview_mesh.scale.multiplyScalar( 1/1.2 );
+    for( var i = 0; i < this.previewCanvasHandler.preview_meshes.length; i++ ) {
+	this.previewCanvasHandler.preview_meshes[i].scale.multiplyScalar( 1/1.2 );		
+    }
     if( redraw )
 	preview_render();
 }
 
 function increaseZoomFactor( redraw ) {
-    this.previewCanvasHandler.preview_mesh.scale.multiplyScalar( 1.2 );
+    //this.previewCanvasHandler.preview_mesh.scale.multiplyScalar( 1.2 );
+    for( var i = 0; i < this.previewCanvasHandler.preview_meshes.length; i++ ) {
+        // window.alert( JSON.stringify(this.previewCanvasHandler.preview_meshes[i]) );
+	this.previewCanvasHandler.preview_meshes[i].scale.multiplyScalar( 1.2 );		
+    }
     if( redraw )
 	preview_render();
 }

@@ -4,7 +4,7 @@ Path Extrusion Generator
 
 @author   Ikaros Kappler
 @date     2013-09-11
-@version  1.0.0
+@version  0.1.0
 
 
 TODO
@@ -13,6 +13,7 @@ TODO
  - Add an enhanced polygon triangulation algorithm for the case
    the mesh is split; the cut is not yet properly filled. Vertically
    non-convex bezier curves cause errors in the mesh.
+ - Bug: the second last bezier point cannot be deleted.
 
 [2013-09-13]
  - Fix Safari incompatibility
@@ -35,6 +36,11 @@ TODO
  - Shape scaling by moving bounding box nodes
 
 
+Changelog
+---------
+[2013-09-16]
+ - The second last bezier curve was not deletable. This is fixed now.
+
 
 
 Used libraries
@@ -43,6 +49,7 @@ Used libraries
  - three.js
  - jszip.js (v1.0.1-23)
  - jszip-deflate.js
+ - jszip-load.js
  - base64-binary.js
  - FileSaver.js
  - Blob.js
