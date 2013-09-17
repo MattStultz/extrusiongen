@@ -25,6 +25,10 @@ IKRS.PreviewCanvasHandler = function( bezierCanvasHandler,
 						       0.1, 
 						       2000 
 						     ); 
+    // Add custom settings to the camera to we can store the mouse movement inside.
+    this.preview_camera.ikrsSettings = { rotation: new THREE.Vector4(0,0,0,0) };
+    // THIS DEPENDS ON THE SCENE. ALIGN CAMERA AT THE END (AFTER ADDING THE MESHES)!
+    //this._setCameraPositionFromLocalSettings();
     
     // create a point light
     this.preview_pointLight =
@@ -55,6 +59,9 @@ IKRS.PreviewCanvasHandler = function( bezierCanvasHandler,
 
     // Create a backward-link to this so the canvas events have access!
     this.preview_canvas.previewCanvasHandler = this;
+    
+    // TEMP
+    //this.i = 0;
 
 }
 
@@ -72,20 +79,133 @@ IKRS.PreviewCanvasHandler.prototype.preview_mouseMoveHandler = function ( e ) {
       
       //this.previewCanvasHandler.preview_mesh.rotation.y += (0.01 * (this.previewCanvasHandler.latestMouseDragPosition.x - e.pageX)); 
       //this.previewCanvasHandler.preview_mesh.rotation.x += (0.01 * (this.previewCanvasHandler.latestMouseDragPosition.y - e.pageY)); 
+      var rotationAmount = new THREE.Vector3( (0.01 * (this.previewCanvasHandler.latestMouseDragPosition.x - e.pageX)),
+					      (0.01 * (this.previewCanvasHandler.latestMouseDragPosition.y - e.pageY)),
+					      0
+					    );
+      //var xAxis = new THREE.Vector3( 1, 0, 0 ); // This is already normalized
+      //var yAxis = new THREE.Vector3( 0, 0, 1 ); // This is already normalized
       for( var i = 0; i < previewCanvasHandler.preview_meshes.length; i++ ) {
 
-	  this.previewCanvasHandler.preview_meshes[i].rotation.y += (0.01 * (this.previewCanvasHandler.latestMouseDragPosition.x - e.pageX)); 
-	  this.previewCanvasHandler.preview_meshes[i].rotation.x += (0.01 * (this.previewCanvasHandler.latestMouseDragPosition.y - e.pageY)); 
+	  //this.previewCanvasHandler.preview_meshes[i].rotation.y += (0.01 * (this.previewCanvasHandler.latestMouseDragPosition.x - e.pageX)); 
+	  //this.previewCanvasHandler.preview_meshes[i].rotation.x += (0.01 * (this.previewCanvasHandler.latestMouseDragPosition.y - e.pageY)); 
+	  //this.previewCanvasHandler.preview_meshes[i].rotation.y += rotationAmount.y; 
+	  //this.previewCanvasHandler.preview_meshes[i].rotation.x += rotationAmount.x;
 
+	  var mesh = this.previewCanvasHandler.preview_meshes[i];
+	  
+	  //mesh.rotation.y += rotationAmount.x; 
+	  //mesh.rotation.x += rotationAmount.y;
+	  
+
+	  // Fist add the rotation amount to the mesh's internal rotation setting.
+	  //mesh.ikrsSettings.rotation.x += rotationAmount.x;
+	  //mesh.ikrsSettings.rotation.y += rotationAmount.y;
+
+	  /*
+	  var rotationObjectMatrix_X = new THREE.Matrix4();	  
+	  rotationObjectMatrix_X.makeRotationAxis(yAxis.normalize(), mesh.ikrsSettings.rotation.y); //rotationAmount.y);
+	  
+	  //mesh.matrix.multiply( rotationObjectMatrix_X );
+	  mesh.matrix = rotationObjectMatrix_X;
+	  mesh.rotation.setEulerFromRotationMatrix(mesh.matrix);
+	  */
+
+	  /*
+	  var rotationObjectMatrix_Y = new THREE.Matrix4();
+	  rotationObjectMatrix_Y.makeRotationAxis(yAxis.normalize(), rotationAmount.x);
+	  
+	  mesh.matrix.multiply( rotationObjectMatrix_Y );
+	  mesh.rotation.setEulerFromRotationMatrix(mesh.matrix);
+	  */
       }
 
+      this.previewCanvasHandler.preview_camera.ikrsSettings.rotation.add( rotationAmount );
+      this.previewCanvasHandler._setCameraPositionFromLocalSettings();
+      /*
+      if( this.previewCanvasHandler.preview_meshes.length > 0 ) {
+	  
+	  var target = this.previewCanvasHandler.preview_meshes[0];
+	  var targetPosition = target.position; //new THREE.Vector3(0,0,0);
+	  var radius = 500.0;
+	  
+	  var newCameraOffset_X = new THREE.Vector3( Math.cos( this.previewCanvasHandler.preview_camera.ikrsSettings.rotation.x ),
+						     Math.sin( this.previewCanvasHandler.preview_camera.ikrsSettings.rotation.x ),
+						     0 
+						   );
+	  var newCameraOffset_Y = new THREE.Vector3( Math.cos( this.previewCanvasHandler.preview_camera.ikrsSettings.rotation.y ),
+						     Math.sin( this.previewCanvasHandler.preview_camera.ikrsSettings.rotation.y ),
+						     0 
+						   );
 
-    this.previewCanvasHandler.latestMouseDragPosition = new THREE.Vector2( e.pageX, e.pageY ); 
+	  this.previewCanvasHandler.i++;
+	  //if( this.previewCanvasHandler.i%100 == 0 )
+	      //window.alert( "newCameraOffset=(" + newCameraOffset.x + ", " + newCameraOffset.y + ", " + newCameraOffset.z + "), mesh_rotation=" + JSON.stringify(target.rotation) + ", mesh.position=" + JSON.stringify(mesh.position) + ", totalMoveAmount=(" + mesh.ikrsSettings.rotation.x + ", " + mesh.ikrsSettings.rotation.y + ")" );
+
+	  //this.previewCanvasHandler.preview_camera.position.x = targetPosition.x + newCameraOffset.x * radius;    
+	  //this.previewCanvasHandler.preview_camera.position.z = targetPosition.y + newCameraOffset.y * radius;
+	  this.previewCanvasHandler.preview_camera.position.x = targetPosition.x + newCameraOffset_X.x * radius;    
+	  this.previewCanvasHandler.preview_camera.position.y = targetPosition.y + newCameraOffset_X.y * radius;
+
+	  //this.previewCanvasHandler.preview_camera.position.z = targetPosition.z;
+	  this.previewCanvasHandler.preview_camera.position.y = targetPosition.y + newCameraOffset_Y.x * radius;    
+	  this.previewCanvasHandler.preview_camera.position.z = targetPosition.z + (newCameraOffset_Y.y + newCameraOffset_X.y) * radius;
+	  
+	  this.previewCanvasHandler.preview_camera.lookAt( targetPosition );
+	  
+	  // Also move the point light with the camera
+	  
+	  this.previewCanvasHandler.preview_pointLight.position.set( this.previewCanvasHandler.preview_camera.position.x,
+								     this.previewCanvasHandler.preview_camera.position.y,
+								     this.previewCanvasHandler.preview_camera.position.z
+							  );
+	  
+
+      }
+      */
+
+      this.previewCanvasHandler.latestMouseDragPosition = new THREE.Vector2( e.pageX, e.pageY ); 
 
     //preview_render();    
   } 
 };
 
+IKRS.PreviewCanvasHandler.prototype._setCameraPositionFromLocalSettings = function() {
+    
+    //window.alert( JSON.stringify(this.preview_camera.ikrsSettings) );
+
+    //if( this.preview_meshes.length > 0 ) {
+	var newCameraOffset_X = new THREE.Vector3( Math.cos( this.preview_camera.ikrsSettings.rotation.x ),
+						   Math.sin( this.preview_camera.ikrsSettings.rotation.x ),
+						   0 
+						 );
+	var newCameraOffset_Y = new THREE.Vector3( Math.cos( this.preview_camera.ikrsSettings.rotation.y ),
+						   Math.sin( this.preview_camera.ikrsSettings.rotation.y ),
+						   0 
+						 );
+
+	
+	//var target = this.preview_meshes[0];
+	var targetPosition = new THREE.Vector3(0,0,0); // target.position; 
+	var radius = 500.0;
+
+	this.preview_camera.position.x = targetPosition.x + newCameraOffset_X.x * radius;    
+	this.preview_camera.position.y = targetPosition.y + newCameraOffset_X.y * radius;
+
+	//this.previewCanvasHandler.preview_camera.position.z = targetPosition.z;
+	this.preview_camera.position.y = targetPosition.y + newCameraOffset_Y.x * radius;    
+	this.preview_camera.position.z = targetPosition.z + (newCameraOffset_Y.y + newCameraOffset_X.y) * radius;
+	
+	this.preview_camera.lookAt( targetPosition );
+	
+	// Also move the point light with the camera
+	
+	this.preview_pointLight.position.set( this.preview_camera.position.x,
+					      this.preview_camera.position.y,
+					      this.preview_camera.position.z
+					    );
+    //}
+}
 
 IKRS.PreviewCanvasHandler.prototype.preview_mouseDownHandler = function( e ) {
   // window.alert( "clicked. Event: " + e + ", e.pageX=" + e.pageX + ", e.pageY=" + e.pageY );
@@ -132,9 +252,10 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
     var mesh_close_path_begin = document.forms["mesh_form"].elements["mesh_close_path_begin"].checked;
     var mesh_close_path_end   = document.forms["mesh_form"].elements["mesh_close_path_end"].checked;
     var wireFrame             = document.forms["mesh_form"].elements["wireframe"].checked; 
-    var triangulate           = document.forms["mesh_form"].elements["triangulate"].checked;
- 
+    var triangulate           = document.forms["mesh_form"].elements["triangulate"].checked; 
     var split_shape           = document.forms["mesh_form"].elements["split_shape"].checked;
+
+    //window.alert( "wireframe=" + wireFrame );
 
     // Convert numeric text values to numbers!
     mesh_hull_strength  = parseInt( mesh_hull_strength );
@@ -142,34 +263,95 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
     pathSegments        = parseInt( pathSegments );
     //var circleRadius    = shapedPathBounds.getWidth();
     
-    var new_mesh = this._buildMeshFromSettings( shapedPath,
-						circleSegmentCount,
-						pathSegments,
-						build_negative_mesh,
-						mesh_hull_strength,
-						mesh_close_path_begin,
-						mesh_close_path_end,
-						wireFrame,
-						triangulate,
-						split_shape
-						);
 
-    new_mesh.position.y  = 150;
-    new_mesh.position.z  = -250;
+    // Temp backup the mesh/view settings.
+    var viewSettings = this._getViewSettings();
+
+    // Remove all existing meshes.
+    this._clearScene();
+    
+
+    var new_mesh_left = this._buildMeshFromSettings( shapedPath,
+						     circleSegmentCount,
+						     pathSegments,
+						     build_negative_mesh,
+						     mesh_hull_strength,
+						     mesh_close_path_begin,
+						     mesh_close_path_end,
+						     wireFrame,
+						     triangulate,
+						     split_shape,
+						     
+						     -Math.PI/2.0  // shape_start_angle
+						   );
+        
+    this._addMeshToScene( new_mesh_left, 
+			  viewSettings,
+			  (split_shape ? new THREE.Vector3(0,50,0) : null)   // offset
+			);
+    
+    if( split_shape ) {
+
+	var new_mesh_right = this._buildMeshFromSettings( shapedPath,
+							  circleSegmentCount,
+							  pathSegments,
+							  build_negative_mesh,
+							  mesh_hull_strength,
+							  mesh_close_path_begin,
+							  mesh_close_path_end,
+							  wireFrame,
+							  triangulate,
+							  split_shape,
+							  
+							  // 90DEG more than in the left part!
+							  Math.PI/2.0  // shape_start_angle
+							);
+        
+	this._addMeshToScene( new_mesh_right, 
+			      viewSettings,
+			      (split_shape ? new THREE.Vector3(0,-50,0) : null)  // offset
+			    );
+
+    }
+    
+    //this._setCameraPositionFromLocalSettings();
+}
+
+
+IKRS.PreviewCanvasHandler.prototype._addMeshToScene = function( new_mesh,
+								viewSettings,
+								optionalOffset
+							      ) {
+
+    if( !viewSettings )
+	viewSettings = this._getViewSettings();
+
+    //new_mesh.position.y  = 150;
+    //new_mesh.position.z  = -250;
     new_mesh.overdraw    = true;
     new_mesh.doubleSided = false;  // true
+
+    
     
     // Apply view settings
-    var viewSettings = this._getViewSettings();
-    if( viewSettings &&
-	viewSettings.rotation &&
-	viewSettings.scale ) {
+    //var viewSettings = this._getViewSettings();
+    if( viewSettings.rotation ) {
 	
 	//new_mesh.rotation.setFromRotationMatrix( viewSettings.rotation );
 	new_mesh.rotation.set( viewSettings.rotation.x,
 			       viewSettings.rotation.y,
 			       viewSettings.rotation.z 
 			     );
+
+    } else {
+
+	viewSettings.rotation = new THREE.Vector2( 0, 0, 0 ); // new THREE.Vector2( -1.38, 0, 0 );
+	new_mesh.rotation.x = viewSettings.rotation.x; // -1.38;
+	
+    }
+    
+
+    if( viewSettings.scale ) {
 	new_mesh.scale.set( viewSettings.scale.x,
 			    viewSettings.scale.y,
 			    viewSettings.scale.z
@@ -177,49 +359,33 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 
     } else {
 
-	new_mesh.scale.multiplyScalar( 1.5 );
-	new_mesh.rotation.x = -1.38;
-
-    }
-    
-    this._clearScene();
-    
-    // Remove old mesh?
-    //if( this.preview_mesh ) {
-    /*
-    if( this.preview_meshes.length != 0 ) {
-	
-	var old_mesh = this.preview_meshes[ 0 ];
-	//this.preview_scene.remove( this.preview_mesh );
-	
-	for( var i = 0; i < this.preview_meshes.length; i++ ) {
-	    
-	    this.preview_scene.remove( this.preview_meshes[i] );
-
-	}
-	this.preview_meshes =[];
-
-	// Keep old rotation	
-	new_mesh.rotation.x = old_mesh.rotation.x;
-	new_mesh.rotation.y = old_mesh.rotation.y;
-	
-	new_mesh.scale.x    = old_mesh.scale.x;
-	new_mesh.scale.y    = old_mesh.scale.y;
-	new_mesh.scale.z    = old_mesh.scale.z;
-    } else {
-
-	// Scale a bit bigger than 1.0 (looks better with the bezier view)
+	viewSettings.scale = new THREE.Vector3( 1.5, 1.5, 1.5 );
 	new_mesh.scale.multiplyScalar( 1.5 );
 	
-	new_mesh.rotation.x = -1.38;
 
     }
-    */
 
+
+    if( optionalOffset ) 
+	new_mesh.position.add( optionalOffset );
+
+
+    // ADD AN ADDITIONAL OBJECT TO EACH MESH IN THE SCENE.
+    //new_mesh.ikrsSettings = {
+	//rotation: viewSettings.rotation.clone()
+    //};
+
+    // Translate the mesh so the origin is at (0,0,0).
+    // This will be the later rotation point for the mouse handler.
+    /*new_mesh.geometry.applyMatrix( new THREE.Matrix4().makeTranslation( -new_mesh.position.x, 
+									-new_mesh.position.y, 
+									-new_mesh.position.z 
+								      ) );
+								      */
+    
+    // Add new meshes to scene.
     this.preview_scene.add( new_mesh );
-    //this.preview_mesh = new_mesh;
     this.preview_meshes.push( new_mesh );
-
 
 }
 
@@ -232,7 +398,9 @@ IKRS.PreviewCanvasHandler.prototype._buildMeshFromSettings = function( shapedPat
 								       mesh_close_path_end,
 								       wireFrame,
 								       triangulate,
-								       split_shape
+								       split_shape,
+								       
+								       shape_start_angle
 								     ) {
     
     var shapedPathBounds     = shapedPath.computeBoundingBox();
@@ -246,36 +414,10 @@ IKRS.PreviewCanvasHandler.prototype._buildMeshFromSettings = function( shapedPat
     else
 	mesh_offset = new THREE.Vector2( 0, 0 );
     
-    /*
-    // Convert text values to numbers!
-    mesh_hull_strength = parseInt( mesh_hull_strength );
-    
-    //window.alert( "mesh_close_path_begin=" + mesh_close_path_begin );
-    
-    // Use the x value (=radius) of the first path point as circle radius
-    var circleRadius       = shapedPathBounds.getWidth(); //shapedPath.getPoint( 0.0 ).x;
-
-    // If the mesh is split, the shape will be split into two halfs. 
-    // -> eventually divide the shape's segment count by two.
-    var localSegmentCount = ( split_shape ? circleSegmentCount/2 : circleSegmentCount );
-    for( i = 0; i <= localSegmentCount; i++ ) {
-	var pct = i * (1.0/localSegmentCount);
-	var angle;
-	if( split_shape ) angle = Math.PI/2.0 + Math.PI * pct;
-	else              angle = Math.PI/2.0 + Math.PI * pct * 2.0;
-	   
-	    
-	shapePoints.push( new THREE.Vector3( Math.sin( angle ) * circleRadius,
-					     Math.cos( angle ) * circleRadius,
-					     0
-					   )
-			);
-    }
-    */
     
     shapePoints = this._createCircleShapePoints( (split_shape ? circleSegmentCount/2 : circleSegmentCount),
 						 circleRadius,
-						 -Math.PI/2.0,                            // startAngle
+						 shape_start_angle, // -Math.PI/2.0,                            // startAngle
 						 (split_shape ? Math.PI : Math.PI * 2.0)  // arc
 					       );
 					       
@@ -434,7 +576,12 @@ IKRS.PreviewCanvasHandler.prototype._getViewSettings = function() {
 	previewSettings.rotation = mesh.rotation.clone();
 	previewSettings.scale    = mesh.scale.clone();
 
-    } 
+    } else {
+
+	previewSettings.rotation = new THREE.Vector4(0,0,0,0); // new THREE.Vector4(-1.38,0,0,0);
+	previewSettings.scale    = new THREE.Vector3(1,1,1);
+
+    }
 
     return previewSettings;
 }
