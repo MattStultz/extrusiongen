@@ -105,19 +105,19 @@ IKRS.PreviewCanvasHandler.prototype.preview_mouseUpHandler = function( e ) {
 
 
 IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
-    
+
+
     // Fetch bezier path from bezier canvas handler
     var shapedPath           = this.bezierCanvasHandler.getBezierPath();
-    var shapedPathBounds     = shapedPath.computeBoundingBox();
+    //var shapedPathBounds     = shapedPath.computeBoundingBox();
 
-    var shapePoints          = [];
+    //var shapePoints          = [];
     // Make a circle
-    var circleSegmentCount   = document.forms["mesh_form"].elements["shape_segments"].value; // 8;
+    var circleSegmentCount   = document.forms["mesh_form"].elements["shape_segments"].value; 
     var pathSegments         = document.forms["mesh_form"].elements["path_segments"].value;
 
 
     if( circleSegmentCount*pathSegments > 400*400 ) {
-	//window.alert( "The total face count is more than 160000 with these settings and would render very slowly. Please enter lower values." );
 	var confirmed = window.confirm( "The total face count is more than 160000 with these settings.\n" +
 					"This might render and process VERY slowly.\n" +
 					"\n" +
@@ -135,16 +135,118 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
     var triangulate           = document.forms["mesh_form"].elements["triangulate"].checked;
  
     var split_shape           = document.forms["mesh_form"].elements["split_shape"].checked;
+
+    // Convert numeric text values to numbers!
+    mesh_hull_strength  = parseInt( mesh_hull_strength );
+    circleSegmentCount  = parseInt( circleSegmentCount );
+    pathSegments        = parseInt( pathSegments );
+    //var circleRadius    = shapedPathBounds.getWidth();
+    
+    var new_mesh = this._buildMeshFromSettings( shapedPath,
+						circleSegmentCount,
+						pathSegments,
+						build_negative_mesh,
+						mesh_hull_strength,
+						mesh_close_path_begin,
+						mesh_close_path_end,
+						wireFrame,
+						triangulate,
+						split_shape
+						);
+
+    new_mesh.position.y  = 150;
+    new_mesh.position.z  = -250;
+    new_mesh.overdraw    = true;
+    new_mesh.doubleSided = false;  // true
+    
+    // Apply view settings
+    var viewSettings = this._getViewSettings();
+    if( viewSettings &&
+	viewSettings.rotation &&
+	viewSettings.scale ) {
+	
+	//new_mesh.rotation.setFromRotationMatrix( viewSettings.rotation );
+	new_mesh.rotation.set( viewSettings.rotation.x,
+			       viewSettings.rotation.y,
+			       viewSettings.rotation.z 
+			     );
+	new_mesh.scale.set( viewSettings.scale.x,
+			    viewSettings.scale.y,
+			    viewSettings.scale.z
+			  );
+
+    } else {
+
+	new_mesh.scale.multiplyScalar( 1.5 );
+	new_mesh.rotation.x = -1.38;
+
+    }
+    
+    this._clearScene();
+    
+    // Remove old mesh?
+    //if( this.preview_mesh ) {
+    /*
+    if( this.preview_meshes.length != 0 ) {
+	
+	var old_mesh = this.preview_meshes[ 0 ];
+	//this.preview_scene.remove( this.preview_mesh );
+	
+	for( var i = 0; i < this.preview_meshes.length; i++ ) {
+	    
+	    this.preview_scene.remove( this.preview_meshes[i] );
+
+	}
+	this.preview_meshes =[];
+
+	// Keep old rotation	
+	new_mesh.rotation.x = old_mesh.rotation.x;
+	new_mesh.rotation.y = old_mesh.rotation.y;
+	
+	new_mesh.scale.x    = old_mesh.scale.x;
+	new_mesh.scale.y    = old_mesh.scale.y;
+	new_mesh.scale.z    = old_mesh.scale.z;
+    } else {
+
+	// Scale a bit bigger than 1.0 (looks better with the bezier view)
+	new_mesh.scale.multiplyScalar( 1.5 );
+	
+	new_mesh.rotation.x = -1.38;
+
+    }
+    */
+
+    this.preview_scene.add( new_mesh );
+    //this.preview_mesh = new_mesh;
+    this.preview_meshes.push( new_mesh );
+
+
+}
+
+IKRS.PreviewCanvasHandler.prototype._buildMeshFromSettings = function( shapedPath,
+								       circleSegmentCount,
+								       pathSegments,
+								       build_negative_mesh,
+								       mesh_hull_strength,
+								       mesh_close_path_begin,
+								       mesh_close_path_end,
+								       wireFrame,
+								       triangulate,
+								       split_shape
+								     ) {
+    
+    var shapedPathBounds     = shapedPath.computeBoundingBox();
+    var circleRadius         = shapedPathBounds.getWidth();
     
     // The shape offset on the lower plane.
     // This will be the (x,y) translation of the final mesh; default is (0,0) if non-split.
     var mesh_offset;
     if( split_shape )
-	mesh_offset = new THREE.Vector2( 0, 0 ); //-100 );
+	mesh_offset = new THREE.Vector2( 0, 0 ); // -100 );
     else
 	mesh_offset = new THREE.Vector2( 0, 0 );
     
-    
+    /*
     // Convert text values to numbers!
     mesh_hull_strength = parseInt( mesh_hull_strength );
     
@@ -169,6 +271,15 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 					   )
 			);
     }
+    */
+    
+    shapePoints = this._createCircleShapePoints( (split_shape ? circleSegmentCount/2 : circleSegmentCount),
+						 circleRadius,
+						 -Math.PI/2.0,                            // startAngle
+						 (split_shape ? Math.PI : Math.PI * 2.0)  // arc
+					       );
+					       
+    
 
     var extrusionShape = new THREE.Shape( shapePoints );
 
@@ -183,88 +294,52 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
     var pathBendAngle = Math.max( document.getElementById( "preview_bend" ).value,
 				  0.01
 				);
-    var buildCurvedPath = true; // (pathBendAngle!=0);
+    //var buildCurvedPath = true; // (pathBendAngle!=0);
     // Make a nice curve (for testing with sin/cos here)
     // HINT: THE NEW IMPLEMENTATION ALWAYS USES A CURVED PATH!
     //       But when there is no curve angle (bend=0.0) an infinite circle radius 
     //       is assumed which will make the path nearly linear ;)
-    //if( buildCurvedPath ) {
 
-	// How large must be the circle's radius so that the arc segment (with the given angle)
-	// has the desired path length (such as defined in the outer shape)?
-	// U = 2*PI*r
-	// r = U / (2*PI)
-	// 
-	// The actual segment size
-	//var tmpCircleRadius = pathLength / (Math.PI*2); // 110
-	
-	// The length of the circle arc must be exactly the shape's length
-	var tmpCircleRadius   = pathLength / ((pathBendAngle/180.0)*Math.PI);
 
-	for( var i = 0; i < pathSegments; i++ ) {
-	    var t     = i/ (pathSegments);
-	    //var angle = Math.PI * t * 0.75;
-	    var angle = Math.PI * (pathBendAngle/180.0) * t;
-	    var sin   = Math.sin( angle );
-	    var cos   = Math.cos( angle );
+    // How large must be the circle's radius so that the arc segment (with the given angle)
+    // has the desired path length (such as defined in the outer shape)?
+    // U = 2*PI*r
+    // r = U / (2*PI)
+    // 
+    // The actual segment size
+    //var tmpCircleRadius = pathLength / (Math.PI*2); // 110
+    
+    // The length of the circle arc must be exactly the shape's length
+    var tmpCircleRadius   = pathLength / ((pathBendAngle/180.0)*Math.PI);
 
-	    var pathPoint = new THREE.Vector3( cos * tmpCircleRadius,  // 110?
-						sin * tmpCircleRadius, // 110?
-						0 
-					     );
-	    // translate to center
-	    pathPoint.add( new THREE.Vector3( -tmpCircleRadius,
-					      -pathLength/2, 
-					      0
-					    )
-			 );
-	    pathPoints.push( pathPoint );
+    for( var i = 0; i < pathSegments; i++ ) {
+	var t     = i/ (pathSegments);
+	//var angle = Math.PI * t * 0.75;
+	var angle = Math.PI * (pathBendAngle/180.0) * t;
+	var sin   = Math.sin( angle );
+	var cos   = Math.cos( angle );
 
-	}
+	var pathPoint = new THREE.Vector3( cos * tmpCircleRadius,  // 110?
+					   sin * tmpCircleRadius, // 110?
+					   0 
+					 );
+	// translate to center
+	pathPoint.add( new THREE.Vector3( -tmpCircleRadius,
+					  -pathLength/2, 
+					  0
+					)
+		     );
+	pathPoints.push( pathPoint );
 
-    /*
-    } else {
-	
-	var pathStep = pathLength/pathSegments;
-	// Make a linear path (for testing)
-	for( var i = 0; i < pathSegments; i++ ) {
-	    var t     = i/pathSegments;
-	    //var sin   = Math.sin( Math.PI * 0.5 * t );
-	    //var cos   = Math.cos( Math.PI * 0.5 * t );
-	    pathPoints.push( new THREE.Vector3( 0, // -i * pathStep, // t, //t*100,
-						- pathLength/2 + i * pathStep, //t*100,
-						0
-					      ) 
-			   );
+    }
 
-	}
-    } // END else
-    */
+
     
     
     var extrusionPath = new THREE.Path( pathPoints );
     
     
-    var extrusionGeometry;
-    /*
-    if( !shapedPath ) {
-	extrusionGeometry = new IKRS.ExtrudePathGeometry( extrusionShape, 
-							  extrusionPath,
-							  { size: pathLength, // 300,
-							    // height: 4,      // height segments
-							    curveSegments: 100, // pathSegments, // 3,
-							    triangulate: triangulate
-							    //bevelThickness: 1,
-							    //bevelSize: 2,
-							    //bevelEnabled: false,
-							    //material: 0,
-							    //extrudeMaterial: 1
-							  }
-							);
-    } else {
-    */
-
-	extrusionGeometry = new IKRS.PathDirectedExtrudeGeometry( extrusionShape, 
+    var extrusionGeometry = new IKRS.PathDirectedExtrudeGeometry( extrusionShape, 
 								  extrusionPath,
 								  shapedPath,
 								  { size:                       pathLength,   // 300,
@@ -280,7 +355,7 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 								  }
 								);	
 	
-    //}
+    
 
     /*
     var exrusionMaterial = new THREE.MeshLambertMaterial( 
@@ -311,55 +386,68 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
     var new_mesh = new THREE.Mesh( extrusionGeometry,
 				   new THREE.MeshFaceMaterial( extrusionMaterialArray )
 				 );
-    new_mesh.position.y  = 150;
-    new_mesh.position.z  = -250;
-    new_mesh.overdraw    = true;
-    new_mesh.doubleSided = false;  // true
     
-    // Remove old mesh?
-    //if( this.preview_mesh ) {
-    if( this.preview_meshes.length != 0 ) {
-	
-	var old_mesh = this.preview_meshes[ 0 ];
-	//this.preview_scene.remove( this.preview_mesh );
-	
-	for( var i = 0; i < this.preview_meshes.length; i++ ) {
+    return new_mesh;
+}
+    
+
+/**
+ * This function creates the points for a circle shape (with the given segment count).
+ **/
+IKRS.PreviewCanvasHandler.prototype._createCircleShapePoints = function( circleSegmentCount,
+									 circleRadius,
+									 startAngle,
+									 arc						    
+								       ) {
+    
+    var shapePoints = [];
+
+    // If the mesh is split, the shape will be split into two halfs. 
+    // -> eventually divide the shape's segment count by two.
+    //var localSegmentCount = ( split_shape ? circleSegmentCount/2 : circleSegmentCount );
+    //for( i = 0; i <= localSegmentCount; i++ ) {
+    for( i = 0; i <= circleSegmentCount; i++ ) {
+	var pct = i * (1.0/circleSegmentCount);
+	var angle = startAngle + arc * pct;
+	//if( split_shape ) angle = Math.PI/2.0 + Math.PI * pct;
+	//else              angle = Math.PI/2.0 + Math.PI * pct * 2.0;
+	   
 	    
-	    this.preview_scene.remove( this.preview_meshes[i] );
-
-	}
-	this.preview_meshes =[];
-
-	// Keep old rotation
-	/*
-	new_mesh.rotation.x = this.preview_mesh.rotation.x;
-	new_mesh.rotation.y = this.preview_mesh.rotation.y;
-	
-	new_mesh.scale.x    = this.preview_mesh.scale.x;
-	new_mesh.scale.y    = this.preview_mesh.scale.y;
-	new_mesh.scale.z    = this.preview_mesh.scale.z;
-	*/
-	
-	new_mesh.rotation.x = old_mesh.rotation.x;
-	new_mesh.rotation.y = old_mesh.rotation.y;
-	
-	new_mesh.scale.x    = old_mesh.scale.x;
-	new_mesh.scale.y    = old_mesh.scale.y;
-	new_mesh.scale.z    = old_mesh.scale.z;
-    } else {
-
-	// Scale a bit bigger than 1.0 (looks better with the bezier view)
-	new_mesh.scale.multiplyScalar( 1.5 );
-	
-	new_mesh.rotation.x = -1.38;
-
+	shapePoints.push( new THREE.Vector3( Math.sin( angle ) * circleRadius,
+					     Math.cos( angle ) * circleRadius,
+					     0
+					   )
+			);
     }
+    
+    return shapePoints;
 
-    this.preview_scene.add( new_mesh );
-    //this.preview_mesh = new_mesh;
-    this.preview_meshes.push( new_mesh );
 }
 
+IKRS.PreviewCanvasHandler.prototype._getViewSettings = function() {
+
+    var previewSettings = {};
+
+    if( this.preview_meshes.length > 0 ) {
+
+	var mesh = this.preview_meshes[ 0 ];
+	previewSettings.rotation = mesh.rotation.clone();
+	previewSettings.scale    = mesh.scale.clone();
+
+    } 
+
+    return previewSettings;
+}
+
+IKRS.PreviewCanvasHandler.prototype._clearScene = function() {
+
+    // Clear scene
+    for( var i = 0; i < this.preview_meshes.length; i++ ) {	    
+	this.preview_scene.remove( this.preview_meshes[i] );
+    }
+    this.preview_meshes = [];
+
+}
 
 IKRS.PreviewCanvasHandler.prototype.render = function() {
     this.preview_renderer.render( this.preview_scene, this.preview_camera ); 

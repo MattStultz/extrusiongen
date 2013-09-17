@@ -75,6 +75,11 @@ IKRS.PathDirectedExtrudeGeometry = function( shape,
 	var shapeScaleX        = (shapeBounds.getWidth()  + options.perpendicularHullStrength) / shapeBounds.getWidth();   // 1.2
 	var shapeScaleY        = (shapeBounds.getHeight() + options.perpendicularHullStrength) / shapeBounds.getHeight();  // 1.2
 	
+	// MHMMM ... this only works if the cicular shape angle is PI (half arc)
+	if( !options.closeShape )
+	    shapeScaleY        = (shapeBounds.getHeight() + options.perpendicularHullStrength/2) / shapeBounds.getHeight();
+	    //shapeScaleY /= 2.0;
+	
 	var scaledShapePoints  = [];
 	for( var i = 0; i < shapePoints.length; i++ ) {
 
