@@ -70,7 +70,7 @@ ZipFileExporter = {
 
 	// Convert THREE.js geometry (object) to STL (string)
 	//var stlData = STLBuilder.buildSTL( data.geometry );
-	var stlData = STLBuilder.buildSTLFromMeshArray( data.meshes ); 
+	//var stlData = STLBuilder.buildSTLFromMeshArray( data.meshes ); 
 
 	var zip = new JSZip();
 	
@@ -88,14 +88,17 @@ ZipFileExporter = {
 		);
 	*/
 
-	// Add STL model to zip
-	zip.file( "model.stl",
-		  stlData,
-		  { base64: false,
-		    binary: false,
-		    type: "application/sla"
-		  }
-		);
+	for( var i = 0; i < data.meshes.length; i++ ) {
+	    // Add STL model to zip
+	    var stlData = STLBuilder.buildSTL( data.meshes[i].geometry );
+	    zip.file( "model_" + i + ".stl",
+		      stlData,
+		      { base64: false,
+			binary: false,
+			type: "application/sla"
+		      }
+		    );
+	}
 	
 	// Add bezier path (JSON) to zip
 	var bezierJSON = data.bezierPath.toJSON( true );
