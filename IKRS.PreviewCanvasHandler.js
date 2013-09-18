@@ -9,24 +9,26 @@ IKRS.PreviewCanvasHandler = function( bezierCanvasHandler,
 				      preview_canvas_height 
 				    ) {
 
-// var preview_canvas_width  = 512;
-// var preview_canvas_height = 768;
 
     this.bezierCanvasHandler = bezierCanvasHandler;
 
     this.preview_canvas   = document.getElementById("preview_canvas");
     this.preview_renderer = new THREE.WebGLRenderer( { "canvas" : this.preview_canvas } );
 
-    //this.preview_mesh; // will be initialized later
+    // An array to store the meshes in.
     this.preview_meshes = [];
     this.preview_scene = new THREE.Scene(); 
     this.preview_camera = new THREE.PerspectiveCamera( 75, 
 						       preview_canvas_width/preview_canvas_height,  
-						       0.1, 
-						       2000 
+						       0.1,  // 0.1, 
+						       8000 // 2000   // max draw depth (on z)
 						     ); 
     // Add custom settings to the camera to we can store the mouse movement inside.
-    this.preview_camera.ikrsSettings = { rotation: new THREE.Vector4(0,0,0,0) };
+    this.preview_camera.ikrsSettings = { 
+	lastRotationStep: new THREE.Vector2(0,0),
+	rotation:         new THREE.Vector4(0,0,0,0),
+	rotationRadius:   500.0
+    };
     // THIS DEPENDS ON THE SCENE. ALIGN CAMERA AT THE END (AFTER ADDING THE MESHES)!
     //this._setCameraPositionFromLocalSettings();
     
@@ -47,21 +49,16 @@ IKRS.PreviewCanvasHandler = function( bezierCanvasHandler,
     this.preview_canvas.onmousemove = this.preview_mouseMoveHandler;
 
     
-    //window.alert( "preview_canvas.width=" +  preview_canvas.width + ", preview_canvas.height=" + preview_canvas.height );
     this.preview_renderer.setSize( preview_canvas_width, 
 				   preview_canvas_height 
 				 ); 
     
-    //this.bezierCanvas
 
     document.body.appendChild( this.preview_renderer.domElement );
 
 
     // Create a backward-link to this so the canvas events have access!
     this.preview_canvas.previewCanvasHandler = this;
-    
-    // TEMP
-    //this.i = 0;
 
 }
 
@@ -70,6 +67,30 @@ IKRS.PreviewCanvasHandler.prototype.constructor = IKRS.PreviewCanvasHandler;
 
 IKRS.PreviewCanvasHandler.prototype.getMeshes = function() {
     return this.preview_meshes;
+}
+
+IKRS.PreviewCanvasHandler.prototype.increaseZoomFactor = function() {
+    
+    // Would the increase zoom hit the max draw range? (the camera frustum far plane)
+    if( this.preview_camera.ikrsSettings.rotationRadius * 1.2 >= this.preview_camera.far )
+	return false; 
+
+    this.preview_camera.ikrsSettings.rotationRadius *= 1.2;
+    this._setCameraPositionFromLocalSettings();
+    
+    return true;
+}
+
+IKRS.PreviewCanvasHandler.prototype.decreaseZoomFactor = function() {
+
+    // Would the increase zoom hit the min draw range? (the camera frustum near plane)
+    if( this.preview_camera.ikrsSettings.rotationRadius * 1.2 <= this.preview_camera.near )
+	return false; 
+
+    this.preview_camera.ikrsSettings.rotationRadius /= 1.2;
+    this._setCameraPositionFromLocalSettings();
+
+    return true;
 }
 
 IKRS.PreviewCanvasHandler.prototype.preview_mouseMoveHandler = function ( e ) {
@@ -85,84 +106,12 @@ IKRS.PreviewCanvasHandler.prototype.preview_mouseMoveHandler = function ( e ) {
 					    );
       //var xAxis = new THREE.Vector3( 1, 0, 0 ); // This is already normalized
       //var yAxis = new THREE.Vector3( 0, 0, 1 ); // This is already normalized
-      for( var i = 0; i < previewCanvasHandler.preview_meshes.length; i++ ) {
 
-	  //this.previewCanvasHandler.preview_meshes[i].rotation.y += (0.01 * (this.previewCanvasHandler.latestMouseDragPosition.x - e.pageX)); 
-	  //this.previewCanvasHandler.preview_meshes[i].rotation.x += (0.01 * (this.previewCanvasHandler.latestMouseDragPosition.y - e.pageY)); 
-	  //this.previewCanvasHandler.preview_meshes[i].rotation.y += rotationAmount.y; 
-	  //this.previewCanvasHandler.preview_meshes[i].rotation.x += rotationAmount.x;
-
-	  var mesh = this.previewCanvasHandler.preview_meshes[i];
 	  
-	  //mesh.rotation.y += rotationAmount.x; 
-	  //mesh.rotation.x += rotationAmount.y;
-	  
-
-	  // Fist add the rotation amount to the mesh's internal rotation setting.
-	  //mesh.ikrsSettings.rotation.x += rotationAmount.x;
-	  //mesh.ikrsSettings.rotation.y += rotationAmount.y;
-
-	  /*
-	  var rotationObjectMatrix_X = new THREE.Matrix4();	  
-	  rotationObjectMatrix_X.makeRotationAxis(yAxis.normalize(), mesh.ikrsSettings.rotation.y); //rotationAmount.y);
-	  
-	  //mesh.matrix.multiply( rotationObjectMatrix_X );
-	  mesh.matrix = rotationObjectMatrix_X;
-	  mesh.rotation.setEulerFromRotationMatrix(mesh.matrix);
-	  */
-
-	  /*
-	  var rotationObjectMatrix_Y = new THREE.Matrix4();
-	  rotationObjectMatrix_Y.makeRotationAxis(yAxis.normalize(), rotationAmount.x);
-	  
-	  mesh.matrix.multiply( rotationObjectMatrix_Y );
-	  mesh.rotation.setEulerFromRotationMatrix(mesh.matrix);
-	  */
-      }
 
       this.previewCanvasHandler.preview_camera.ikrsSettings.rotation.add( rotationAmount );
       this.previewCanvasHandler._setCameraPositionFromLocalSettings();
-      /*
-      if( this.previewCanvasHandler.preview_meshes.length > 0 ) {
-	  
-	  var target = this.previewCanvasHandler.preview_meshes[0];
-	  var targetPosition = target.position; //new THREE.Vector3(0,0,0);
-	  var radius = 500.0;
-	  
-	  var newCameraOffset_X = new THREE.Vector3( Math.cos( this.previewCanvasHandler.preview_camera.ikrsSettings.rotation.x ),
-						     Math.sin( this.previewCanvasHandler.preview_camera.ikrsSettings.rotation.x ),
-						     0 
-						   );
-	  var newCameraOffset_Y = new THREE.Vector3( Math.cos( this.previewCanvasHandler.preview_camera.ikrsSettings.rotation.y ),
-						     Math.sin( this.previewCanvasHandler.preview_camera.ikrsSettings.rotation.y ),
-						     0 
-						   );
-
-	  this.previewCanvasHandler.i++;
-	  //if( this.previewCanvasHandler.i%100 == 0 )
-	      //window.alert( "newCameraOffset=(" + newCameraOffset.x + ", " + newCameraOffset.y + ", " + newCameraOffset.z + "), mesh_rotation=" + JSON.stringify(target.rotation) + ", mesh.position=" + JSON.stringify(mesh.position) + ", totalMoveAmount=(" + mesh.ikrsSettings.rotation.x + ", " + mesh.ikrsSettings.rotation.y + ")" );
-
-	  //this.previewCanvasHandler.preview_camera.position.x = targetPosition.x + newCameraOffset.x * radius;    
-	  //this.previewCanvasHandler.preview_camera.position.z = targetPosition.y + newCameraOffset.y * radius;
-	  this.previewCanvasHandler.preview_camera.position.x = targetPosition.x + newCameraOffset_X.x * radius;    
-	  this.previewCanvasHandler.preview_camera.position.y = targetPosition.y + newCameraOffset_X.y * radius;
-
-	  //this.previewCanvasHandler.preview_camera.position.z = targetPosition.z;
-	  this.previewCanvasHandler.preview_camera.position.y = targetPosition.y + newCameraOffset_Y.x * radius;    
-	  this.previewCanvasHandler.preview_camera.position.z = targetPosition.z + (newCameraOffset_Y.y + newCameraOffset_X.y) * radius;
-	  
-	  this.previewCanvasHandler.preview_camera.lookAt( targetPosition );
-	  
-	  // Also move the point light with the camera
-	  
-	  this.previewCanvasHandler.preview_pointLight.position.set( this.previewCanvasHandler.preview_camera.position.x,
-								     this.previewCanvasHandler.preview_camera.position.y,
-								     this.previewCanvasHandler.preview_camera.position.z
-							  );
-	  
-
-      }
-      */
+      
 
       this.previewCanvasHandler.latestMouseDragPosition = new THREE.Vector2( e.pageX, e.pageY ); 
 
@@ -174,37 +123,45 @@ IKRS.PreviewCanvasHandler.prototype._setCameraPositionFromLocalSettings = functi
     
     //window.alert( JSON.stringify(this.preview_camera.ikrsSettings) );
 
-    //if( this.preview_meshes.length > 0 ) {
-	var newCameraOffset_X = new THREE.Vector3( Math.cos( this.preview_camera.ikrsSettings.rotation.x ),
-						   Math.sin( this.preview_camera.ikrsSettings.rotation.x ),
-						   0 
-						 );
-	var newCameraOffset_Y = new THREE.Vector3( Math.cos( this.preview_camera.ikrsSettings.rotation.y ),
-						   Math.sin( this.preview_camera.ikrsSettings.rotation.y ),
-						   0 
-						 );
+    var newCameraOffset_X = new THREE.Vector3( Math.cos( this.preview_camera.ikrsSettings.rotation.x ),
+					       Math.sin( this.preview_camera.ikrsSettings.rotation.x ),
+					       0 
+					     );
+    var newCameraOffset_Y = new THREE.Vector3( Math.cos( this.preview_camera.ikrsSettings.rotation.y ),
+					       Math.sin( this.preview_camera.ikrsSettings.rotation.y ),
+					       0 
+					     );
 
-	
-	//var target = this.preview_meshes[0];
-	var targetPosition = new THREE.Vector3(0,0,0); // target.position; 
-	var radius = 500.0;
+    
+    //var target = this.preview_meshes[0];
+    var targetPosition = new THREE.Vector3(0,0,0); // target.position; 
+    var radius         = this.preview_camera.ikrsSettings.rotationRadius; // 500.0;
 
-	this.preview_camera.position.x = targetPosition.x + newCameraOffset_X.x * radius;    
-	this.preview_camera.position.y = targetPosition.y + newCameraOffset_X.y * radius;
+    this.preview_camera.position.x = targetPosition.x + newCameraOffset_X.x * radius;    
+    this.preview_camera.position.y = targetPosition.y + newCameraOffset_X.y * radius;
 
-	//this.previewCanvasHandler.preview_camera.position.z = targetPosition.z;
-	this.preview_camera.position.y = targetPosition.y + newCameraOffset_Y.x * radius;    
-	this.preview_camera.position.z = targetPosition.z + (newCameraOffset_Y.y + newCameraOffset_X.y) * radius;
-	
-	this.preview_camera.lookAt( targetPosition );
-	
-	// Also move the point light with the camera
-	
-	this.preview_pointLight.position.set( this.preview_camera.position.x,
-					      this.preview_camera.position.y,
-					      this.preview_camera.position.z
-					    );
-    //}
+    //this.previewCanvasHandler.preview_camera.position.z = targetPosition.z;
+    this.preview_camera.position.y = targetPosition.y + newCameraOffset_Y.x * radius;    
+    this.preview_camera.position.z = targetPosition.z + (newCameraOffset_Y.y + newCameraOffset_X.y) * radius;
+    
+    this.preview_camera.lookAt( targetPosition );
+    
+    // Also move the point light with the camera	
+    this.preview_pointLight.position.set( this.preview_camera.position.x,
+					  this.preview_camera.position.y,
+					  this.preview_camera.position.z
+					);
+
+    
+    /*
+      var rotationObjectMatrix_X = new THREE.Matrix4();	  
+      rotationObjectMatrix_X.makeRotationAxis(yAxis.normalize(), mesh.ikrsSettings.rotation.y); //rotationAmount.y);
+      
+      //mesh.matrix.multiply( rotationObjectMatrix_X );
+      mesh.matrix = rotationObjectMatrix_X;
+      mesh.rotation.setEulerFromRotationMatrix(mesh.matrix);
+    */
+    
 }
 
 IKRS.PreviewCanvasHandler.prototype.preview_mouseDownHandler = function( e ) {
@@ -220,19 +177,13 @@ IKRS.PreviewCanvasHandler.prototype.preview_mouseUpHandler = function( e ) {
 
 
 
-
-
-
-
 IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 
 
-    // Fetch bezier path from bezier canvas handler
+    // Fetch bezier path from bezier canvas handler.
     var shapedPath           = this.bezierCanvasHandler.getBezierPath();
-    //var shapedPathBounds     = shapedPath.computeBoundingBox();
-
-    //var shapePoints          = [];
-    // Make a circle
+ 
+    // Fetch segment settings.
     var circleSegmentCount   = document.forms["mesh_form"].elements["shape_segments"].value; 
     var pathSegments         = document.forms["mesh_form"].elements["path_segments"].value;
 
@@ -255,7 +206,6 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
     var triangulate           = document.forms["mesh_form"].elements["triangulate"].checked; 
     var split_shape           = document.forms["mesh_form"].elements["split_shape"].checked;
 
-    //window.alert( "wireframe=" + wireFrame );
 
     // Convert numeric text values to numbers!
     mesh_hull_strength  = parseInt( mesh_hull_strength );

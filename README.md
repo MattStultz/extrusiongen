@@ -7,6 +7,17 @@ Path Extrusion Generator
 @version  0.1.0
 
 
+
+Plan
+----
+- Namen finden
+    + Domain anlegen
+- Propaganda
+- 
+
+
+
+
 TODO
 ----
 [2013-09-16]
