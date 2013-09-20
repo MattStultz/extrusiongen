@@ -87,6 +87,44 @@ IKRS.CubicBezierCurve.prototype.moveCurvePoint = function( pointID,           //
 	this.updateArcLengths();
 }
 
+/*
+IKRS.CubicBezierCurve.prototype.scale = function( anchor,  // Vector2
+						  scaling  // Vector2
+						) {
+    IKRS.CubicBezierCurve._scalePoint( this.getStartPoint(),
+				       anchor,
+				       scaling
+				     );
+    IKRS.CubicBezierCurve._scalePoint( this.getEndPoint(),
+				       anchor,
+				       scaling
+				     );
+    IKRS.CubicBezierCurve._scalePoint( this.getStartControlPoint(),
+				       anchor,
+				       scaling
+				     );
+    IKRS.CubicBezierCurve._scalePoint( this.getEndControlPoint(),
+				       anchor,
+				       scaling
+				     );
+    this.updateArcLengths();
+}
+*/
+
+IKRS.CubicBezierCurve._scalePoint = function( point,   // Vector2
+					      anchor,  // Vector2
+					      scaling  // Vector2
+					    ) {
+    // Move point to origin
+    point.sub( anchor );
+    // Apply scaling
+    point.setX( point.x * scaling.x );
+    point.setY( point.y * scaling.y );
+    // Move back to original position
+    point.add( anchor );
+    
+}
+
 IKRS.CubicBezierCurve.prototype.getLength = function() {
     return this.arcLength;
 }

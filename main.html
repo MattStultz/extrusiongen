@@ -126,7 +126,7 @@ tooltip:hover:before{
 <body> 
 
 <div id="version_tag">
-  v0.1.3 built 20130918#0
+  v0.1.4 built 20130919#0
 </div>
 
 <canvas 
@@ -200,11 +200,11 @@ tooltip:hover:before{
   <td>
     <table border="0" style="padding: 0px; spacing: 0px;" width="100%">
       <tr>
-	<td align="left"><input type="number" id="shape_segments" name="shape_segments" value="80" class="tooltip" title="The number of vertices on the vertical shape (on the circle). More vertices make the mesh more accurate but it renders slower." size="4" />
+	<td align="left"><input type="number" id="shape_segments" name="shape_segments" value="80" class="tooltip" title="The number of vertices on the vertical shape (on the circle). More vertices make the mesh more accurate but it renders slower." size="4" style="width: 35px;" />
 	  <label for="shape_segments">Shape</label>
 	</td>
 
-	<td align="right"><input type="number" id="path_segments" name="path_segments" value="80" class="tooltip" title="The number of vertices on the horizontal shape (on the outer path). More vertices make the mesh more accurate but it renders slower." size="4"/>
+	<td align="right"><input type="number" id="path_segments" name="path_segments" value="80" class="tooltip" title="The number of vertices on the horizontal shape (on the outer path). More vertices make the mesh more accurate but it renders slower." size="4" style="width: 35px;" />
 	  <label for="path_segments">Path</label>
 	</td>
 	
@@ -244,7 +244,7 @@ tooltip:hover:before{
 					     (only if hollow)
   </td>
   <td valign="top">
-        <input type="number" id="mesh_hull_strength" name="mesh_hull_strength" value="25" class="tooltip" title="..." onchange="javascript:bezierCanvasHandler.redraw();" onkeyup="javascript:bezierCanvasHandler.redraw();preview_rebuild_model();" size="4" onchange="preview_rebuild_model();" />px
+        <input type="number" id="mesh_hull_strength" name="mesh_hull_strength" value="25" class="tooltip" title="..." onchange="javascript:bezierCanvasHandler.redraw();" onkeyup="javascript:bezierCanvasHandler.redraw();preview_rebuild_model();" size="4" style="width: 35px;" onchange="preview_rebuild_model();" />px
          
   </td>
 </tr>
@@ -321,7 +321,7 @@ tooltip:hover:before{
     <label for="stl_filename">Filename</label>
     <input type="text" id="stl_filename" name="stl_filename" value="my_extrusion.stl" />
     <input type="button" value="Save STL ..." onclick="STLBuilder.saveSTL( getPreviewMeshes(), document.forms['stl_form'].elements['stl_filename'].value );" /> 
-    <span class="tooltip" title="Note: split meshes result in two unconnected objects; they will be stored as a sequence of objects in the STL file. Not all programs support this!" style="font-size: 22pt;">&#x26a0;</span>
+    <span class="tooltip" title="Note: split meshes result in two unconnected objects; they will be stored as a sequence of objects in the STL file. Not all programs are capable to read this!" style="font-size: 22pt;">&#x26a0;</span>
   </form>
     
 </div>
@@ -343,6 +343,9 @@ tooltip:hover:before{
 </form>
 
 </div>
+
+
+<button style="position: absolute; left: 10px; top: 788px;" onclick="debug();">DEBUG</button>
 
 
 <!-- <script language="Javascript" type="text/javascript" src="prototype-1.6.0.3.js"></script> -->
@@ -537,6 +540,10 @@ window.onmousewheel = document.onmousewheel = mouseWheelHandler;
 // window.previewCanvasHandler = this;
 
 
+
+function debug() {
+	window.alert( "cameraRotation=" + JSON.stringify(this.previewCanvasHandler.preview_camera.ikrsSettings.rotation) );
+}
 
 </script>
 

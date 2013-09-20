@@ -265,7 +265,50 @@ IKRS.BezierPath.prototype.splitAt = function( curveIndex,
     return true;
 }
 
-// IKRS.BezierPath.prototype.locate
+IKRS.BezierPath.prototype.scale = function( anchor,  // Vector2
+					    scaling  // Vector2
+					  ) {
+    
+    for( var i = 0; i < this.bezierCurves.length; i++ ) {
+
+	var curve = this.bezierCurves[ i ];
+	
+	IKRS.BezierPath._scalePoint( curve.getStartPoint(),        anchor, scaling );
+	IKRS.BezierPath._scalePoint( curve.getStartControlPoint(), anchor, scaling );
+	IKRS.BezierPath._scalePoint( curve.getEndControlPoint(),   anchor, scaling );
+	// Do NOT scale the end point here!
+	// Don't forget that the curves are connected and on curve's end point
+	// the the successor's start point (same instance)!
+
+    }
+    
+    // Finally move the last end point (was not scaled yet)
+    if( this.bezierCurves.length > 0 ) {
+
+	IKRS.BezierPath._scalePoint( this.bezierCurves[ this.bezierCurves.length-1 ].getEndPoint(),
+				     anchor,
+				     scaling
+				   );
+    }
+    
+    this.updateArcLengths();
+    
+}
+
+
+IKRS.BezierPath._scalePoint = function( point,   // Vector2
+					anchor,  // Vector2
+					scaling  // Vector2
+				      ) {
+    // Move point to origin
+    point.sub( anchor );
+    // Apply scaling
+    point.setX( point.x * scaling.x );
+    point.setY( point.y * scaling.y );
+    // Move back to original position
+    point.add( anchor );
+    
+}
 
 IKRS.BezierPath.prototype.getPointAt = function( u ) {
 

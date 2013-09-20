@@ -26,7 +26,7 @@ IKRS.PreviewCanvasHandler = function( bezierCanvasHandler,
     // Add custom settings to the camera to we can store the mouse movement inside.
     this.preview_camera.ikrsSettings = { 
 	lastRotationStep: new THREE.Vector2(0,0),
-	rotation:         new THREE.Vector4(0,0,0,0),
+	rotation:         new THREE.Vector4(1.57,3.52,0,0),
 	rotationRadius:   500.0
     };
     // THIS DEPENDS ON THE SCENE. ALIGN CAMERA AT THE END (AFTER ADDING THE MESHES)!
@@ -60,6 +60,8 @@ IKRS.PreviewCanvasHandler = function( bezierCanvasHandler,
     // Create a backward-link to this so the canvas events have access!
     this.preview_canvas.previewCanvasHandler = this;
 
+    
+    this._setCameraPositionFromLocalSettings();
 }
 
 IKRS.PreviewCanvasHandler.prototype = new IKRS.Object();
@@ -122,7 +124,7 @@ IKRS.PreviewCanvasHandler.prototype.preview_mouseMoveHandler = function ( e ) {
 IKRS.PreviewCanvasHandler.prototype._setCameraPositionFromLocalSettings = function() {
     
     //window.alert( JSON.stringify(this.preview_camera.ikrsSettings) );
-
+    
     var newCameraOffset_X = new THREE.Vector3( Math.cos( this.preview_camera.ikrsSettings.rotation.x ),
 					       Math.sin( this.preview_camera.ikrsSettings.rotation.x ),
 					       0 
@@ -133,14 +135,13 @@ IKRS.PreviewCanvasHandler.prototype._setCameraPositionFromLocalSettings = functi
 					     );
 
     
-    //var target = this.preview_meshes[0];
     var targetPosition = new THREE.Vector3(0,0,0); // target.position; 
     var radius         = this.preview_camera.ikrsSettings.rotationRadius; // 500.0;
 
     this.preview_camera.position.x = targetPosition.x + newCameraOffset_X.x * radius;    
     this.preview_camera.position.y = targetPosition.y + newCameraOffset_X.y * radius;
 
-    //this.previewCanvasHandler.preview_camera.position.z = targetPosition.z;
+
     this.preview_camera.position.y = targetPosition.y + newCameraOffset_Y.x * radius;    
     this.preview_camera.position.z = targetPosition.z + (newCameraOffset_Y.y + newCameraOffset_X.y) * radius;
     
@@ -151,15 +152,27 @@ IKRS.PreviewCanvasHandler.prototype._setCameraPositionFromLocalSettings = functi
 					  this.preview_camera.position.y,
 					  this.preview_camera.position.z
 					);
+					
+
+    /*
+    if( !this.preview_camera.ikrsSettings.lastRotationStep )
+	return;
+    var deltaX = this.preview_camera.lastRotationStep.x * 0.1;
+    var deltaY = this.preview_camera.lastRotationStep.y * 0.1;
+    if( deltaX == 0 && deltaY == 0 )
+	return;
 
     
-    /*
-      var rotationObjectMatrix_X = new THREE.Matrix4();	  
-      rotationObjectMatrix_X.makeRotationAxis(yAxis.normalize(), mesh.ikrsSettings.rotation.y); //rotationAmount.y);
-      
-      //mesh.matrix.multiply( rotationObjectMatrix_X );
-      mesh.matrix = rotationObjectMatrix_X;
-      mesh.rotation.setEulerFromRotationMatrix(mesh.matrix);
+    
+    var xAxis = new THREE.Vector3(1,0,0);
+    var yAxis = new THREE.Vector3(0,1,0);
+    
+    var rotationObjectMatrix_X = new THREE.Matrix4();	  
+    rotationObjectMatrix_X.makeRotationAxis( xAxis.normalize(), deltaX );
+    
+    //mesh.matrix.multiply( rotationObjectMatrix_X );
+    mesh.matrix = rotationObjectMatrix_X;
+    mesh.rotation.setEulerFromRotationMatrix(mesh.matrix);
     */
     
 }
@@ -496,15 +509,10 @@ IKRS.PreviewCanvasHandler.prototype._createCircleShapePoints = function( circleS
 
     // If the mesh is split, the shape will be split into two halfs. 
     // -> eventually divide the shape's segment count by two.
-    //var localSegmentCount = ( split_shape ? circleSegmentCount/2 : circleSegmentCount );
-    //for( i = 0; i <= localSegmentCount; i++ ) {
     for( i = 0; i <= circleSegmentCount; i++ ) {
+
 	var pct = i * (1.0/circleSegmentCount);
-	var angle = startAngle + arc * pct;
-	//if( split_shape ) angle = Math.PI/2.0 + Math.PI * pct;
-	//else              angle = Math.PI/2.0 + Math.PI * pct * 2.0;
-	   
-	    
+	var angle = startAngle + arc * pct;	    
 	shapePoints.push( new THREE.Vector3( Math.sin( angle ) * circleRadius,
 					     Math.cos( angle ) * circleRadius,
 					     0

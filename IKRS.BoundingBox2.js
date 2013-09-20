@@ -50,6 +50,28 @@ IKRS.BoundingBox2.prototype.getHeight = function() {
     return this.yMax - this.yMin;
 }
 
+IKRS.BoundingBox2.prototype.getLeftUpperPoint = function() {
+    return new THREE.Vector2( this.xMin, this.yMin );
+}
+
+IKRS.BoundingBox2.prototype.getRightUpperPoint = function() {
+    return new THREE.Vector2( this.xMax, this.yMin );
+}
+
+IKRS.BoundingBox2.prototype.getRightLowerPoint = function() {
+    return new THREE.Vector2( this.xMax, this.yMax );
+}
+
+IKRS.BoundingBox2.prototype.getLeftLowerPoint = function() {
+    return new THREE.Vector2( this.xMin, this.yMax );
+}
+
+
+IKRS.BoundingBox2.prototype._toString = function() {
+    return "[IKRS.BoundingBox2]={ xMin=" + this.xMin + ", xMax=" + this.xMax + ", yMin=" + this.yMin + ", yMax=" + this.yMax + ", width=" + this.getWidth() + ", height=" + this.getHeight() + " }";
+}
+
+
 // A static function
 IKRS.BoundingBox2.computeFromPoints = function( points ) {
 
@@ -77,6 +99,7 @@ IKRS.BoundingBox2.computeFromPoints = function( points ) {
     return new IKRS.BoundingBox2( xMin, xMax, yMin, yMax );
 
 }
+
 
 
 
