@@ -26,9 +26,11 @@ IKRS.PreviewCanvasHandler = function( bezierCanvasHandler,
     // Add custom settings to the camera to we can store the mouse movement inside.
     this.preview_camera.ikrsSettings = { 
 	lastRotationStep: new THREE.Vector2(0,0),
-	rotation:         new THREE.Vector4(1.57,3.52,0,0),
+	rotation:         new THREE.Vector4(1.57,3.92,0,0),
 	rotationRadius:   500.0
     };
+    this.preview_camera.position = new THREE.Vector3( 0.39816335536663167, -376.42747328364794,    170.90660641346517 );
+    this.preview_camera.rotation = new THREE.Vector3( 1.144602197912255,   0.0009631226746176703, -0.0021213060976673294 );
     // THIS DEPENDS ON THE SCENE. ALIGN CAMERA AT THE END (AFTER ADDING THE MESHES)!
     //this._setCameraPositionFromLocalSettings();
     
@@ -350,6 +352,8 @@ IKRS.PreviewCanvasHandler.prototype._addMeshToScene = function( new_mesh,
     this.preview_scene.add( new_mesh );
     this.preview_meshes.push( new_mesh );
 
+
+    // this._setCameraPositionFromLocalSettings();
 }
 
 IKRS.PreviewCanvasHandler.prototype._buildMeshFromSettings = function( shapedPath,

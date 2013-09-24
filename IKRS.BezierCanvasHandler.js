@@ -74,8 +74,8 @@ IKRS.BezierCanvasHandler.POINT_ID_LEFT_LOWER_BOUND  = -1004;
 IKRS.BezierCanvasHandler.prototype = new IKRS.Object();
 IKRS.BezierCanvasHandler.prototype.constructor = IKRS.BezierCanvasHandler;
 
-IKRS.BezierCanvasHandler.prototype.drawOffset = new THREE.Vector2( 256, 384 );
-IKRS.BezierCanvasHandler.prototype.zoomFactor = 1.0;
+IKRS.BezierCanvasHandler.prototype.drawOffset = new THREE.Vector2( 324, 525 ); //256, 384 );
+IKRS.BezierCanvasHandler.prototype.zoomFactor = 1.4;
 // 0: start point
 // 1: start control point
 // 2: end control point
@@ -120,6 +120,7 @@ IKRS.BezierCanvasHandler.prototype.redraw = function() {
     }
 
     // Draw coordinate system (global crosshair)?
+    // This form element is deprecated!
     if( document.forms["bezier_form"] &&
 	document.forms["bezier_form"].elements["draw_coordinate_system"] &&
 	document.forms["bezier_form"].elements["draw_coordinate_system"].checked ) {
@@ -141,6 +142,7 @@ IKRS.BezierCanvasHandler.prototype.redraw = function() {
 
     var drawTangents = document.forms["bezier_form"].elements["draw_tangents"].checked;
     
+    /*
     this.drawBezierPath( this.context, 
 			 this.bezierPath, 
 			 this.drawOffset,
@@ -152,7 +154,7 @@ IKRS.BezierCanvasHandler.prototype.redraw = function() {
 			 
 			 drawTangents
 		       );
-
+		       */
 
     var boundingBox = this.bezierPath.computeBoundingBox();
 
@@ -172,10 +174,39 @@ IKRS.BezierCanvasHandler.prototype.redraw = function() {
 	
     }
 
+    // Fill inner shape?
+    // Note: always fill if the bounding box is drawn, too.
+    if( document.forms["bezier_form"].elements["draw_bounding_box"].checked ) {
+
+	// Fill inner shape?
+	var rightLowerPoint = boundingBox.getRightLowerPoint();
+	this.context.fillStyle   = "#e8e8e8";
+	this.context.beginPath();
+	this.context.moveTo( rightLowerPoint.x * this.zoomFactor + this.drawOffset.x, 
+			     rightLowerPoint.y * this.zoomFactor + this.drawOffset.y
+			   );
+	for( var c = 0; c < this.getBezierPath().getCurveCount(); c++ ) {
+
+	    var curve = this.getBezierPath().getCurveAt( c );
+	    
+	    for( var s = 0; s < curve.segmentCache.length; s++ ) {
+
+		var segment = curve.segmentCache[ s ];
+		this.context.lineTo( segment.x * this.zoomFactor + this.drawOffset.x,
+				     segment.y * this.zoomFactor + this.drawOffset.y
+				   );
+
+	    }
+	    
+	}
+	this.context.closePath();
+	this.context.fill();
+
+    }
+    
     // Draw the bounding box?
     if( document.forms["bezier_form"].elements["draw_bounding_box"].checked ) {
 
-	//var boundingBox = this.bezierPath.computeBoundingBox();
 	this.context.strokeStyle = "#888888";
 	this.context.lineWidth   = 0.5;
 	this.context.strokeRect( boundingBox.xMin * this.zoomFactor + this.drawOffset.x,
@@ -216,7 +247,19 @@ IKRS.BezierCanvasHandler.prototype.redraw = function() {
 	this.context.stroke();
 	
 
-    }
+    } // END if [draw bounding box]
+
+    this.drawBezierPath( this.context, 
+			 this.bezierPath, 
+			 this.drawOffset,
+			 this.zoomFactor,
+			 true,          // drawStartPoint
+			 true,          // drawEndPoint
+			 drawTangents,  // drawStartControlPoint
+			 drawTangents,  // drawEndControlPoint
+			 
+			 drawTangents
+		       );
 }
 
 IKRS.BezierCanvasHandler.prototype._drawRulers = function( context,

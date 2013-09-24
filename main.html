@@ -126,7 +126,7 @@ tooltip:hover:before{
 <body> 
 
 <div id="version_tag">
-  v0.1.5 built 20130924#0
+  v0.1.6 built 20130924#1
 </div>
 
 <canvas 
@@ -424,8 +424,6 @@ tooltip:hover:before{
     return this.bezierCanvasHandler.bezierPath;
   }
 
-  //window.alert( JSON.stringify(IKRS) );
-  //window.alert( "AA" );
   this.bezierCanvasHandler = new IKRS.BezierCanvasHandler();
 
   
@@ -442,7 +440,7 @@ var previewCanvasHandler = new IKRS.PreviewCanvasHandler( this.bezierCanvasHandl
 							  );
 
 previewCanvasHandler.preview_rebuild_model();
-previewCanvasHandler.preview_camera.position.z = 500;
+// previewCanvasHandler.preview_camera.position.z = 500;
 
 
 
@@ -542,7 +540,12 @@ window.onmousewheel = document.onmousewheel = mouseWheelHandler;
 
 
 function debug() {
-	window.alert( "cameraRotation=" + JSON.stringify(this.previewCanvasHandler.preview_camera.ikrsSettings.rotation) );
+	window.alert( 
+	"camera.ikrsSettings.rotation=" + JSON.stringify(this.previewCanvasHandler.preview_camera.ikrsSettings.rotation) + ",\n" + 
+	"camera.ikrsSettings.position=" + JSON.stringify(this.previewCanvasHandler.preview_camera.ikrsSettings.position) + ",\n" +
+	"camera.rotation=" + JSON.stringify(this.previewCanvasHandler.preview_camera.rotation) + ",\n" +
+	"camera.position=" + JSON.stringify(this.previewCanvasHandler.preview_camera.position) + "\n"
+	);
 }
 
 </script>
