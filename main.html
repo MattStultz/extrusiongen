@@ -126,7 +126,7 @@ tooltip:hover:before{
 <body> 
 
 <div id="version_tag">
-  v0.1.6 built 20130924#1
+  v0.1.7 built 20130924#2
 </div>
 
 <canvas 
@@ -240,17 +240,17 @@ tooltip:hover:before{
 <tr>
   <td></td>
   <td>
-        <input type="checkbox" id="build_negative_mesh" name="build_negative_mesh" onchange="preview_rebuild_model();" />
+        <input type="checkbox" id="build_negative_mesh" name="build_negative_mesh" class="tooltip" title="Set this value if you want to have a hollow shape to be generated. The strength of the hollow hull is specified by the 'Mesh Hull Strength' setting." onchange="document.getElementById('mesh_hull_strength').disabled=(document.getElementById('build_negative_mesh').checked?'':'disabled'); preview_rebuild_model();"/>
           <label for="build_negative_mesh">Hollow</label>
   </td>
 </tr>
 
 <tr>
-  <td> <label for="mesh_hull_strength">Mesh&nbsp;hull&nbsp;strength:</label><br/>
+  <td> <label for="mesh_hull_strength">Mesh&nbsp;Hull&nbsp;Strength:</label><br/>
 					     (only if hollow)
   </td>
   <td valign="top">
-        <input type="number" id="mesh_hull_strength" name="mesh_hull_strength" value="25" class="tooltip" title="..." onchange="javascript:bezierCanvasHandler.redraw();" onkeyup="javascript:bezierCanvasHandler.redraw();preview_rebuild_model();" size="4" style="width: 35px;" onchange="preview_rebuild_model();" />px
+        <input type="number" id="mesh_hull_strength" name="mesh_hull_strength" value="25" class="tooltip" title="..." onchange="javascript:bezierCanvasHandler.redraw();" onkeyup="javascript:bezierCanvasHandler.redraw();preview_rebuild_model();" size="4" style="width: 35px;" onchange="preview_rebuild_model();" disabled="disabled" />px
          
   </td>
 </tr>
@@ -260,11 +260,11 @@ tooltip:hover:before{
   <td>
     <table border="0" style="padding: 0px; spacing: 0px;" width="100%">
       <tr><td align="left">
-        <input type="checkbox" id="mesh_close_path_begin" name="mesh_close_path_begin" onchange="preview_rebuild_model();" disabled="disabled" />
+        <input type="checkbox" id="mesh_close_path_begin" name="mesh_close_path_begin" onchange="preview_rebuild_model();" class="tooltip" title="The path begin is the top of the mesh. In some cases the top bezier point is not located at the right bound. The top shape can be closed with this option then." />
           <label for="mesh_close_path_begin">begin</label>
 	  </td>
           <td align="right">
-	  <input type="checkbox" id="mesh_close_path_end" name="mesh_close_path_end" onchange="preview_rebuild_model();" checked="checked" />
+	  <input type="checkbox" id="mesh_close_path_end" name="mesh_close_path_end" onchange="preview_rebuild_model();" class="tooltip" title="The path end is the bottom of the mesh." checked="checked" />
           <label for="mesh_close_path_end">end</label>
 	  </td></tr>
       </table>
@@ -274,7 +274,7 @@ tooltip:hover:before{
 <tr>
   <td></td>
   <td>
-        <input type="checkbox" id="wireframe" name="wireframe" onchange="preview_rebuild_model();" />
+        <input type="checkbox" id="wireframe" name="wireframe" onchange="preview_rebuild_model();" class="tooltip" title="Well, just toggles wireframe on/off." />
           <label for="wireframe">Wireframe</label>
   </td>
 </tr>

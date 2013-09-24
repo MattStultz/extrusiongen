@@ -4,27 +4,55 @@ Path Extrusion Generator
 
 @author   Ikaros Kappler
 @date     2013-09-11
-@version  0.1.0
+@modified 2013-09-24
+@version  0.1.7
 
 
 
 Plan
 ----
-- Namen finden
-    + Domain anlegen
+- Find name
+    + register domain
 - Propaganda
-- 
+- ...
+
+
+
+Changelog
+---------
+[2013-09-24]
+ - Added ruler/measurements (in mm).
+ - Shape scaling by moving bounding box nodes implemented.
+
+[2013-09-18]
+ - Bug fixed: the second last bezier point can be deleted now.
+
+[2013-09-16]
+ - The second last bezier curve was not deletable. This is fixed now.
+
+[2013-09-12] 
+   Implemented a better bezier curve splitting.
+
+[2013-09-11] 
+ - Zip file import implemented.
+
 
 
 
 
 TODO
 ----
+[2013-09-24]
+ - The bezier scaling by bounding-box works so far but there is a
+   boundary required to avoid the path to be scale to width=0 or	
+   height=0.
+
 [2013-09-16]
  - Add an enhanced polygon triangulation algorithm for the case
    the mesh is split; the cut is not yet properly filled. Vertically
    non-convex bezier curves cause errors in the mesh.
- - Bug: the second last bezier point cannot be deleted.
+ - [DONE 2013-09-18]
+   Bug: the second last bezier point cannot be deleted.
 
 [2013-09-13]
  - Fix Safari incompatibility
@@ -38,19 +66,21 @@ TODO
 [2013-09-11]
  - [DONE 2013-09-11] 
    Zip file import
- - Add ruler/measurements
- - Implement split mesh
+ - [DONE 2013-09-24]
+   Add ruler/measurements
+ - [DONE 2013-09-18]
+   Implement split mesh
  - Implement second inner perpendicular hull (for wax)
  - [DONE 2013-09-12] 
    Implement a better bezier curve splitting
  - Add an undo-function to the bezier editor
- - Shape scaling by moving bounding box nodes
+ - [DONE 2013-09-24]
+   Shape scaling by moving bounding box nodes
 
 
-Changelog
----------
-[2013-09-16]
- - The second last bezier curve was not deletable. This is fixed now.
+
+
+
 
 
 

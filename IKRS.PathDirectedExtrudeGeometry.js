@@ -47,9 +47,12 @@ IKRS.PathDirectedExtrudeGeometry = function( shape,
     //var pathTangent      = null;
     //var pathTangentSlope = 0.0;
 
-    var old_closePathEnd = options.closePathEnd;
-    if( options.hollow )
-	options.closePathEnd = false;
+    var old_closePathEnd   = options.closePathEnd;
+    var old_closePathBegin = options.closePathBegin;
+    if( options.hollow ) {
+	options.closePathEnd   = false;
+	options.closePathBegin = false;
+    }
     
     options.buildPerpendicularHull = true;
 
@@ -107,12 +110,12 @@ IKRS.PathDirectedExtrudeGeometry = function( shape,
 	options.hollow                 = false; // in-place
 	options.buildPerpendicularHull = false;
 	var outerPathResult = this.buildPathExtrusion( scaledShape, // shape, 
-							   extendedExtrusionPath, 
-							   outerHullPath, 
-							   options, 
-							   extendedExtrusionPathBounds, 
-							   outerHullPathBounds, 
-							   innerPathResult.vertexCount );
+						       extendedExtrusionPath, 
+						       outerHullPath, 
+						       options, 
+						       extendedExtrusionPathBounds, 
+						       outerHullPathBounds, 
+						       innerPathResult.vertexCount );
 
 	
 	// Build connection between outer and inner hull?
@@ -154,8 +157,7 @@ IKRS.PathDirectedExtrudeGeometry = function( shape,
 	    }
 
 	} // END if [options.closePathEnd]
-					
-
+	
 
 
 	// Connect inner and outer hull?
@@ -215,6 +217,29 @@ IKRS.PathDirectedExtrudeGeometry = function( shape,
 	    this.faces.push( new THREE.Face3( innerPathResult.outerPointIndices.right[i],
 					      innerPathResult.outerPointIndices.right[i-1],
 					      innerPathResult.outerPointIndices.left[i-1]
+					    ) );
+
+	}
+
+    } else // END else [not hollow but closeShape]
+	if( old_closePathBegin ) {
+	
+	//window.alert( "Closing path begin ... begin.length=" + innerPathResult.outerPointIndices.begin.length );
+
+	for( var i = 2; i < innerPathResult.outerPointIndices.begin.length; i++ ) {
+
+	    /*
+	    window.alert( "begin[0]=" +  innerPathResult.outerPointIndices.begin[0] + 
+			  ", begin[" + (i-1) + "]=" + innerPathResult.outerPointIndices.begin[i-1] +
+			  ", begin[" + i + "]=" + innerPathResult.outerPointIndices.begin[i]
+			);
+			*/
+
+	    // Triangulate yes or no?
+	    // Connect the left with the right side.
+	    this.faces.push( new THREE.Face3( innerPathResult.outerPointIndices.end[0],
+					      innerPathResult.outerPointIndices.end[i],
+					      innerPathResult.outerPointIndices.end[i-1]
 					    ) );
 
 	}
@@ -429,14 +454,17 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPathExtrusion = function( shape,
 	    if( s > 1 || options.closeShape ) {
 
 		// If the mesh should be build hollow this is not yet the last segment
-		if( i == options.curveSegments  && options.closePathBegin ) {
+		if( i == options.curveSegments && options.closePathBegin ) {
 
-		    // Last segment
+		    // Last segment 
+		    // ??? !!!
+		    /*
 		    this.faces.push( new THREE.Face3( vertexCount,
 						      vertexCount-1,
 						      firstShapePointIndex
 						    ) 
 				   );
+				   */
 				   
 		} else if( i == 0 && options.closePathEnd ) {
 		    

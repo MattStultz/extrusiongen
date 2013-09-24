@@ -141,21 +141,6 @@ IKRS.BezierCanvasHandler.prototype.redraw = function() {
     }
 
     var drawTangents = document.forms["bezier_form"].elements["draw_tangents"].checked;
-    
-    /*
-    this.drawBezierPath( this.context, 
-			 this.bezierPath, 
-			 this.drawOffset,
-			 this.zoomFactor,
-			 true,          // drawStartPoint
-			 true,          // drawEndPoint
-			 drawTangents,  // drawStartControlPoint
-			 drawTangents,  // drawEndControlPoint
-			 
-			 drawTangents
-		       );
-		       */
-
     var boundingBox = this.bezierPath.computeBoundingBox();
 
 
@@ -180,9 +165,13 @@ IKRS.BezierCanvasHandler.prototype.redraw = function() {
 
 	// Fill inner shape?
 	var rightLowerPoint = boundingBox.getRightLowerPoint();
+	var rightUpperPoint = boundingBox.getRightUpperPoint();
 	this.context.fillStyle   = "#e8e8e8";
 	this.context.beginPath();
-	this.context.moveTo( rightLowerPoint.x * this.zoomFactor + this.drawOffset.x, 
+	this.context.moveTo( rightUpperPoint.x * this.zoomFactor + this.drawOffset.x, 
+			     rightUpperPoint.y * this.zoomFactor + this.drawOffset.y
+			   );
+	this.context.lineTo( rightLowerPoint.x * this.zoomFactor + this.drawOffset.x, 
 			     rightLowerPoint.y * this.zoomFactor + this.drawOffset.y
 			   );
 	for( var c = 0; c < this.getBezierPath().getCurveCount(); c++ ) {
