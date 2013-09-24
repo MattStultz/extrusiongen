@@ -126,7 +126,7 @@ tooltip:hover:before{
 <body> 
 
 <div id="version_tag">
-  v0.1.4 built 20130919#0
+  v0.1.5 built 20130924#0
 </div>
 
 <canvas 
@@ -170,9 +170,15 @@ tooltip:hover:before{
   <input type="checkbox" id="draw_linear_path_segments" name="draw_linear_path_segments" onchange="javascript:bezierCanvasHandler.redraw();" class="tooltip" title="The outer shape is a sequence of cubic bezier curves connected with each other. Enabling this will draw the linear path between the start- and end-points." />
   <label for="draw_linear_path_segments">Draw linear path segments</label>
 
+  <!--
   <br/>
   <input type="checkbox" id="draw_coordinate_system" name="draw_coordinate_system" onchange="javascript:bezierCanvasHandler.redraw();" class="tooltip" title="Show the origin at (0,0) on the X-Y-plane." />
   <label for="draw_coordinate_system">Draw coordinate system</label>
+  -->
+
+  <br/>
+  <input type="checkbox" id="draw_rulers" name="draw_rulers" onchange="javascript:bezierCanvasHandler.redraw();" class="tooltip" title="Check if rulers should be painted." checked="checked" />
+  <label for="draw_rulers">Draw rulers</label>
 
   <br/>
   <input type="checkbox" id="draw_bounding_box" name="draw_bounding_box" checked="checked" onchange="javascript:bezierCanvasHandler.redraw();" class="tooltip" title="The curve's bounding box is the minimal rectangular area around the bezier path that encloses the path itself." />
@@ -348,7 +354,6 @@ tooltip:hover:before{
 <button style="position: absolute; left: 10px; top: 788px;" onclick="debug();">DEBUG</button>
 
 
-<!-- <script language="Javascript" type="text/javascript" src="prototype-1.6.0.3.js"></script> -->
 <script language="Javascript" type="text/javascript" src="three.js"></script>
 
 <script language="Javascript" type="text/javascript" src="Blob.js"></script>
@@ -365,12 +370,7 @@ tooltip:hover:before{
 <script language="Javascript" type="text/javascript" src="ZipFileImporter.js"></script>
 
 <script language="Javascript" type="text/javascript" src="IKRS.js"></script>
-
-<!-- This class will be obsolete soon ... -->
-<!-- <script language="Javascript" type="text/javascript" src="IKRS.ExtrudePathGeometry.js"></script> -->
-
 <script language="Javascript" type="text/javascript" src="IKRS.Object.js"></script>
-
 <script language="Javascript" type="text/javascript" src="IKRS.ShapedPathGeometry.js"></script>
 <script language="Javascript" type="text/javascript" src="IKRS.PathDirectedExtrudeGeometry.js"></script>
 

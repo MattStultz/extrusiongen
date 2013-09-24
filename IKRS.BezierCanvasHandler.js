@@ -40,7 +40,13 @@ IKRS.BezierCanvasHandler = function() {
     window.addEventListener( "keydown", this.keyDownHandler, false );
 
     // This is a new way: build from a JSON string
+    /*
     var jsonString = "[ { \"startPoint\" : [-122,74], \"endPoint\" : [-57.454814814814796,5.460592592592583], \"startControlPoint\": [-119,14], \"endControlPoint\" : [-66.28766869253815,34.77964111961321] }, { \"startPoint\" : [-57.454814814814796,5.460592592592583], \"endPoint\" : [-55,-139], \"startControlPoint\": [-50.31974300727449,-18.222977798698675], \"endControlPoint\" : [-84.38654635129569,-50.09980658609145] }, { \"startPoint\" : [-55,-139], \"endPoint\" : [-51.66118578883062,-227.750293953586], \"startControlPoint\": [-39.46858425198657,-185.98564599883105], \"endControlPoint\" : [-56.750583998055625,-189.07086756347596] }, { \"startPoint\" : [-51.66118578883062,-227.750293953586], \"endPoint\" : [-2,-323], \"startControlPoint\": [-46.66118578883062,-265.75029395358604], \"endControlPoint\" : [-40,-323] } ]";
+    */
+    /*
+    var jsonString = "[ { \"startPoint\" : [-122,77.80736634304651], \"endPoint\" : [-67.73307944072262,8.610642479882245], \"startControlPoint\": [-119.47772415230133,17.2319457370441], \"endControlPoint\" : [-75.15937744140035,38.21087075141645] }, { \"startPoint\" : [-67.73307944072262,8.610642479882245], \"endPoint\" : [-65.66917273472913,-137.23537680826058], \"startControlPoint\": [-61.734206343470944,-15.300061485189019], \"endControlPoint\" : [-98.78877899720925,-50.23487060385922] }, { \"startPoint\" : [-65.66917273472913,-137.23537680826058], \"endPoint\" : [-61.86203591980055,-243.8368165606738], \"startControlPoint\": [-47.61100112746867,-184.67163128865914], \"endControlPoint\" : [-66.14099131395022,-204.786441187677] }, { \"startPoint\" : [-61.86203591980055,-243.8368165606738], \"endPoint\" : [-21.108966092052256,-323], \"startControlPoint\": [-57.658242840302705,-282.20124961114175], \"endControlPoint\" : [-53.05779349623559,-323] } ]";
+    */
+    var jsonString = "[ { \"startPoint\" : [-122,77.80736634304651], \"endPoint\" : [-67.73307944072262,8.610642479882245], \"startControlPoint\": [-119.47772415230133,17.2319457370441], \"endControlPoint\" : [-75.15937744140035,38.21087075141645] }, { \"startPoint\" : [-67.73307944072262,8.610642479882245], \"endPoint\" : [-65.66917273472913,-149.23537680826058], \"startControlPoint\": [-61.734206343470944,-15.300061485189019], \"endControlPoint\" : [-91.08420510869792,-63.306491030252076] }, { \"startPoint\" : [-65.66917273472913,-149.23537680826058], \"endPoint\" : [-61.86203591980055,-243.8368165606738], \"startControlPoint\": [-51.097820700079055,-198.5014971968797], \"endControlPoint\" : [-66.14099131395022,-204.786441187677] }, { \"startPoint\" : [-61.86203591980055,-243.8368165606738], \"endPoint\" : [-21.108966092052256,-323], \"startControlPoint\": [-57.658242840302705,-282.20124961114175], \"endControlPoint\" : [-53.05779349623559,-323] } ]";
     this.bezierPath = IKRS.BezierPath.fromJSON( jsonString );
     
     // THE UNDO-HISTORY IS REALLY BUGGY AND CURRENTLY NOT IN USE.
@@ -114,7 +120,10 @@ IKRS.BezierCanvasHandler.prototype.redraw = function() {
     }
 
     // Draw coordinate system (global crosshair)?
-    if( document.forms["bezier_form"].elements["draw_coordinate_system"].checked ) {
+    if( document.forms["bezier_form"] &&
+	document.forms["bezier_form"].elements["draw_coordinate_system"] &&
+	document.forms["bezier_form"].elements["draw_coordinate_system"].checked ) {
+
 	this.context.strokeStyle = "#d0d0d0";
 	this.context.lineWidth   = 1;
 	
@@ -145,10 +154,28 @@ IKRS.BezierCanvasHandler.prototype.redraw = function() {
 		       );
 
 
+    var boundingBox = this.bezierPath.computeBoundingBox();
+
+
+    // Draw rulers?
+    if( document.forms["bezier_form"] &&
+	document.forms["bezier_form"].elements["draw_rulers"] && 
+	document.forms["bezier_form"].elements["draw_rulers"].checked ) {
+
+	this._drawRulers( this.context,
+			  this.drawOffset,
+			  this.zoomFactor,
+			  boundingBox
+			);
+			 
+	
+	
+    }
+
     // Draw the bounding box?
     if( document.forms["bezier_form"].elements["draw_bounding_box"].checked ) {
 
-	var boundingBox = this.bezierPath.computeBoundingBox();
+	//var boundingBox = this.bezierPath.computeBoundingBox();
 	this.context.strokeStyle = "#888888";
 	this.context.lineWidth   = 0.5;
 	this.context.strokeRect( boundingBox.xMin * this.zoomFactor + this.drawOffset.x,
@@ -191,6 +218,238 @@ IKRS.BezierCanvasHandler.prototype.redraw = function() {
 
     }
 }
+
+IKRS.BezierCanvasHandler.prototype._drawRulers = function( context,
+							   drawOffset,
+							   zoomFactor,
+							   bounds
+							 ) {
+
+    context.strokeStyle    = "#888888";  // For the lines
+    context.fillStyle      = "#888888";  // For the text
+    context.font           = "9px Monospace";
+    context.lineWidth      = 0.5;
+    
+
+    IKRS.BezierCanvasHandler.drawVerticalRuler( context,
+						 drawOffset,
+						 zoomFactor,
+						 
+						 bounds,
+						 20.0,    // distance
+						 5.0,     // markerLength
+						 0.5,     // millimeterPerPixel = 0.5;
+						 50,      // markerDistance     = 50;   // px
+						 5.0      // textDistance       = 5.0;
+						 
+						 
+						 //new THREE.Vector2(0,1),  // direction
+						 //0.0      // textRotation
+					       );
+
+    IKRS.BezierCanvasHandler.drawHorizontalRuler( context,
+						  drawOffset,
+						  zoomFactor,
+						  
+						  bounds,
+						  20.0,    // distance
+						  5.0,     // markerLength
+						  0.5,     // millimeterPerPixel = 0.5;
+						  50,      // markerDistance     = 50;   // px
+						  5.0      // textDistance       = 5.0;
+						  
+						  
+						  //new THREE.Vector2(0,1),  // direction
+						  //0.0      // textRotation
+						);
+}
+
+IKRS.BezierCanvasHandler.drawVerticalRuler = function( context,
+						       drawOffset, 
+						       zoomFactor,
+
+						       bounds,
+						       distance,           // px
+						       markerLength,       // px
+						       millimeterPerPixel,
+						       markerDistance,     // px
+						       textDistance        // px
+						     ) {
+
+    var leftUpperPoint     = bounds.getLeftUpperPoint();
+    var rightUpperPoint    = bounds.getRightUpperPoint();
+    var rightLowerPoint    = bounds.getRightLowerPoint();
+    var leftLowerPoint     = bounds.getLeftLowerPoint();
+    var width              = bounds.getWidth();
+    var height             = bounds.getHeight();
+    
+    
+    // Draw vertical ruler
+    context.beginPath();
+    context.moveTo( rightLowerPoint.x * zoomFactor + drawOffset.x + distance,
+		    rightLowerPoint.y * zoomFactor + drawOffset.y
+		  );
+    context.lineTo( rightUpperPoint.x * zoomFactor + drawOffset.x + distance,
+		    rightUpperPoint.y * zoomFactor + drawOffset.y
+		  );    
+    context.stroke();
+
+    
+    // Draw unit markers
+    var i = 0;
+    var x = 0, y = 0, relY;
+    while( (relY = i*markerDistance) < height ) {
+
+	x = rightLowerPoint.x * zoomFactor + drawOffset.x;
+	y = rightLowerPoint.y * zoomFactor + drawOffset.y - relY * zoomFactor;
+	context.beginPath();
+	context.moveTo( x + distance,
+			y
+		      );
+	context.lineTo( x + distance + markerLength, 
+			y 
+		      );	
+	context.stroke();
+
+	// Draw unit number
+	var mm = relY * millimeterPerPixel;
+	context.fillText( "" + mm + "mm", 
+			  x + distance + markerLength + textDistance,
+			  y );
+
+	i++;
+
+    }
+}
+
+
+IKRS.BezierCanvasHandler.drawHorizontalRuler = function( context,
+							 drawOffset, 
+							 zoomFactor,
+							 
+							 bounds,
+							 distance,           // px
+							 markerLength,       // px
+							 millimeterPerPixel,
+							 markerDistance,     // px
+							 textDistance        // px
+						       ) {
+
+    var leftUpperPoint     = bounds.getLeftUpperPoint();
+    var rightUpperPoint    = bounds.getRightUpperPoint();
+    var rightLowerPoint    = bounds.getRightLowerPoint();
+    var leftLowerPoint     = bounds.getLeftLowerPoint();
+    var width              = bounds.getWidth();
+    var height             = bounds.getHeight();
+    
+    
+    // Draw vertical ruler
+    context.beginPath();
+    context.moveTo( rightLowerPoint.x * zoomFactor + drawOffset.x,
+		    rightLowerPoint.y * zoomFactor + drawOffset.y + distance
+		  );
+    context.lineTo( leftLowerPoint.x * zoomFactor + drawOffset.x,
+		    leftLowerPoint.y * zoomFactor + drawOffset.y + distance
+		  );    
+    context.stroke();
+
+    
+    // Draw unit markers
+    var i = 0;
+    var x = 0, y = 0, relX;
+    while( (relX = i*markerDistance) < width ) {
+
+	x = rightLowerPoint.x * zoomFactor + drawOffset.x - relX * zoomFactor;
+	y = rightLowerPoint.y * zoomFactor + drawOffset.y;
+	context.beginPath();
+	context.moveTo( x,
+			y + distance
+		      );
+	context.lineTo( x, 
+			y + distance + markerLength
+		      );	
+	context.stroke();
+
+	// Draw unit number
+	var mm = relX * millimeterPerPixel;
+	context.rotate(Math.PI/2);
+	context.fillText( "" + mm + "mm", 
+			  
+			  y + distance + markerLength + textDistance, -x 
+			);
+	context.rotate(-Math.PI/2);
+
+	i++;
+
+    }
+}
+
+
+/*
+IKRS.BezierCanvasHandler.drawAnonymousRuler = function( context,
+							drawOffset, 
+							zoomFactor,
+
+							bounds,
+							distance,           // px
+							markerLength,       // px
+							millimeterPerPixel,
+							markerDistance,     // px
+							textDistance,       // px
+
+							direction,
+							textRotation
+						       ) {
+
+    var leftUpperPoint     = bounds.getLeftUpperPoint();
+    var rightUpperPoint    = bounds.getRightUpperPoint();
+    var rightLowerPoint    = bounds.getRightLowerPoint();
+    var leftLowerPoint     = bounds.getLeftLowerPoint();
+    var width              = bounds.getWidth();
+    var height             = bounds.getHeight();
+    
+    var perpendicular      = direction.negate();
+    perpendicular          = perpendicular.normalize();
+
+    // Draw main line
+    context.beginPath();
+    context.moveTo( rightLowerPoint.x * zoomFactor + drawOffset.x + distance,
+		    rightLowerPoint.y * zoomFactor + drawOffset.y
+		  );
+    context.lineTo( rightUpperPoint.x * zoomFactor + drawOffset.x + distance,
+		    rightUpperPoint.y * zoomFactor + drawOffset.y
+		  );    
+    context.stroke();
+
+    // Draw unit markers
+    var i = 0;
+    var x = 0, y = 0, relY;
+    while( (relY = i*markerDistance) < height ) {
+
+	x = rightLowerPoint.x * zoomFactor + drawOffset.x;
+	y = rightLowerPoint.y * zoomFactor + drawOffset.y - (relY * zoomFactor * perpendicular.y);
+	context.beginPath();
+	context.moveTo( x + distance * perpendicular.x,
+			y + distance
+		      );
+	context.lineTo( x + (distance + markerLength) * perpendicular.x, 
+			y + (distance + markerLength) 
+		      );	
+	context.stroke();
+
+	// Draw unit number
+	var mm = relY * millimeterPerPixel;
+	context.fillText( "" + mm + "mm", 
+			  x + (distance + markerLength + textDistance) * direction.x,
+			  y + (distance + markerLength + textDistance) * direction.y
+			);
+
+	i++;
+
+    }
+}
+*/
+
 
 IKRS.BezierCanvasHandler.prototype._drawSelectedPoint = function( context,
 								  point,
