@@ -47,6 +47,8 @@ IKRS.BezierCanvasHandler = function() {
     var jsonString = "[ { \"startPoint\" : [-122,77.80736634304651], \"endPoint\" : [-67.73307944072262,8.610642479882245], \"startControlPoint\": [-119.47772415230133,17.2319457370441], \"endControlPoint\" : [-75.15937744140035,38.21087075141645] }, { \"startPoint\" : [-67.73307944072262,8.610642479882245], \"endPoint\" : [-65.66917273472913,-137.23537680826058], \"startControlPoint\": [-61.734206343470944,-15.300061485189019], \"endControlPoint\" : [-98.78877899720925,-50.23487060385922] }, { \"startPoint\" : [-65.66917273472913,-137.23537680826058], \"endPoint\" : [-61.86203591980055,-243.8368165606738], \"startControlPoint\": [-47.61100112746867,-184.67163128865914], \"endControlPoint\" : [-66.14099131395022,-204.786441187677] }, { \"startPoint\" : [-61.86203591980055,-243.8368165606738], \"endPoint\" : [-21.108966092052256,-323], \"startControlPoint\": [-57.658242840302705,-282.20124961114175], \"endControlPoint\" : [-53.05779349623559,-323] } ]";
     */
     var jsonString = "[ { \"startPoint\" : [-122,77.80736634304651], \"endPoint\" : [-67.73307944072262,8.610642479882245], \"startControlPoint\": [-119.47772415230133,17.2319457370441], \"endControlPoint\" : [-75.15937744140035,38.21087075141645] }, { \"startPoint\" : [-67.73307944072262,8.610642479882245], \"endPoint\" : [-65.66917273472913,-149.23537680826058], \"startControlPoint\": [-61.734206343470944,-15.300061485189019], \"endControlPoint\" : [-91.08420510869792,-63.306491030252076] }, { \"startPoint\" : [-65.66917273472913,-149.23537680826058], \"endPoint\" : [-61.86203591980055,-243.8368165606738], \"startControlPoint\": [-51.097820700079055,-198.5014971968797], \"endControlPoint\" : [-66.14099131395022,-204.786441187677] }, { \"startPoint\" : [-61.86203591980055,-243.8368165606738], \"endPoint\" : [-21.108966092052256,-323], \"startControlPoint\": [-57.658242840302705,-282.20124961114175], \"endControlPoint\" : [-53.05779349623559,-323] } ]";
+    
+    var jsonString = "[ { \"startPoint\" : [-122,77.80736634304651], \"endPoint\" : [-65.59022229786551,21.46778533702511], \"startControlPoint\": [-121.62058129515852,25.08908859418696], \"endControlPoint\" : [-79.33419353770395,48.71529293460728] }, { \"startPoint\" : [-65.59022229786551,21.46778533702511], \"endPoint\" : [-65.66917273472913,-149.23537680826058], \"startControlPoint\": [-52.448492057756646,-4.585775770903305], \"endControlPoint\" : [-86.1618869001374,-62.11613821618976] }, { \"startPoint\" : [-65.66917273472913,-149.23537680826058], \"endPoint\" : [-61.86203591980055,-243.8368165606738], \"startControlPoint\": [-53.701578771473564,-200.1123697454778], \"endControlPoint\" : [-69.80704300441666,-205.36451303641783] }, { \"startPoint\" : [-61.86203591980055,-243.8368165606738], \"endPoint\" : [-21.108966092052256,-323], \"startControlPoint\": [-54.08681426887413,-281.486963896856], \"endControlPoint\" : [-53.05779349623559,-323] } ]";
     this.bezierPath = IKRS.BezierPath.fromJSON( jsonString );
     
     // THE UNDO-HISTORY IS REALLY BUGGY AND CURRENTLY NOT IN USE.
@@ -141,7 +143,7 @@ IKRS.BezierCanvasHandler.prototype.redraw = function() {
     }
 
     var drawTangents = document.forms["bezier_form"].elements["draw_tangents"].checked;
-    var boundingBox = this.bezierPath.computeBoundingBox();
+    var boundingBox  = this.bezierPath.computeBoundingBox();
 
 
     // Draw rulers?

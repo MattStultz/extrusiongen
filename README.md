@@ -46,6 +46,11 @@ TODO
  - The bezier scaling by bounding-box works so far but there is a
    boundary required to avoid the path to be scale to width=0 or	
    height=0.
+ - The mm-measurements are not yet applied to the STL models.
+ - The bezier-Settings file should also store scaling and
+   draw offset.
+   When loading a file these settings should be restored so the bezier
+   path is at the same position.
 
 [2013-09-16]
  - Add an enhanced polygon triangulation algorithm for the case

@@ -126,7 +126,7 @@ tooltip:hover:before{
 <body> 
 
 <div id="version_tag">
-  v0.1.7 built 20130924#2
+  v0.1.8 built 20130925#0
 </div>
 
 <canvas 
@@ -202,18 +202,26 @@ tooltip:hover:before{
 <table border="0">
 
 <tr>
-  <td>Segments:</td>
+  <td valign="top">Segments:</td>
   <td>
     <table border="0" style="padding: 0px; spacing: 0px;" width="100%">
       <tr>
-	<td align="left"><input type="number" id="shape_segments" name="shape_segments" value="80" class="tooltip" title="The number of vertices on the vertical shape (on the circle). More vertices make the mesh more accurate but it renders slower." size="4" style="width: 35px;" />
+	<td align="left" valign="top">
+	  <input type="number" id="shape_segments" name="shape_segments" value="80" class="tooltip" title="The number of vertices on the vertical shape (on the circle). More vertices make the mesh more accurate but it renders slower." size="4" style="width: 35px;" />
 	  <label for="shape_segments">Shape</label>
 	</td>
 
-	<td align="right"><input type="number" id="path_segments" name="path_segments" value="80" class="tooltip" title="The number of vertices on the horizontal shape (on the outer path). More vertices make the mesh more accurate but it renders slower." size="4" style="width: 35px;" />
+	<td align="center" valign="top">
+	  <input type="number" id="path_segments" name="path_segments" value="80" class="tooltip" title="The number of vertices on the horizontal shape (on the outer path). More vertices make the mesh more accurate but it renders slower." size="4" style="width: 35px;" />
 	  <label for="path_segments">Path</label>
 	</td>
 	
+	<td valign="top">
+	  <input type="button" onclick="increase_mesh_details()" value="+" />
+	</td>
+	<td valign="top">
+	  <input type="button" onclick="decrease_mesh_details()" value="-" />
+	</td>
       </tr>
     </table>
 	
@@ -474,6 +482,43 @@ function increaseZoomFactor( redraw ) {
     this.previewCanvasHandler.increaseZoomFactor();
     if( redraw )
 	preview_render();
+}
+
+function increase_mesh_details() {
+	var shape_segments = this.document.forms["mesh_form"].elements["shape_segments"].value;
+	var path_segments  = this.document.forms["mesh_form"].elements["path_segments"].value;		
+			
+	shape_segments     = parseInt( shape_segments );
+	path_segments      = parseInt( path_segments );
+			
+	shape_segments     = Math.floor( shape_segments * 1.2 );
+	path_segments      = Math.floor( path_segments  * 1.2 );
+			
+	this.document.forms["mesh_form"].elements["shape_segments"].value = shape_segments;
+	this.document.forms["mesh_form"].elements["path_segments"].value  = path_segments;
+			
+	preview_rebuild_model();
+}
+
+function decrease_mesh_details() {
+
+	var shape_segments = this.document.forms["mesh_form"].elements["shape_segments"].value;
+	var path_segments  = this.document.forms["mesh_form"].elements["path_segments"].value;		
+			
+	shape_segments     = parseInt( shape_segments );
+	path_segments      = parseInt( path_segments );
+			
+	shape_segments     = Math.max( 3, Math.floor( shape_segments / 1.2 ) );
+	path_segments      = Math.max( 2, Math.floor( path_segments  / 1.2 ) );
+
+        if( shape_segments <= 3 && path_segments <= 2 )
+	    return; // No change
+			
+	this.document.forms["mesh_form"].elements["shape_segments"].value = shape_segments;
+	this.document.forms["mesh_form"].elements["path_segments"].value  = path_segments;
+			
+	preview_rebuild_model();
+
 }
 
 function preview_rebuild_model() {
