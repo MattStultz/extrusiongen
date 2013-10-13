@@ -12,34 +12,7 @@
 
 STLBuilder = {
 
-    /*
-    saveSTL: function( geometry, filename ) {
-
-	if( !filename )
-	    filename = "extrusion.stl";
-	
-	// It is possible to pass an array or a single gerometry
-	if( typeof geometry.length === "undefined" )
-	    geometry = [ geometry ];
-	
-	//var stlString = STLBuilder.buildSTL( geometry );  
-
-	var buffer = [];
-	for( var i = 0; i < buffer.length; i++ ) {
-
-	    buffer[i] = buildSTL( geometry[i] );
-
-	}
-
-	var stlString = buffer.join( "\n\n" );
-
-	var blob = new Blob([stlString], {type: 'text/plain'});
-	window.saveAs(blob, filename);
-	
-    },
-    */
-
-    saveSTL: function( meshes, filename ) {
+    saveSTL: function( meshes, filename, processListener ) {
 
 	//window.alert( meshes.length );
 
@@ -52,7 +25,14 @@ STLBuilder = {
 	if( typeof meshes.length === "undefined" )
 	    meshes = [ meshes ];
 	
-	//var stlString = STLBuilder.buildSTL( geometry );  
+	// First step: calculate total triganle count
+	var totalTriCount = 0;
+	for( var i = 0; i < meshes.length; i++ ) {
+
+	    totalTriCount += meshes[ i ].geometry.faces.length;
+
+	}
+	
 
 	var buffer = [];
 	for( var i = 0; i < meshes.length; i++ ) {
@@ -69,7 +49,7 @@ STLBuilder = {
 	
     },
 
-    buildSTLFromMeshArray: function( meshes ) {
+    buildSTLFromMeshArray: function( meshes, processListener ) {
 
 	var buffer = [];
 	for( var i = 0; i < meshes.length; i++ ) {

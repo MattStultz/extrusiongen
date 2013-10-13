@@ -62,43 +62,26 @@ ZipFileExporter = {
 	// Data passed?
 	data = data || ZipFileExporter._build_export_data();
 
-
-	// OK, also allow to pass a single geometry ... for downward compatibility.
-	//if( data.geoy && !data.geometries )
-	//    data.geometries = [ data.geometry ];
-
-
-	// Convert THREE.js geometry (object) to STL (string)
-	//var stlData = STLBuilder.buildSTL( data.geometry );
-	//var stlData = STLBuilder.buildSTLFromMeshArray( data.meshes ); 
-
 	var zip = new JSZip();
 	
 	// Remember: btoa() converts string data to base64, 
 	//           atob() converts base64 data to string.
 
-	/*
-	stringData = "{ test: \"true\" }";
-	zip.file( "test.json",
-		  stringData,
-		  { base64: false,
-		    binary: false,
-		    type: "application/json"
-		  }
-		);
-	*/
 
-	for( var i = 0; i < data.meshes.length; i++ ) {
-	    // Add STL model to zip
-	    var stlData = STLBuilder.buildSTL( data.meshes[i].geometry );
-	    zip.file( "model_" + i + ".stl",
-		      stlData,
-		      { base64: false,
-			binary: false,
-			type: "application/sla"
-		      }
-		    );
-	}
+	var exportSTLFile = false; // Too large!
+	if( exportSTLFile ) {
+	    for( var i = 0; i < data.meshes.length; i++ ) {
+		// Add STL model to zip
+		var stlData = STLBuilder.buildSTL( data.meshes[i].geometry );
+		zip.file( "model_" + i + ".stl",
+			  stlData,
+			  { base64: false,
+			    binary: false,
+			    type: "application/sla"
+			  }
+			);
+	    } // END for
+	} // END if
 	
 	// Add bezier path (JSON) to zip
 	var bezierJSON = data.bezierPath.toJSON( true );
@@ -123,7 +106,7 @@ ZipFileExporter = {
 		);
 	
 
-	// The generate-function returns a base64 string
+        // The generate-function returns a base64 string
 	var zipData = zip.generate( { type: "base64", 
 				      compression: ( data.compress ? "DEFLATE" : "STORE" )
 				    } ); 

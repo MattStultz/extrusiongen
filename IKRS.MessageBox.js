@@ -20,8 +20,8 @@ IKRS.MessageBox = function( baseID ) {
     IKRS.MessageBox.getDocumentBody().appendChild( blanket );
     blanket.style.display           = "none";     // Initially invisible
     blanket.style.position          = "absolute";
-    blanket.style.left              = "0 px";
-    blanket.style.top               = "0 px";
+    blanket.style.left              = "0px";
+    blanket.style.top               = "0px";
     blanket.style.width             = "100%";
     blanket.style.height            = "100%";
     blanket.style.backgroundColor   = "#888888";
@@ -40,6 +40,7 @@ IKRS.MessageBox = function( baseID ) {
     box.style.borderStyle           = "solid";
     box.style.borderColor           = "#000000";
     box.style.padding               = "0em";
+    box.style.zIndex                = "9002";
 
     box.style.textAlign             = "center";
     box.innerHTML                   = "Test";
