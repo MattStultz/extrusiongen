@@ -202,34 +202,43 @@ IKRS.DivisibleSTLBuilder.prototype._buildSTL = function( geometry,
     // Use an array as StringBuffer (concatenation is extremely slow in IE6).
     var stl       = [];
     var chunkSize = 0;
-    stl.push( "solid pixel\n" );
-    chunkSize += ("solid pixel\n").length;
+    
+    if( triangleIndex == 0 ) {
+	stl.push( "solid pixel\n" );
+	chunkSize += ("solid pixel\n").length;
+    }
  
     //for(var i = 0; i < tris.length; i++) {    
     //for( var i = triangleIndex; i < tris.length; i++ ) {
+    //var tmpBuffer = [];
     while( triangleIndex < tris.length &&
 	   currentChunkSize+chunkSize < maxChunkSize
 	 ) {
 
 	var tmpBuffer = [];
-	tmpBuffer.push( " facet normal "+ this._stringifyVector( tris[i].normal )+"\n");
+	var triangle = tris[triangleIndex];
+	tmpBuffer.push( " facet normal "+ this._stringifyVector( triangle.normal )+"\n");
 	tmpBuffer.push("  outer loop\n");
-	tmpBuffer.push("   " + this._stringifyVertex( vertices[ tris[i].a ] ) );
-	tmpBuffer.push("   " + this._stringifyVertex( vertices[ tris[i].b ] ) );
-	tmpBuffer.push("   " + this._stringifyVertex( vertices[ tris[i].c ] ) );
+	tmpBuffer.push("   " + this._stringifyVertex( vertices[ triangle.a ] ) );
+	tmpBuffer.push("   " + this._stringifyVertex( vertices[ triangle.b ] ) );
+	tmpBuffer.push("   " + this._stringifyVertex( vertices[ triangle.c ] ) );
 	tmpBuffer.push("  endloop \n");
 	tmpBuffer.push(" endfacet \n");
 	
 
 	triangleIndex++;
 	var tmpData = tmpBuffer.join("");
+	//tmpBuffer   = [];
 	stl.push( tmpData );
 	chunkSize += tmpData.length;
 	
 	
     }
-    stl.push("endsolid\n");
-    chunkSize += ("endsolid\n").length;
+    
+    if( triangleIndex >= tris.length ) {
+	stl.push("endsolid\n");
+	chunkSize += ("endsolid\n").length;
+    }
     
     // Convert array to string
     var data = stl.join("");
