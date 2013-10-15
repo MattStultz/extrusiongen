@@ -41,14 +41,14 @@ position: absolute;
 top: 10px;
 left: 1054px;
 width: 400px;
-height: 330px;
+height: 310px;
 border: 1px solid #000000;
 padding: 10px;
 }
 
 div#shape_controls {
 position: absolute;
-top: 370px;
+top: 350px;
 left: 1054px;
 width: 400px;
 height: 130px;
@@ -58,10 +58,10 @@ padding: 10px;
 
 div#stl_builder {
 position: absolute;
-top: 530px;
+top: 510px;
 left: 1054px;
 width: 400px;
-height: 58px;
+height: 78px;
 border: 1px solid #000000;
 padding: 10px;
 }
@@ -126,7 +126,7 @@ tooltip:hover:before{
 <body> 
 
 <div id="version_tag">
-  v0.1.9 built 20131013#1
+  v0.2.0 built 20131015#0
 </div>
 
 <canvas 
@@ -339,6 +339,11 @@ tooltip:hover:before{
     -->
     <input type="button" value="Save STL ..." onclick="exportSTL();" />
     <span class="tooltip" title="Note: split meshes result in two unconnected objects; they will be stored as a sequence of objects in the STL file. Not all programs are capable to read this!" style="font-size: 22pt;">&#x26a0;</span>
+    <div style="text-align: right;">
+      <input type="checkbox" id="stl_merge_meshes" name="stl_merge_meshes" checked="checked" />
+      <label for="stl_merge_meshes">Merge meshes</label>
+    </div>
+    
   </form>
     
 </div>

@@ -62,7 +62,8 @@ IKRS.PathDirectedExtrudeGeometry = function( shape,
 						   options, 
 						   pathBounds, 
 						   shapedPathBounds, 
-						   vertexCount );
+						   vertexCount
+						 );
     // Restore old closePathEnd option?
     //window.alert( options.closePathEnd );
     

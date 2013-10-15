@@ -1,4 +1,10 @@
 
+/**
+ * @author Ikaros Kappler
+ * @date 2013-10-13
+ * @version 1.0.0
+ **/
+
   /**
    * ...
    **/
@@ -188,14 +194,17 @@ function exportSTL() {
 
     if( !divisibleSTLBuilder ) { 
 	
-	var meshes   = getPreviewMeshes();
-	var filename = document.forms['stl_form'].elements['stl_filename'].value;
+	var meshes        = getPreviewMeshes();
+	var filename      = document.forms['stl_form'].elements['stl_filename'].value;
+	var merge_meshes  = document.forms["stl_form"].elements["stl_merge_meshes"].checked;
 	
 	// Init the divisible STL builder
 	divisibleSTLBuilder = new IKRS.DivisibleSTLBuilder( meshes,
 							    filename,
 							    function( e ) { },
-							    1024*32     // 32 kB chunks
+							    1024*128,    // 128 kB chunks,
+							    this.bezierCanvasHandler.getMillimeterPerUnit(),
+							    !merge_meshes        // export as single mesh?
 							  );
 	
 	showLoadingBar( "exportSTL_cancelHandler()" );
@@ -206,6 +215,7 @@ function exportSTL() {
 
 	divisibleSTLBuilder = null;
 	hideLoadingBar();
+	return;
 
     }
 
@@ -262,6 +272,7 @@ function displayProcessState( currentStep, maxStep ) {
     document.getElementById( "process_div" ).innerHTML = "" + currentStep + "/" + maxStep + " [" + pct + "%]";
 }
 
+/*
 var stlProcessListener = new IKRS.ProcessListener( null,   // startCallback
                                                    null,   // stepCallback
                                                    null,   // terminationCallback
@@ -270,7 +281,7 @@ var stlProcessListener = new IKRS.ProcessListener( null,   // startCallback
 stlProcessListener.startCallback       = function(x,y) { }; // displayProcessState;
 stlProcessListener.stepCallback        = function(x,y) { }; // displayProcessState;
 stlProcessListener.terminationCallback = function(x,y) { }; // displayProcessState;
-
+*/
 
 
 
@@ -290,7 +301,13 @@ function showLoadingBar( buttonHandler ) {
 }
 
 function hideLoadingBar() {
-    messageBox.hide();
+
+    // !!! FIX THIS !!!
+    // THIS SOMEHOW MAKES THE PROGRESS INDICATOR TO FAIL!
+    //stopLoadingAnimation();
+    
+    
+     messageBox.hide();
 }
 
 /*

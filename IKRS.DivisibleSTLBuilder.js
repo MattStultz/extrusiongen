@@ -7,23 +7,26 @@
  *
  * @author Ikaros Kappler
  * @date 2013-10-10 (based on the STLBuilder.js)
- * @version 1.0.0
+ * @modified 2013-10-15 Ikaros Kappler (Params 'millimeterPerUnit' and 'exportSingleMesh' added).
+ * @version 1.0.1
  **/
 
 IKRS.DivisibleSTLBuilder = function( meshes, 
 				     filename, 
 				     processListener,
-				     maxChunkSize
+				     maxChunkSize,
+				     millimeterPerUnit,
+				     exportSingleMesh
 				   ) {
     
     IKRS.Object.call( this );
 
-    //window.alert( meshes.length );
-
     if( !filename )
 	filename = "extrusion.stl";
     
-    //window.alert( meshes.length );
+    if( !millimeterPerUnit )
+	millimeterPerUnit = 0.5;  // The default value in the BezierCanvasHandler
+
 
     // It is possible to pass an array or a single gerometry
     if( typeof meshes.length === "undefined" )
@@ -34,6 +37,8 @@ IKRS.DivisibleSTLBuilder = function( meshes,
     this.filename             = filename;
     this.processListener      = processListener;
     this.maxChunkSize         = maxChunkSize;
+    this.millimeterPerUnit    = millimeterPerUnit;
+    this.exportSingleMesh     = exportSingleMesh;
 
     this.currentMeshIndex     = 0;
     this.currentTriangleIndex = 0;
@@ -74,7 +79,9 @@ IKRS.DivisibleSTLBuilder.prototype.processNextChunk = function() {
     
     var tmpResult = this._saveSTL( this.currentMeshIndex,
 				   this.currentTriangleIndex,
-				   this.maxChunkSize
+				   this.maxChunkSize,
+				   this.millimeterPerUnit,
+				   this.exportSingleMesh
 				 );    
     
     this.currentMeshIndex     = tmpResult.meshIndex;
@@ -115,24 +122,12 @@ IKRS.DivisibleSTLBuilder.prototype.saveSTLResult = function() {
 
 IKRS.DivisibleSTLBuilder.prototype._saveSTL = function( meshIndex,
 							triangleIndex,
-							maxChunkSize
+							maxChunkSize,
+							millimeterPerUnit,
+							exportSingleMesh
 						      ) {
     
-		
-    // First step: calculate total triganle count
-    /*
-      var totalTriCount = 0;
-      for( var i = 0; i < meshes.length; i++ ) {
-
-      totalTriCount += meshes[ i ].geometry.faces.length;
-
-      }
-    */
     
-
-    //var buffer = [];
-    
-    //for( var i = this.currentMeshIndex; i < meshes.length; i++ ) {
     var currentChunkSize = 0;
     while( meshIndex < this.meshes.length &&
 	   currentChunkSize < maxChunkSize
@@ -142,9 +137,12 @@ IKRS.DivisibleSTLBuilder.prototype._saveSTL = function( meshIndex,
 	var currentMesh = this.meshes[ meshIndex ];
 	//window.alert( meshes[i].geometry );
 	var tmpResult = this._buildSTL( currentMesh.geometry,
+					meshIndex,
 					triangleIndex,
 					currentChunkSize,
-					maxChunkSize
+					maxChunkSize,
+					millimeterPerUnit,
+					exportSingleMesh
 				      );
 	
 	this.chunkResults.push( tmpResult.value );
@@ -158,40 +156,21 @@ IKRS.DivisibleSTLBuilder.prototype._saveSTL = function( meshIndex,
 	}
 
     }
-
-    //var stlString = buffer.join( "\n\n" );
-
-    //var blob = new Blob([stlString], {type: 'text/plain'});
-    //window.saveAs(blob, filename);
     
     return { returnCode:    0,
 	     meshIndex:     meshIndex,
 	     triangleIndex: triangleIndex
 	   };
 };
-
-/*
-    buildSTLFromMeshArray: function( meshes, processListener ) {
-
-	var buffer = [];
-	for( var i = 0; i < meshes.length; i++ ) {
-
-	    //window.alert( meshes[i].geometry );
-	    buffer[i] = STLBuilder.buildSTL( meshes[i].geometry );
-
-	}
-
-	var stlString = buffer.join( "\n\n" );
-	return stlString;
-
-    },
-*/
     
 
 IKRS.DivisibleSTLBuilder.prototype._buildSTL = function( geometry, 
+							 meshIndex,
 							 triangleIndex,
 							 currentChunkSize,
-							 maxChunkSize
+							 maxChunkSize,
+							 millimeterPerUnit,
+							 exportSingleMesh
 						       ) {
 
     var vertices  = geometry.vertices;
@@ -203,7 +182,9 @@ IKRS.DivisibleSTLBuilder.prototype._buildSTL = function( geometry,
     var stl       = [];
     var chunkSize = 0;
     
-    if( triangleIndex == 0 ) {
+    if( triangleIndex == 0 && 
+	(!exportSingleMesh || (exportSingleMesh && meshIndex==0))
+	) {
 	stl.push( "solid pixel\n" );
 	chunkSize += ("solid pixel\n").length;
     }
@@ -217,11 +198,11 @@ IKRS.DivisibleSTLBuilder.prototype._buildSTL = function( geometry,
 
 	var tmpBuffer = [];
 	var triangle = tris[triangleIndex];
-	tmpBuffer.push( " facet normal "+ this._stringifyVector( triangle.normal )+"\n");
+	tmpBuffer.push( " facet normal " + this._stringifyVector( triangle.normal, millimeterPerUnit ) + "\n");
 	tmpBuffer.push("  outer loop\n");
-	tmpBuffer.push("   " + this._stringifyVertex( vertices[ triangle.a ] ) );
-	tmpBuffer.push("   " + this._stringifyVertex( vertices[ triangle.b ] ) );
-	tmpBuffer.push("   " + this._stringifyVertex( vertices[ triangle.c ] ) );
+	tmpBuffer.push("   " + this._stringifyVertex( vertices[ triangle.a ], millimeterPerUnit ) );
+	tmpBuffer.push("   " + this._stringifyVertex( vertices[ triangle.b ], millimeterPerUnit ) );
+	tmpBuffer.push("   " + this._stringifyVertex( vertices[ triangle.c ], millimeterPerUnit ) );
 	tmpBuffer.push("  endloop \n");
 	tmpBuffer.push(" endfacet \n");
 	
@@ -235,7 +216,9 @@ IKRS.DivisibleSTLBuilder.prototype._buildSTL = function( geometry,
 	
     }
     
-    if( triangleIndex >= tris.length ) {
+    if( triangleIndex >= tris.length &&
+	(!exportSingleMesh || (exportSingleMesh && meshIndex+1>=this.meshes.length))
+	) {
 	stl.push("endsolid\n");
 	chunkSize += ("endsolid\n").length;
     }
@@ -252,11 +235,21 @@ IKRS.DivisibleSTLBuilder.prototype._buildSTL = function( geometry,
 
 
 
-IKRS.DivisibleSTLBuilder.prototype._stringifyVector = function(vec) {
-	return ""+vec.x+" "+vec.y+" "+vec.z;
+IKRS.DivisibleSTLBuilder.prototype._stringifyVector = function( vec, 
+								millimeterPerUnit 
+							      ) {
+    // var mm = value * millimeterPerUnit
+    return "" + 
+	(vec.x*millimeterPerUnit) + 
+	" " + 
+	(vec.y*millimeterPerUnit) + 
+	" " + 
+	(vec.z*millimeterPerUnit);
 };
 
-IKRS.DivisibleSTLBuilder.prototype._stringifyVertex = function(vec) {
-	return "vertex " + this._stringifyVector(vec) + " \n";
+IKRS.DivisibleSTLBuilder.prototype._stringifyVertex = function( vec, 
+								millimeterPerUnit 
+							      ) {
+    return "vertex " + this._stringifyVector(vec,millimeterPerUnit) + " \n";
 };
 

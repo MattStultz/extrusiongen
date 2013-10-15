@@ -21,7 +21,7 @@ IKRS.PreviewCanvasHandler = function( bezierCanvasHandler,
     this.preview_camera = new THREE.PerspectiveCamera( 75, 
 						       preview_canvas_width/preview_canvas_height,  
 						       0.1,  // 0.1, 
-						       8000 // 2000   // max draw depth (on z)
+						       8000  // 2000   // max draw depth (on z)
 						     ); 
     // Add custom settings to the camera to we can store the mouse movement inside.
     this.preview_camera.ikrsSettings = { 
@@ -102,8 +102,12 @@ IKRS.PreviewCanvasHandler.prototype.preview_mouseMoveHandler = function ( e ) {
   
   if( this.previewCanvasHandler.latestMouseDownPosition ) {
       
-      //this.previewCanvasHandler.preview_mesh.rotation.y += (0.01 * (this.previewCanvasHandler.latestMouseDragPosition.x - e.pageX)); 
-      //this.previewCanvasHandler.preview_mesh.rotation.x += (0.01 * (this.previewCanvasHandler.latestMouseDragPosition.y - e.pageY)); 
+      for( var i = 0; i < this.previewCanvasHandler.preview_meshes.length; i++ ) {
+	  this.previewCanvasHandler.preview_meshes[i].rotation.y += (0.01 * (this.previewCanvasHandler.latestMouseDragPosition.x - e.pageX)); 
+	  this.previewCanvasHandler.preview_meshes[i].rotation.x += (0.01 * (this.previewCanvasHandler.latestMouseDragPosition.y - e.pageY)); 
+      }
+
+      /*
       var rotationAmount = new THREE.Vector3( (0.01 * (this.previewCanvasHandler.latestMouseDragPosition.x - e.pageX)),
 					      (0.01 * (this.previewCanvasHandler.latestMouseDragPosition.y - e.pageY)),
 					      0
@@ -115,13 +119,14 @@ IKRS.PreviewCanvasHandler.prototype.preview_mouseMoveHandler = function ( e ) {
 
       this.previewCanvasHandler.preview_camera.ikrsSettings.rotation.add( rotationAmount );
       this.previewCanvasHandler._setCameraPositionFromLocalSettings();
-      
+      */
 
       this.previewCanvasHandler.latestMouseDragPosition = new THREE.Vector2( e.pageX, e.pageY ); 
 
     //preview_render();    
   } 
 };
+
 
 IKRS.PreviewCanvasHandler.prototype._setCameraPositionFromLocalSettings = function() {
     
@@ -155,29 +160,9 @@ IKRS.PreviewCanvasHandler.prototype._setCameraPositionFromLocalSettings = functi
 					  this.preview_camera.position.z
 					);
 					
-
-    /*
-    if( !this.preview_camera.ikrsSettings.lastRotationStep )
-	return;
-    var deltaX = this.preview_camera.lastRotationStep.x * 0.1;
-    var deltaY = this.preview_camera.lastRotationStep.y * 0.1;
-    if( deltaX == 0 && deltaY == 0 )
-	return;
-
-    
-    
-    var xAxis = new THREE.Vector3(1,0,0);
-    var yAxis = new THREE.Vector3(0,1,0);
-    
-    var rotationObjectMatrix_X = new THREE.Matrix4();	  
-    rotationObjectMatrix_X.makeRotationAxis( xAxis.normalize(), deltaX );
-    
-    //mesh.matrix.multiply( rotationObjectMatrix_X );
-    mesh.matrix = rotationObjectMatrix_X;
-    mesh.rotation.setEulerFromRotationMatrix(mesh.matrix);
-    */
-    
+   
 }
+
 
 IKRS.PreviewCanvasHandler.prototype.preview_mouseDownHandler = function( e ) {
   // window.alert( "clicked. Event: " + e + ", e.pageX=" + e.pageX + ", e.pageY=" + e.pageY );
@@ -247,12 +232,14 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 						     triangulate,
 						     split_shape,
 						     
-						     -Math.PI/2.0  // shape_start_angle
+						     -Math.PI/2.0,  // shape_start_angle
+						     
+						     new THREE.Vector3(0,50,0)  // offset
 						   );
         
     this._addMeshToScene( new_mesh_left, 
 			  viewSettings,
-			  (split_shape ? new THREE.Vector3(0,50,0) : null)   // offset
+			  null  // (split_shape ? new THREE.Vector3(0,50,0) : null)   // offset
 			);
     
     if( split_shape ) {
@@ -269,12 +256,14 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 							  split_shape,
 							  
 							  // 90DEG more than in the left part!
-							  Math.PI/2.0  // shape_start_angle
+							  Math.PI/2.0,  // shape_start_angle
+
+							  new THREE.Vector3(0,-50,0)  // offset
 							);
         
 	this._addMeshToScene( new_mesh_right, 
 			      viewSettings,
-			      (split_shape ? new THREE.Vector3(0,-50,0) : null)  // offset
+			      null  // (split_shape ? new THREE.Vector3(0,-50,0) : null)  // offset
 			    );
 
     }
@@ -367,7 +356,9 @@ IKRS.PreviewCanvasHandler.prototype._buildMeshFromSettings = function( shapedPat
 								       triangulate,
 								       split_shape,
 								       
-								       shape_start_angle
+								       shape_start_angle,
+								       
+								       mesh_offset  // Vector3
 								     ) {
     
     var shapedPathBounds     = shapedPath.computeBoundingBox();
@@ -375,11 +366,14 @@ IKRS.PreviewCanvasHandler.prototype._buildMeshFromSettings = function( shapedPat
     
     // The shape offset on the lower plane.
     // This will be the (x,y) translation of the final mesh; default is (0,0) if non-split.
+    /*
     var mesh_offset;
     if( split_shape )
 	mesh_offset = new THREE.Vector2( 0, 0 ); // -100 );
     else
 	mesh_offset = new THREE.Vector2( 0, 0 );
+    */
+    //var mesh_offset = offset;
     
     
     shapePoints = this._createCircleShapePoints( (split_shape ? circleSegmentCount/2 : circleSegmentCount),

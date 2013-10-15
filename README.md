@@ -4,8 +4,8 @@ Path Extrusion Generator
 
 @author   Ikaros Kappler
 @date     2013-09-11
-@modified 2013-09-24
-@version  0.1.7
+@modified 2013-10-15
+@version  0.2.0
 
 
 
@@ -20,6 +20,15 @@ Plan
 
 Changelog
 ---------
+[2013-10-15]
+ - The mm-measurements are now applied to the STL models.
+
+[2013-10-04]
+ - Added process bar (display in the CSS message box).
+
+[2013-10-02]
+ - Added CSS message box for errors and warnings.
+
 [2013-09-24]
  - Added ruler/measurements (in mm).
  - Shape scaling by moving bounding box nodes implemented.
@@ -42,11 +51,16 @@ Changelog
 
 TODO
 ----
+[2013-10-15]
+ - The 'Merge Meshes' STL option should be included into the settings 
+   import/export.
+
 [2013-09-24]
  - The bezier scaling by bounding-box works so far but there is a
    boundary required to avoid the path to be scale to width=0 or	
    height=0.
- - The mm-measurements are not yet applied to the STL models.
+ - [DONE 2013-10-15]
+   The mm-measurements are not yet applied to the STL models.
  - The bezier-Settings file should also store scaling and
    draw offset.
    When loading a file these settings should be restored so the bezier
@@ -60,10 +74,12 @@ TODO
    Bug: the second last bezier point cannot be deleted.
 
 [2013-09-13]
- - Fix Safari incompatibility
- - Add CSS message box for errors and warnings
- - Add process bar
- - Add a compatibility check with error message
+ - Fix Safari incompatibility.
+ - [DONE 2013-10-02]
+   Add CSS message box for errors and warnings.
+ - [DONE 2013-10-04]
+   Add process bar.
+ - Add a compatibility check with error message.
 
 [2013-09-12]
  - Add dummy console for older browsers
