@@ -126,7 +126,7 @@ tooltip:hover:before{
 <body> 
 
 <div id="version_tag">
-  v0.2.0 built 20131015#0
+  v0.2.1 built 20131016#0
 </div>
 
 <canvas 
@@ -350,15 +350,15 @@ tooltip:hover:before{
 
 
 <div id="zip_builder">
-<h3>Export ZIP file</h3>
+<h3>Export Settings (to ZIP)</h3>
 <form name="zip_form">
   <label for="zip_filename">Filename</label>
-  <input type="text" id="zip_filename" name="zip_filename" value="full_backup.zip" />
+  <input type="text" id="zip_filename" name="zip_filename" value="settings.zip" />
   <input type="button" value="Save ZIP ..." onclick="ZipFileExporter.exportZipFile( document.forms['zip_form'].elements['zip_filename'].value );" /> <br/>
-  <div style="text-align: right"><input type="checkbox" id="compress_zip" name="compress_zip" /><label for="compress_zip">Compress (slower!)</label></div>
+  <div style="text-align: right"><input type="checkbox" id="compress_zip" name="compress_zip" /><label for="compress_zip">Compress</label></div>
 </form>
 
-<h3>Import ZIP file</h3>
+<h3>Import Settings (from UIP)</h3>
 <form name="zip_import_form">
   <input type="file" name="zip_upload_file" /><br/>
   <input type="button" value="Upload ZIP file" onclick="ZipFileImporter.importZipFile( document.forms['zip_import_form'].elements['zip_upload_file'] );">	
@@ -368,9 +368,10 @@ tooltip:hover:before{
 
 
 <button style="position: absolute; left: 10px; top: 788px;" onclick="debug();">DEBUG</button><br/>
-<button style="position: absolute; left: 10px; top: 818px;" onclick="showLoadingBar();">Message Box</button><br/>
+<button style="position: absolute; left: 10px; top: 818px;" onclick="showLoadingBar( null );">Message Box</button><br/>
 
 
+<script language="Javascript" type="text/javascript" src="console_check.js"></script>
 <script language="Javascript" type="text/javascript" src="three.js"></script>
 
 <script language="Javascript" type="text/javascript" src="Blob.js"></script>
@@ -406,7 +407,7 @@ tooltip:hover:before{
 
 <script language="Javascript" type="text/javascript" src="IKRS.MessageBox.js"></script>
 
-
+<!-- This is the main script -->
 <script language="Javascript" type="text/javascript" src="main.js"></script>
 
 

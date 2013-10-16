@@ -98,7 +98,7 @@ IKRS.PreviewCanvasHandler.prototype.decreaseZoomFactor = function() {
 }
 
 IKRS.PreviewCanvasHandler.prototype.preview_mouseMoveHandler = function ( e ) {
-  // window.alert( "clicked. Event: " + e + ", e.pageX=" + e.pageX + ", e.pageY=" + e.pageY );
+  //window.alert( "clicked. Event: " + e + ", e.pageX=" + e.pageX + ", e.pageY=" + e.pageY );
   
   if( this.previewCanvasHandler.latestMouseDownPosition ) {
       
@@ -397,21 +397,7 @@ IKRS.PreviewCanvasHandler.prototype._buildMeshFromSettings = function( shapedPat
     var pathBendAngle = Math.max( document.getElementById( "preview_bend" ).value,
 				  0.01
 				);
-    //var buildCurvedPath = true; // (pathBendAngle!=0);
-    // Make a nice curve (for testing with sin/cos here)
-    // HINT: THE NEW IMPLEMENTATION ALWAYS USES A CURVED PATH!
-    //       But when there is no curve angle (bend=0.0) an infinite circle radius 
-    //       is assumed which will make the path nearly linear ;)
 
-
-    // How large must be the circle's radius so that the arc segment (with the given angle)
-    // has the desired path length (such as defined in the outer shape)?
-    // U = 2*PI*r
-    // r = U / (2*PI)
-    // 
-    // The actual segment size
-    //var tmpCircleRadius = pathLength / (Math.PI*2); // 110
-    
     // The length of the circle arc must be exactly the shape's length
     var tmpCircleRadius   = pathLength / ((pathBendAngle/180.0)*Math.PI);
 
@@ -458,16 +444,6 @@ IKRS.PreviewCanvasHandler.prototype._buildMeshFromSettings = function( shapedPat
 								  }
 								);	
 	
-    
-
-    /*
-    var exrusionMaterial = new THREE.MeshLambertMaterial( 
-	{ color: 0x2D303D, 
-	  wireframe: wireFrame, // false, 
-	  shading: THREE.FlatShading // THREE.LambertShading // THREE.FlatShading 
-	} 
-	);
-	*/
 
     var exrusionMaterial = new THREE.MeshPhongMaterial( 
 	{ color: 0x151D28, //0x2D303D, 

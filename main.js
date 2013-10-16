@@ -5,29 +5,61 @@
  * @version 1.0.0
  **/
 
-  /**
-   * ...
-   **/
-  function getPreviewMeshes() {
-	//return preview_mesh;
-	//return previewCanvasHandler.preview_mesh;
-        return previewCanvasHandler.getMeshes();
-  }
 
-  function bezier_undo() {
+function onloadHandler() {
+    
+    // Append the current date to the output filename values
+    var curDate = new Date();
+    //var ts      = curDate.toString( "yyyy-MM-dd H-i" );
+    var ts        = "" +
+	curDate.getFullYear() +
+	"-" +
+	(curDate.getMonth()+1) +  // months start at 0
+	"-" +
+	curDate.getDate() +
+	"_" +
+	curDate.getHours() + 
+	"." +
+	curDate.getMinutes() +
+	"." +
+	curDate.getSeconds();
+    //window.alert( ts );
+    document.forms[ "stl_form" ].elements[ "stl_filename" ].value = "my_extrusion_" + ts + ".stl";
+    document.forms[ "zip_form" ].elements[ "zip_filename" ].value = "settings_" + ts + ".zip";
+}
+
+// IE < v9 does not support this function.
+if( window.addEventListener ) {
+    window.addEventListener( "load",
+			     onloadHandler,
+			     false
+			   );
+} else {
+    window.onload = onloadHandler;
+}
+
+
+
+function getPreviewMeshes() {
+    //return preview_mesh;
+    //return previewCanvasHandler.preview_mesh;
+    return previewCanvasHandler.getMeshes();
+}
+
+function bezier_undo() {
     var hasMoreUndoSteps = this.bezierCanvasHandler.undo();
     
     window.alert( this.bezierCanvasHandler.undoHistory._toString() );
     
     //document.getElementById( "bezier_undo" ).disabled = !hasMoreUndoSteps;
-  }
+}
 
-  function bezier_redo() {
+function bezier_redo() {
     var hasMoreRedoteps = this.bezierCanvasHandler.redo();
     //document.getElementById( "bezier_redo" ).disabled = !hasMoreRedoSteps;
-  }
+}
 
-  function setBezierPath( bezierPath ) {
+function setBezierPath( bezierPath ) {
     //this.bezierCanvasHandler.bezierPath = bezierPath;
     
     this.bezierCanvasHandler.setBezierPath( bezierPath );
@@ -35,17 +67,17 @@
     //this.bezierCanvasHandler.redraw();
 
     
-			
+    
     preview_rebuild_model();
-  }
+}
 
-  function getBezierPath() {
+function getBezierPath() {
     return this.bezierCanvasHandler.bezierPath;
-  }
+}
 
-  this.bezierCanvasHandler = new IKRS.BezierCanvasHandler();
+this.bezierCanvasHandler = new IKRS.BezierCanvasHandler();
 
-  
+
 
 
 var previewCanvasHandler = new IKRS.PreviewCanvasHandler( this.bezierCanvasHandler,
@@ -286,6 +318,10 @@ stlProcessListener.terminationCallback = function(x,y) { }; // displayProcessSta
 
 
 function showLoadingBar( buttonHandler ) {
+    
+    if( !buttonHandler )
+	buttonHandler = "hideLoadingBar()";
+    
     messageBox.show( 
         "<br/><br/>Loading ...<br/>\n" +
             "<br/>\n" +

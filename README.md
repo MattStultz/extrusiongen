@@ -5,7 +5,7 @@ Path Extrusion Generator
 @author   Ikaros Kappler
 @date     2013-09-11
 @modified 2013-10-15
-@version  0.2.0
+@version  0.2.1
 
 
 
