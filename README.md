@@ -20,6 +20,9 @@ Plan
 
 Changelog
 ---------
+[2013-10-22]
+ - Added a basic menu bar library (moo-tools_dropdown-menu).
+
 [2013-10-15]
  - The mm-measurements are now applied to the STL models.
 
@@ -115,6 +118,7 @@ Used libraries
  - base64-binary.js
  - FileSaver.js
  - Blob.js
+ - Moo-Tools (dropdown-menu, core 1.4.5)
 
 
 
@@ -138,6 +142,10 @@ Thanks to
 
  [STLBuilder inspirations]
    Paul Kaplan
+ 
+ [Moo-Tools dropdown menu]
+   mootools / https://github.com/mootools  
+   <unknown author>
  
 
 

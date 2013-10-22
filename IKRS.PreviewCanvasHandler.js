@@ -50,6 +50,20 @@ IKRS.PreviewCanvasHandler = function( bezierCanvasHandler,
     this.preview_canvas.onmouseup   = this.preview_mouseUpHandler;
     this.preview_canvas.onmousemove = this.preview_mouseMoveHandler;
 
+
+    // Install a mouse wheel listener
+    if( this.preview_canvas.addEventListener ) { // window.addEventListener ) {
+
+	// For Mozilla 
+	//window.addEventListener( 'DOMMouseScroll', mouseWheelHandler, false );
+	this.preview_canvas.addEventListener( 'DOMMouseScroll', this.mouseWheelHandler, false );
+    } else {
+
+	// IE
+	this.preview_canvas.onmousewheel = document.onmousewheel = mouseWheelHandler;
+
+    }
+
     
     this.preview_renderer.setSize( preview_canvas_width, 
 				   preview_canvas_height 
@@ -66,8 +80,46 @@ IKRS.PreviewCanvasHandler = function( bezierCanvasHandler,
     this._setCameraPositionFromLocalSettings();
 }
 
+
 IKRS.PreviewCanvasHandler.prototype = new IKRS.Object();
 IKRS.PreviewCanvasHandler.prototype.constructor = IKRS.PreviewCanvasHandler;
+
+IKRS.PreviewCanvasHandler.prototype.mouseWheelHandler = function( e ) {
+
+    var delta = 0;
+    if (!e) // For IE.
+	e = window.event;
+    if (e.wheelDelta) { // IE/Opera.
+	delta = e.wheelDelta/120;
+    } else if (e.detail) { // Mozilla case. 
+	// In Mozilla, sign of delta is different than in IE.
+	// Also, delta is multiple of 3.
+	delta = -e.detail/3;
+    }
+    // If delta is nonzero, handle it.
+    // Basically, delta is now positive if wheel was scrolled up,
+    // and negative, if wheel was scrolled down.
+    if (delta) {
+	
+	if( delta > 0 )
+	    decreaseZoomFactor( true ); // redraw
+	else
+	    increaseZoomFactor( true ); // redraw
+	
+
+    }
+    // Prevent default actions caused by mouse wheel.
+    // That might be ugly, but we handle scrolls somehow
+    // anyway, so don't bother here..
+    if (e.preventDefault)
+	e.preventDefault();
+    e.returnValue = false;
+
+}
+
+IKRS.PreviewCanvasHandler.prototype.getCanvas = function() {
+    return this.preview_canvas;
+}
 
 IKRS.PreviewCanvasHandler.prototype.getMeshes = function() {
     return this.preview_meshes;

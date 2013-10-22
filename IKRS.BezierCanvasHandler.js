@@ -39,6 +39,19 @@ IKRS.BezierCanvasHandler = function() {
     this.canvas.onmouseup      = this.mouseUpHandler;
     this.canvas.onmousemove    = this.mouseMoveHandler; 
 
+    // Install a mouse wheel listener
+    if( this.canvas.addEventListener ) { // window.addEventListener ) {
+
+	// For Mozilla 
+	//window.addEventListener( 'DOMMouseScroll', mouseWheelHandler, false );
+	this.canvas.addEventListener( 'DOMMouseScroll', this.mouseWheelHandler, false );
+    } else {
+
+	// IE
+	this.canvas.onmousewheel = document.onmousewheel = mouseWheelHandler;
+
+    }
+
     window.addEventListener( "keydown", this.keyDownHandler, false );
 
     // This is a new way: build from a JSON string
@@ -69,6 +82,41 @@ IKRS.BezierCanvasHandler.POINT_ID_LEFT_LOWER_BOUND  = -1004;
 
 IKRS.BezierCanvasHandler.prototype = new IKRS.Object();
 IKRS.BezierCanvasHandler.prototype.constructor = IKRS.BezierCanvasHandler;
+
+
+IKRS.BezierCanvasHandler.prototype.mouseWheelHandler = function( e ) {
+
+    // window.alert( "X" );
+
+    var delta = 0;
+    if (!e) // For IE.
+	e = window.event;
+    if (e.wheelDelta) { // IE/Opera.
+	delta = e.wheelDelta/120;
+    } else if (e.detail) { // Mozilla case. 
+	// In Mozilla, sign of delta is different than in IE.
+	// Also, delta is multiple of 3.
+	delta = -e.detail/3;
+    }
+    // If delta is nonzero, handle it.
+    // Basically, delta is now positive if wheel was scrolled up,
+    // and negative, if wheel was scrolled down.
+    if (delta) {
+	
+	if( delta > 0 )
+	    this.bezierCanvasHandler.decreaseZoomFactor( true ); // redraw
+	else
+	    this.bezierCanvasHandler.increaseZoomFactor( true ); // redraw
+	
+    }
+    // Prevent default actions caused by mouse wheel.
+    // That might be ugly, but we handle scrolls somehow
+    // anyway, so don't bother here..
+    if( e.preventDefault )
+	e.preventDefault();
+    e.returnValue = false;
+}
+
 
 IKRS.BezierCanvasHandler.prototype.drawOffset = new THREE.Vector2( 324, 525 ); //256, 384 );
 IKRS.BezierCanvasHandler.prototype.zoomFactor = 1.4;
@@ -421,72 +469,6 @@ IKRS.BezierCanvasHandler.drawHorizontalRuler = function( context,
 
     }
 }
-
-
-/*
-IKRS.BezierCanvasHandler.drawAnonymousRuler = function( context,
-							drawOffset, 
-							zoomFactor,
-
-							bounds,
-							distance,           // px
-							markerLength,       // px
-							millimeterPerPixel,
-							markerDistance,     // px
-							textDistance,       // px
-
-							direction,
-							textRotation
-						       ) {
-
-    var leftUpperPoint     = bounds.getLeftUpperPoint();
-    var rightUpperPoint    = bounds.getRightUpperPoint();
-    var rightLowerPoint    = bounds.getRightLowerPoint();
-    var leftLowerPoint     = bounds.getLeftLowerPoint();
-    var width              = bounds.getWidth();
-    var height             = bounds.getHeight();
-    
-    var perpendicular      = direction.negate();
-    perpendicular          = perpendicular.normalize();
-
-    // Draw main line
-    context.beginPath();
-    context.moveTo( rightLowerPoint.x * zoomFactor + drawOffset.x + distance,
-		    rightLowerPoint.y * zoomFactor + drawOffset.y
-		  );
-    context.lineTo( rightUpperPoint.x * zoomFactor + drawOffset.x + distance,
-		    rightUpperPoint.y * zoomFactor + drawOffset.y
-		  );    
-    context.stroke();
-
-    // Draw unit markers
-    var i = 0;
-    var x = 0, y = 0, relY;
-    while( (relY = i*markerDistance) < height ) {
-
-	x = rightLowerPoint.x * zoomFactor + drawOffset.x;
-	y = rightLowerPoint.y * zoomFactor + drawOffset.y - (relY * zoomFactor * perpendicular.y);
-	context.beginPath();
-	context.moveTo( x + distance * perpendicular.x,
-			y + distance
-		      );
-	context.lineTo( x + (distance + markerLength) * perpendicular.x, 
-			y + (distance + markerLength) 
-		      );	
-	context.stroke();
-
-	// Draw unit number
-	var mm = relY * millimeterPerPixel;
-	context.fillText( "" + mm + "mm", 
-			  x + (distance + markerLength + textDistance) * direction.x,
-			  y + (distance + markerLength + textDistance) * direction.y
-			);
-
-	i++;
-
-    }
-}
-*/
 
 
 IKRS.BezierCanvasHandler.prototype._drawSelectedPoint = function( context,
@@ -1115,7 +1097,7 @@ IKRS.BezierCanvasHandler.prototype.drawBezierPath = function( context,
 
 
 	// Clear linear path for debugging?
-	if( document.forms["bezier_form"].elements["draw_linear_path_segments"].checked ) {
+	if( false ) { // document.forms["bezier_form"].elements["draw_linear_path_segments"].checked ) {
 	    
 	    context.strokeStyle = "#c8c8ff";
 	    context.lineWidth   = 1;

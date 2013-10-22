@@ -157,39 +157,36 @@ window.onload = preview_render;
 
 
 
-
+/*
 function mouseWheelHandler( e ) {
   
   //this.previewCanvasHandler.handleMouseWheelEvent( e );
   
   var delta = 0;
-  if (!e) /* For IE. */
+  if (!e) // For IE.
     e = window.event;
-  if (e.wheelDelta) { /* IE/Opera. */
+  if (e.wheelDelta) { // IE/Opera.
     delta = e.wheelDelta/120;
-  } else if (e.detail) { /** Mozilla case. */
-    /** In Mozilla, sign of delta is different than in IE.
-     * Also, delta is multiple of 3.
-     */
+  } else if (e.detail) { // Mozilla case. 
+    // In Mozilla, sign of delta is different than in IE.
+    // Also, delta is multiple of 3.
     delta = -e.detail/3;
   }
-  /** If delta is nonzero, handle it.
-   * Basically, delta is now positive if wheel was scrolled up,
-   * and negative, if wheel was scrolled down.
-   */
+  // If delta is nonzero, handle it.
+  // Basically, delta is now positive if wheel was scrolled up,
+  // and negative, if wheel was scrolled down.
   if (delta) {
     
-    if( delta < 0 )
+    if( delta > 0 )
       decreaseZoomFactor( true ); // redraw
     else
       increaseZoomFactor( true ); // redraw
     
 
   }
-  /** Prevent default actions caused by mouse wheel.
-   * That might be ugly, but we handle scrolls somehow
-   * anyway, so don't bother here..
-   */
+  // Prevent default actions caused by mouse wheel.
+  // That might be ugly, but we handle scrolls somehow
+  // anyway, so don't bother here..
   if (e.preventDefault)
     e.preventDefault();
   e.returnValue = false;
@@ -197,18 +194,32 @@ function mouseWheelHandler( e ) {
 }
 
 
-
 // Install a mouse wheel listener
 if( window.addEventListener ) {
 
-  // For Mozilla 
-  window.addEventListener( 'DOMMouseScroll', mouseWheelHandler, false );
+    // For Mozilla 
+    //window.addEventListener( 'DOMMouseScroll', mouseWheelHandler, false );
+    this.previewCanvasHandler.getCanvas().addEventListener( 'DOMMouseScroll', mouseWheelHandler, false );
 }
     
 // IE and Opera
-window.onmousewheel = document.onmousewheel = mouseWheelHandler;
-// window.previewCanvasHandler = this;
+//window.onmousewheel = document.onmousewheel = mouseWheelHandler;
+this.previewCanvasHandler.getCanvas().onmousewheel = document.onmousewheel = mouseWheelHandler;
+*/
 
+function saveShape() {
+
+    saveTextFile( bezierCanvasHandler.bezierPath.toJSON(), 'bezier_shape.json', 'application/json' );
+
+}
+
+function loadShape() {
+    upload_bezier_json_file( document.forms['bezier_file_upload_form'].elements['bezier_json_file'] );
+}
+
+function exportZIP() {
+    ZipFileExporter.exportZipFile( document.forms['zip_form'].elements['zip_filename'].value );
+}
 
 
 function debug() {

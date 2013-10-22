@@ -19,9 +19,9 @@ input {
 }
 
 canvas#preview_canvas { 
- position: absolute;
- top: 10px;
- left: 10px;
+ position: absolute; 
+ top: 30px;
+ left: 10px; 
  width: 512px; 
  height: 768px; 
  border: 1px solid #000000;
@@ -29,7 +29,7 @@ canvas#preview_canvas {
 
 canvas#bezier_canvas {
 position: absolute;
-top: 10px;
+top: 30px;
 left: 532px;
 width: 512px;
 height: 768px;
@@ -38,7 +38,7 @@ border: 1px solid #000000;
 
 div#mesh_controls {
 position: absolute;
-top: 10px;
+top: 30px;
 left: 1054px;
 width: 400px;
 height: 310px;
@@ -48,7 +48,7 @@ padding: 10px;
 
 div#shape_controls {
 position: absolute;
-top: 350px;
+top: 370px;
 left: 1054px;
 width: 400px;
 height: 130px;
@@ -58,7 +58,7 @@ padding: 10px;
 
 div#stl_builder {
 position: absolute;
-top: 510px;
+top: 530px;
 left: 1054px;
 width: 400px;
 height: 78px;
@@ -68,7 +68,7 @@ padding: 10px;
 
 div#zip_builder {
 position: absolute;
-top: 620px;
+top: 640px;
 left: 1054px;
 width: 400px;
 height: 138px;
@@ -111,12 +111,18 @@ tooltip:hover:before{
 
 #version_tag {
     position:   absolute;
-    top:        0px;
+    top:        20px;
     left:       10px;
     width:      512px;
     text-align: right;
     font-size:  7pt;
 
+}
+
+#menu_bar {
+    position: absolute;
+    left: 10px;
+    top: 0px;
 }
 
 </style> 
@@ -125,8 +131,9 @@ tooltip:hover:before{
 
 <body> 
 
+
 <div id="version_tag">
-  v0.2.1 built 20131016#0
+  v0.2.2 built 20131022#0
 </div>
 
 <canvas 
@@ -135,7 +142,7 @@ tooltip:hover:before{
   id="preview_canvas">
 </canvas>
 
-<div style="position: absolute; left: 10px; top: 788px; width: 256px;">
+<div style="position: absolute; left: 10px; top: 808px; width: 256px;">
   <div style="position: absolute; top: 0px; left: 256px; width: 256px; text-align: right;">
   <button onclick="decreaseZoomFactor(true);">-</button>
   <button onclick="increaseZoomFactor(true);">+</button>
@@ -155,7 +162,7 @@ tooltip:hover:before{
   height="768px">
 </canvas>
 
-<div style="position: absolute; left: 532px; top: 788px; width: 256px;">
+<div style="position: absolute; left: 532px; top: 808px; width: 256px;">
   <div>
   <form name="bezier_form">
 
@@ -166,9 +173,11 @@ tooltip:hover:before{
   <input type="checkbox" id="draw_perpendiculars" name="draw_perpendiculars" onchange="javascript:bezierCanvasHandler.redraw();" class="tooltip" title="Draws a perpendicular hull that shows how the material thickness must be calculated." />
   <label for="draw_perpendiculars">Draw perpendiculars</label>
 
+  <!--
   <br/>
   <input type="checkbox" id="draw_linear_path_segments" name="draw_linear_path_segments" onchange="javascript:bezierCanvasHandler.redraw();" class="tooltip" title="The outer shape is a sequence of cubic bezier curves connected with each other. Enabling this will draw the linear path between the start- and end-points." />
   <label for="draw_linear_path_segments">Draw linear path segments</label>
+  -->
 
   <!--
   <br/>
@@ -319,13 +328,13 @@ tooltip:hover:before{
 
 <div id="shape_controls">
   <h3>Save shape to JSON file</h3>
-  <button onclick="saveTextFile( bezierCanvasHandler.bezierPath.toJSON(), 'bezier_shape.json', 'application/json' );">Export JSON ...</button>
+  <button onclick="saveShape();">Export JSON ...</button>
   <br/>
   <br/>							     
   <h3>Load shape from JSON file</h3>
   <form name="bezier_file_upload_form">
   <input type="file" name="bezier_json_file" /><br/>
-  <input type="button" value="Upload JSON file" onclick="upload_bezier_json_file( document.forms['bezier_file_upload_form'].elements['bezier_json_file'] );">
+  <input type="button" value="Upload JSON file" onclick="loadShape();">
   </form>
 </div>
 
@@ -354,7 +363,7 @@ tooltip:hover:before{
 <form name="zip_form">
   <label for="zip_filename">Filename</label>
   <input type="text" id="zip_filename" name="zip_filename" value="settings.zip" />
-  <input type="button" value="Save ZIP ..." onclick="ZipFileExporter.exportZipFile( document.forms['zip_form'].elements['zip_filename'].value );" /> <br/>
+  <input type="button" value="Save ZIP ..." onclick="exportZIP();" /> <br/>
   <div style="text-align: right"><input type="checkbox" id="compress_zip" name="compress_zip" /><label for="compress_zip">Compress</label></div>
 </form>
 
@@ -367,8 +376,9 @@ tooltip:hover:before{
 </div>
 
 
-<button style="position: absolute; left: 10px; top: 788px;" onclick="debug();">DEBUG</button><br/>
-<button style="position: absolute; left: 10px; top: 818px;" onclick="showLoadingBar( null );">Message Box</button><br/>
+
+<button style="position: absolute; left: 10px; top: 808px;" onclick="debug();">DEBUG</button><br/>
+<button style="position: absolute; left: 10px; top: 838px;" onclick="showLoadingBar( null );">Message Box</button><br/>
 
 
 <script language="Javascript" type="text/javascript" src="console_check.js"></script>
@@ -412,6 +422,43 @@ tooltip:hover:before{
 
 
 
+<!-- Add the menu bar -->
+<link rel="stylesheet" type="text/css" media="screen" href="moo_tools_drop_down_menu/css/dropdown.css" />
+<script type="text/javascript" src="moo_tools_drop_down_menu/scripts/mootools.js"> </script>
+<script type="text/javascript" src="moo_tools_drop_down_menu/scripts/mootools-plugins.js"> </script>
+<script type="text/javascript" src="moo_tools_drop_down_menu/scripts/dropdown-compressed.js"> </script>
+<script type="text/javascript">
+   new UvumiDropdown('nav'); 
+</script>
+
+
+<div id="menu_bar">
+    <div id="dropdown-holder">
+      <ul id="nav" class="dropdown">
+	<li class="heading"><a href="#">File</a>
+	  <ul>
+	    <li><a href="#" onclick="exportZIP()">Save ...</a></li>
+	    <li><a href="#" onclick="alert('no action assigned yet')">Load ...</a></li>
+	    <li><a href="#" class="popout">Export Mesh &gt;</a>
+	      <ul style="color: #f00;">
+		<li><a href="#" onclick="exportSTL()">STL</a></li>	
+	      </ul>
+	    </li>
+	    <li><a href="#" onclick="saveShape();">Export bezier shape ...</a></li>
+	    <li><a href="#" onclick="alert('no action assigned yet')">Import bezier shape ...</a></li>
+	  </ul>
+	</li>	
+	<li class="heading"><a href="#">Edit</a>
+	  <ul>
+	    <li><a href="#" onclick="alert('not yet implemented')">Settings ...</a></li>   
+	  </ul>
+	</li>
+	
+      </ul>
+      <div class="clear"> </div>
+    </div>
+</div>
+<!-- END menu bar -->
 
 
 
