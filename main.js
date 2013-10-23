@@ -238,8 +238,19 @@ function exportSTL() {
     if( !divisibleSTLBuilder ) { 
 	
 	var meshes        = getPreviewMeshes();
-	var filename      = document.forms['stl_form'].elements['stl_filename'].value;
-	var merge_meshes  = document.forms["stl_form"].elements["stl_merge_meshes"].checked;
+	var filename      = null;
+	if( document.forms['stl_form'].elements['stl_filename'] )
+	    filename =  document.forms['stl_form'].elements['stl_filename'].value;
+	else
+	    filename = "mesh.stl";
+
+	var merge_meshes  = false;
+	if( document.forms["stl_form"] &&
+	    document.forms["stl_form"].elements["stl_merge_meshes"] &&
+	    document.forms["stl_form"].elements["stl_merge_meshes"].checked ) {
+
+	    merge_meshes = true;
+	}
 	
 	// Init the divisible STL builder
 	divisibleSTLBuilder = new IKRS.DivisibleSTLBuilder( meshes,

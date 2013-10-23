@@ -103,7 +103,7 @@ IKRS.BezierCanvasHandler.prototype.mouseWheelHandler = function( e ) {
     // and negative, if wheel was scrolled down.
     if (delta) {
 	
-	if( delta > 0 )
+	if( delta < 0 )
 	    this.bezierCanvasHandler.decreaseZoomFactor( true ); // redraw
 	else
 	    this.bezierCanvasHandler.increaseZoomFactor( true ); // redraw
