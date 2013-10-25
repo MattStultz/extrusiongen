@@ -26,13 +26,15 @@ I TRIED TO MAKE THIS EASY TO STYLE! SEE NOTES BELOW
 	/* font-size: 16px; */
 	display:block;
 	padding:0px 10px 0px 10px;
-	color:#0099CC;
+	/* color:#0099CC; */
+	color:#000000;
 	text-decoration:none;
 }
 .dropdown a:hover{
-	color: #00ccff;
-	/* background-color: #121212; */
-	background-color: #e0e0e0;
+    /* color: #00ccff; */
+    color: #000000;
+    /* background-color: #121212; */
+    background-color: #e0e0e0;
 }
 .dropdown ul {
 	top:30px;

@@ -102,9 +102,9 @@ IKRS.PreviewCanvasHandler.prototype.mouseWheelHandler = function( e ) {
     if (delta) {
 	
 	if( delta > 0 )
-	    decreaseZoomFactor( true ); // redraw
-	else
 	    increaseZoomFactor( true ); // redraw
+	else
+	    decreaseZoomFactor( true ); // redraw
 	
 
     }
@@ -128,10 +128,10 @@ IKRS.PreviewCanvasHandler.prototype.getMeshes = function() {
 IKRS.PreviewCanvasHandler.prototype.increaseZoomFactor = function() {
     
     // Would the increase zoom hit the max draw range? (the camera frustum far plane)
-    if( this.preview_camera.ikrsSettings.rotationRadius * 1.2 >= this.preview_camera.far )
+    if( this.preview_camera.ikrsSettings.rotationRadius / 1.2 >= this.preview_camera.far )
 	return false; 
 
-    this.preview_camera.ikrsSettings.rotationRadius *= 1.2;
+    this.preview_camera.ikrsSettings.rotationRadius /= 1.2;
     this._setCameraPositionFromLocalSettings();
     
     return true;
@@ -143,7 +143,7 @@ IKRS.PreviewCanvasHandler.prototype.decreaseZoomFactor = function() {
     if( this.preview_camera.ikrsSettings.rotationRadius * 1.2 <= this.preview_camera.near )
 	return false; 
 
-    this.preview_camera.ikrsSettings.rotationRadius /= 1.2;
+    this.preview_camera.ikrsSettings.rotationRadius *= 1.2;
     this._setCameraPositionFromLocalSettings();
 
     return true;

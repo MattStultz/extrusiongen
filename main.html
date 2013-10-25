@@ -8,6 +8,7 @@ body {
    font-family: Monospace;
    font-size: 10pt;
    background-color: #f8f8f8;
+   /* background-image: url('img/depositphotos_1692651-Blueprint_0.1.jpg'); */
 }
 
 h3 {
@@ -48,6 +49,7 @@ border: 1px solid #000000;
 padding: 10px;
 }
 
+/*
 div#shape_controls {
 position: absolute;
 top: 380px;
@@ -77,6 +79,7 @@ height: 138px;
 border: 1px solid #000000;
 padding: 10px;
 }
+*/
 
 .tooltip {
     display: inline;
@@ -135,7 +138,7 @@ tooltip:hover:before{
 
 
 <div id="version_tag">
-  v0.2.3 built 20131022#1
+  v0.2.4 built 20131025#0
 </div>
 
 <canvas 
@@ -168,10 +171,12 @@ tooltip:hover:before{
   <div>
   <form name="bezier_form">
 
+    <!--
   <input type="checkbox" id="draw_tangents" name="draw_tangents" checked="checked" onchange="javascript:bezierCanvasHandler.redraw();" class="tooltip" title="Disables the control points and tangents." />
   <label for="draw_tangents">Draw tangents</label>
-
   <br/>
+  -->
+
   <input type="checkbox" id="draw_perpendiculars" name="draw_perpendiculars" onchange="javascript:bezierCanvasHandler.redraw();" class="tooltip" title="Draws a perpendicular hull that shows how the material thickness must be calculated." />
   <label for="draw_perpendiculars">Draw perpendiculars</label>
 
@@ -269,7 +274,7 @@ tooltip:hover:before{
 					     (only if hollow)
   </td>
   <td valign="top">
-        <input type="number" id="mesh_hull_strength" name="mesh_hull_strength" value="25" class="tooltip" title="..." onchange="javascript:bezierCanvasHandler.redraw();" onkeyup="javascript:bezierCanvasHandler.redraw();preview_rebuild_model();" size="4" style="width: 35px;" onchange="preview_rebuild_model();" disabled="disabled" />px
+        <input type="number" id="mesh_hull_strength" name="mesh_hull_strength" value="25" class="tooltip" title="..." onchange="javascript:bezierCanvasHandler.redraw();" onkeyup="javascript:bezierCanvasHandler.redraw();preview_rebuild_model();" size="4" style="width: 35px;" onchange="preview_rebuild_model();" />px
          
   </td>
 </tr>
@@ -328,6 +333,7 @@ tooltip:hover:before{
 </form>
 </div>
 
+<!--
 <div id="shape_controls">
   <h3>Save shape to JSON file</h3>
   <button onclick="saveShape();">Export JSON ...</button>
@@ -339,6 +345,7 @@ tooltip:hover:before{
   <input type="button" value="Upload JSON file" onclick="loadShape();">
   </form>
 </div>
+-->
 
 <!-- NOT IN USE ANY MORE AS THERE EXSISTS A MENU BAR NOW
 <div id="stl_builder">
@@ -362,6 +369,7 @@ tooltip:hover:before{
 </form>
 
 
+<!--
 <div id="zip_builder">
 <h3>Export Settings (to ZIP)</h3>
 <form name="zip_form">
@@ -371,6 +379,8 @@ tooltip:hover:before{
   <div style="text-align: right"><input type="checkbox" id="compress_zip" name="compress_zip" /><label for="compress_zip">Compress</label></div>
 </form>
 
+
+
 <h3>Import Settings (from ZIP)</h3>
 <form name="zip_import_form">
   <input type="file" name="zip_upload_file" onchange="alert('changed')" /><br/>
@@ -378,6 +388,8 @@ tooltip:hover:before{
 </form>
 
 </div>
+-->
+
 
 
 
@@ -436,20 +448,60 @@ tooltip:hover:before{
 </script>
 
 
+<style>
+
+.open_file_menu_div {
+position: relative; 
+top: 0px; 
+left: 0px; 
+width: 220px; 
+height: 30px; 
+cursor: pointer;
+}
+
+.open_file_menu_input {
+position: relative; 
+width: 220px; 
+height: 30px; 
+top: -30px; 
+left: 0px; 
+opacity: 0; 
+filter: alpha(opacity=0); 
+cursor: pointer;
+}
+
+</style>
 <div id="menu_bar">
     <div id="dropdown-holder">
       <ul id="nav" class="dropdown">
 	<li class="heading"><a href="#">File</a>
 	  <ul>
-	    <li><a href="#" onclick="exportZIP()">Save</a></li>
-	    <li><a href="#" onclick="alert('no action assigned yet')">Load</a></li>
+	    <li><a href="#" onclick="newScene()">New</a></li>
+	    <li><a href="#" onclick="exportZIP()">Save (*.zip)</a></li>
+	    <li>
+	      <!-- <a href="#" onclick="alert('no action assigned yet')">Load</a> -->
+	      <form name="zip_import_form">		
+		<a href="#">Load (*.zip)</a>
+		<div class="open_file_menu_div">
+		  <input type="file" name="zip_upload_file" accept="application/zip" class="open_file_menu_input" onchange="importZIP();" />
+		</div>
+	      </form>
+	    </li>
 	    <li><a href="#" class="popout">Export Mesh &gt;</a>
-	      <ul style="color: #f00;">
-		<li><a href="#" onclick="exportSTL()">STL</a></li>	
+	      <ul>
+		<li><a href="#" onclick="exportSTL()">STL file (*.stl)</a></li>	
 	      </ul>
 	    </li>
-	    <li><a href="#" onclick="saveShape();">Export bezier shape</a></li>
-	    <li><a href="#" onclick="alert('no action assigned yet')">Import bezier shape</a></li>
+	    <li><a href="#" onclick="saveShape();">Export shape (*.json)</a></li>
+	    <li>
+	      <!-- <a href="#" onclick="alert('no action assigned yet')">Import shape (*.json)</a> -->
+	       <form name="bezier_file_upload_form">		
+		<a href="#">Import shape (*.json)</a>
+		<div class="open_file_menu_div">
+		  <input type="file" name="bezier_json_file" accept="application/zip" class="open_file_menu_input" onchange="loadShape();" />
+		</div>
+	      </form>
+	    </li>
 	  </ul>
 	</li>	
 	<li class="heading"><a href="#">Edit</a>

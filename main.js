@@ -5,9 +5,8 @@
  * @version 1.0.0
  **/
 
+function createHumanReadableTimestamp() {
 
-function onloadHandler() {
-    
     // Append the current date to the output filename values
     var curDate = new Date();
     //var ts      = curDate.toString( "yyyy-MM-dd H-i" );
@@ -23,9 +22,38 @@ function onloadHandler() {
 	curDate.getMinutes() +
 	"." +
 	curDate.getSeconds();
+
+    return ts;
+}
+
+function getDefaultBezierJSON() {
+    return "[ { \"startPoint\" : [-122,77.80736634304651], \"endPoint\" : [-65.59022229786551,21.46778533702511], \"startControlPoint\": [-121.62058129515852,25.08908859418696], \"endControlPoint\" : [-79.33419353770395,48.71529293460728] }, { \"startPoint\" : [-65.59022229786551,21.46778533702511], \"endPoint\" : [-65.66917273472913,-149.23537680826058], \"startControlPoint\": [-52.448492057756646,-4.585775770903305], \"endControlPoint\" : [-86.1618869001374,-62.11613821618976] }, { \"startPoint\" : [-65.66917273472913,-149.23537680826058], \"endPoint\" : [-61.86203591980055,-243.8368165606738], \"startControlPoint\": [-53.701578771473564,-200.1123697454778], \"endControlPoint\" : [-69.80704300441666,-205.36451303641783] }, { \"startPoint\" : [-61.86203591980055,-243.8368165606738], \"endPoint\" : [-21.108966092052256,-323], \"startControlPoint\": [-54.08681426887413,-281.486963896856], \"endControlPoint\" : [-53.05779349623559,-323] } ]";
+}
+
+function onloadHandler() {
+    
+    // Append the current date to the output filename values
+/*
+    var curDate = new Date();
+    //var ts      = curDate.toString( "yyyy-MM-dd H-i" );
+    var ts        = "" +
+	curDate.getFullYear() +
+	"-" +
+	(curDate.getMonth()+1) +  // months start at 0
+	"-" +
+	curDate.getDate() +
+	"_" +
+	curDate.getHours() + 
+	"." +
+	curDate.getMinutes() +
+	"." +
+	curDate.getSeconds();
+	
+    
     //window.alert( ts );
     document.forms[ "stl_form" ].elements[ "stl_filename" ].value = "my_extrusion_" + ts + ".stl";
     document.forms[ "zip_form" ].elements[ "zip_filename" ].value = "settings_" + ts + ".zip";
+    */
 }
 
 // IE < v9 does not support this function.
@@ -35,8 +63,8 @@ if( window.addEventListener ) {
 			     false
 			   );
 } else {
-    window.onload = onloadHandler;
-}
+    window.onload = onloadHandler;}
+
 
 
 
@@ -156,56 +184,36 @@ function preview_rebuild_model() {
 window.onload = preview_render;
 
 
-
-/*
-function mouseWheelHandler( e ) {
-  
-  //this.previewCanvasHandler.handleMouseWheelEvent( e );
-  
-  var delta = 0;
-  if (!e) // For IE.
-    e = window.event;
-  if (e.wheelDelta) { // IE/Opera.
-    delta = e.wheelDelta/120;
-  } else if (e.detail) { // Mozilla case. 
-    // In Mozilla, sign of delta is different than in IE.
-    // Also, delta is multiple of 3.
-    delta = -e.detail/3;
-  }
-  // If delta is nonzero, handle it.
-  // Basically, delta is now positive if wheel was scrolled up,
-  // and negative, if wheel was scrolled down.
-  if (delta) {
+function newScene() {
     
-    if( delta > 0 )
-      decreaseZoomFactor( true ); // redraw
-    else
-      increaseZoomFactor( true ); // redraw
     
+    var defaultSettings = {
+	shapeSegments:     80,
+	pathSegments:      80,
+	bendAngle:         0,
+	buildNegativeMesh: false,
+	meshHullStrength:  0,
+	closePathBegin:    false,
+	closePathEnd:      true,
+	wireframe:         false,
+	triangulate:       true
+    };
 
-  }
-  // Prevent default actions caused by mouse wheel.
-  // That might be ugly, but we handle scrolls somehow
-  // anyway, so don't bother here..
-  if (e.preventDefault)
-    e.preventDefault();
-  e.returnValue = false;
+    ZipFileImporter._apply_mesh_settings( defaultSettings );
 
+
+    var json = getDefaultBezierJSON();
+    try {
+	bezierPath = IKRS.BezierPath.fromJSON( json );		    
+    } catch( e ) {
+	window.alert( "Error: " + e );
+	return false;
+    }
+
+    setBezierPath( bezierPath );
+
+    preview_rebuild_model();
 }
-
-
-// Install a mouse wheel listener
-if( window.addEventListener ) {
-
-    // For Mozilla 
-    //window.addEventListener( 'DOMMouseScroll', mouseWheelHandler, false );
-    this.previewCanvasHandler.getCanvas().addEventListener( 'DOMMouseScroll', mouseWheelHandler, false );
-}
-    
-// IE and Opera
-//window.onmousewheel = document.onmousewheel = mouseWheelHandler;
-this.previewCanvasHandler.getCanvas().onmousewheel = document.onmousewheel = mouseWheelHandler;
-*/
 
 function saveShape() {
 
@@ -218,7 +226,15 @@ function loadShape() {
 }
 
 function exportZIP() {
-    ZipFileExporter.exportZipFile( document.forms['zip_form'].elements['zip_filename'].value );
+    //var zip_filename = document.forms['zip_form'].elements['zip_filename'].value;
+    var zip_filename = "settings_" + createHumanReadableTimestamp() + ".zip";
+    ZipFileExporter.exportZipFile( zip_filename );
+}
+
+function importZIP() {
+    var zip_filename = document.forms['zip_import_form'].elements['zip_upload_file'];
+    if( zip_filename )
+	ZipFileImporter.importZipFile( zip_filename );
 }
 
 

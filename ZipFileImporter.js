@@ -35,7 +35,7 @@ ZipFileImporter = {
 	if( meshSettings.shapeSegments )
 	    document.forms[ "mesh_form" ].elements[ "shape_segments" ].value = meshSettings.shapeSegments;
 
-	if( meshSettings.pathSegment )
+	if( meshSettings.pathSegments )
 	    document.forms[ "mesh_form" ].elements[ "path_segments" ].value = meshSettings.pathSegments;
 
 	if( typeof meshSettings.bendAngle != "undefined" ) // || meshSettings.bendAngle == 0 )
