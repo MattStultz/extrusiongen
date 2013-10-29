@@ -44,7 +44,7 @@ position: absolute;
 top: 40px;
 left: 1054px;
 width: 400px;
-height: 310px;
+height: 330px;
 border: 1px solid #000000;
 padding: 10px;
 }
@@ -171,26 +171,8 @@ tooltip:hover:before{
   <div>
   <form name="bezier_form">
 
-    <!--
-  <input type="checkbox" id="draw_tangents" name="draw_tangents" checked="checked" onchange="javascript:bezierCanvasHandler.redraw();" class="tooltip" title="Disables the control points and tangents." />
-  <label for="draw_tangents">Draw tangents</label>
-  <br/>
-  -->
-
   <input type="checkbox" id="draw_perpendiculars" name="draw_perpendiculars" onchange="javascript:bezierCanvasHandler.redraw();" class="tooltip" title="Draws a perpendicular hull that shows how the material thickness must be calculated." />
   <label for="draw_perpendiculars">Draw perpendiculars</label>
-
-  <!--
-  <br/>
-  <input type="checkbox" id="draw_linear_path_segments" name="draw_linear_path_segments" onchange="javascript:bezierCanvasHandler.redraw();" class="tooltip" title="The outer shape is a sequence of cubic bezier curves connected with each other. Enabling this will draw the linear path between the start- and end-points." />
-  <label for="draw_linear_path_segments">Draw linear path segments</label>
-  -->
-
-  <!--
-  <br/>
-  <input type="checkbox" id="draw_coordinate_system" name="draw_coordinate_system" onchange="javascript:bezierCanvasHandler.redraw();" class="tooltip" title="Show the origin at (0,0) on the X-Y-plane." />
-  <label for="draw_coordinate_system">Draw coordinate system</label>
-  -->
 
   <br/>
   <input type="checkbox" id="draw_rulers" name="draw_rulers" onchange="javascript:bezierCanvasHandler.redraw();" class="tooltip" title="Check if rulers should be painted." checked="checked" />
@@ -318,8 +300,16 @@ tooltip:hover:before{
 <tr>
   <td></td>
   <td>
-        <input type="checkbox" id="split_shape" name="split_shape" onchange="preview_rebuild_model();" />
+        <input type="checkbox" id="split_shape" name="split_shape" onchange="document.getElementById('arrange_splits_on_plane').disabled = !document.getElementById('split_shape').checked; preview_rebuild_model();" />
           <label for="split_shape">Split shape/mesh</label>
+  </td>
+</tr>
+
+<tr>
+  <td></td>
+  <td>
+        <input type="checkbox" id="arrange_splits_on_plane" name="arrange_splits_on_plane" onchange="preview_rebuild_model();" disabled="disabled" />
+          <label for="arrange_splits_on_plabe">Arrange splits on plane</label>
   </td>
 </tr>
 
@@ -422,6 +412,7 @@ tooltip:hover:before{
 <script language="Javascript" type="text/javascript" src="IKRS.DivisibleSTLBuilder.js"></script>
 
 <script language="Javascript" type="text/javascript" src="IKRS.BoundingBox2.js"></script>
+<script language="Javascript" type="text/javascript" src="IKRS.VectorFactory.js"></script>
 <script language="Javascript" type="text/javascript" src="IKRS.CubicBezierCurve.js"></script>
 <script language="Javascript" type="text/javascript" src="IKRS.BezierCanvasHandler.js"></script>
 <script language="Javascript" type="text/javascript" src="IKRS.BezierPath.js"></script>

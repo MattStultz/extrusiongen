@@ -250,20 +250,61 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 	    return;
     }
 
-    var build_negative_mesh   = document.forms["mesh_form"].elements["build_negative_mesh"].checked;
-    var mesh_hull_strength    = document.forms["mesh_form"].elements["mesh_hull_strength"].value;
-    var mesh_close_path_begin = document.forms["mesh_form"].elements["mesh_close_path_begin"].checked;
-    var mesh_close_path_end   = document.forms["mesh_form"].elements["mesh_close_path_end"].checked;
-    var wireFrame             = document.forms["mesh_form"].elements["wireframe"].checked; 
-    var triangulate           = document.forms["mesh_form"].elements["triangulate"].checked; 
-    var split_shape           = document.forms["mesh_form"].elements["split_shape"].checked;
-
+    var build_negative_mesh      = document.forms["mesh_form"].elements["build_negative_mesh"].checked;
+    var mesh_hull_strength       = document.forms["mesh_form"].elements["mesh_hull_strength"].value;
+    var mesh_close_path_begin    = document.forms["mesh_form"].elements["mesh_close_path_begin"].checked;
+    var mesh_close_path_end      = document.forms["mesh_form"].elements["mesh_close_path_end"].checked;
+    var wireFrame                = document.forms["mesh_form"].elements["wireframe"].checked; 
+    var triangulate              = document.forms["mesh_form"].elements["triangulate"].checked; 
+    var split_shape              = document.forms["mesh_form"].elements["split_shape"].checked;
+    var arrange_splits_on_plane  = document.forms["mesh_form"].elements["arrange_splits_on_plane"].checked;
+    
 
     // Convert numeric text values to numbers!
     mesh_hull_strength  = parseInt( mesh_hull_strength );
     circleSegmentCount  = parseInt( circleSegmentCount );
     pathSegments        = parseInt( pathSegments );
-    //var circleRadius    = shapedPathBounds.getWidth();
+    
+
+    var vectorFactories;
+    var offsets;
+    if( split_shape && arrange_splits_on_plane ) {
+
+	var bezierBounds = shapedPath.computeBoundingBox();
+
+	// Use different vector factories for both splits
+	var tmpFactory_A = new IKRS.VectorFactory();
+	tmpFactory_A.createVector2 = function( x, y ) { 
+	    return new THREE.Vector2(x,y); 
+	};
+	tmpFactory_A.createVector3 = function( x, y, z ) { 
+	    return new THREE.Vector3(y,z,x); 
+	};
+	var tmpFactory_B = new IKRS.VectorFactory();
+	tmpFactory_B.createVector2 = function( x, y ) { 
+	    return new THREE.Vector2(x,y); 
+	};
+	tmpFactory_B.createVector3 = function( x, y, z ) { 
+	    return new THREE.Vector3(y,-z,-x); // y,-z,x); 
+	};
+	vectorFactories = [
+	    tmpFactory_A,
+	    tmpFactory_B
+	];
+	offsets = [
+	    new THREE.Vector3( 0, 0,  50 + bezierBounds.getWidth()/2 ),    // Create two 'lying' objects with a distance of 100 px
+	    new THREE.Vector3( 0, 0, -50 - bezierBounds.getWidth()/2 )     // NOTE: recognize diameter
+	];
+    } else {
+	vectorFactories = [
+	    new IKRS.VectorFactory(),       // use default factories (x,y,z)
+	    new IKRS.VectorFactory()
+	];
+	offsets = [
+	    new THREE.Vector3(0,  50, 0),   // Create two 'standing' objects with a distance of 300 px
+	    new THREE.Vector3(0, -50, 0)
+	];
+    }
     
 
     // Temp backup the mesh/view settings.
@@ -286,7 +327,9 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 						     
 						     -Math.PI/2.0,  // shape_start_angle
 						     
-						     new THREE.Vector3(0,50,0)  // offset
+						     offsets[0], // new THREE.Vector3(0,50,0),  // offset,
+						     
+						     vectorFactories[0]
 						   );
         
     this._addMeshToScene( new_mesh_left, 
@@ -310,7 +353,8 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 							  // 90DEG more than in the left part!
 							  Math.PI/2.0,  // shape_start_angle
 
-							  new THREE.Vector3(0,-50,0)  // offset
+							  offsets[1], // new THREE.Vector3(0,-50,0),  // offset
+							  vectorFactories[1]
 							);
         
 	this._addMeshToScene( new_mesh_right, 
@@ -410,7 +454,9 @@ IKRS.PreviewCanvasHandler.prototype._buildMeshFromSettings = function( shapedPat
 								       
 								       shape_start_angle,
 								       
-								       mesh_offset  // Vector3
+								       mesh_offset,  // Vector3
+
+								       vectorFactory
 								     ) {
     
     var shapedPathBounds     = shapedPath.computeBoundingBox();
@@ -493,7 +539,9 @@ IKRS.PreviewCanvasHandler.prototype._buildMeshFromSettings = function( shapedPat
 								    perpendicularHullStrength:  mesh_hull_strength,
 								    closeShape:                 !split_shape,
 								    meshOffset:                 mesh_offset
-								  }
+								  },
+								  
+								  vectorFactory
 								);	
 	
 

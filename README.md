@@ -5,7 +5,7 @@ Path Extrusion Generator
 @author   Ikaros Kappler
 @date     2013-09-11
 @modified 2013-10-15
-@version  0.2.1
+@version  0.2.4
 
 
 
@@ -20,6 +20,9 @@ Plan
 
 Changelog
 ---------
+[2013-10-25]
+ - Moved all secondary controls the the new menu bar.
+
 [2013-10-22]
  - Added a basic menu bar library (moo-tools_dropdown-menu).
 
