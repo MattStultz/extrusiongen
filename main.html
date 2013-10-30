@@ -8,7 +8,7 @@ body {
    font-family: Monospace;
    font-size: 10pt;
    background-color: #f8f8f8;
-   /* background-image: url('img/depositphotos_1692651-Blueprint_0.1.jpg'); */
+   background-image: url('img/depositphotos_1692651-Blueprint_0.5.jpg');
 }
 
 h3 {
@@ -47,39 +47,11 @@ width: 400px;
 height: 330px;
 border: 1px solid #000000;
 padding: 10px;
+background-color: #ffffff;
+background-image: url('bg_controls.png');
+background-position: 0 0;
+background-size: 420px 350px;
 }
-
-/*
-div#shape_controls {
-position: absolute;
-top: 380px;
-left: 1054px;
-width: 400px;
-height: 130px;
-border: 1px solid #000000;
-padding: 10px;
-}
-
-div#stl_builder {
-position: absolute;
-top: 540px;
-left: 1054px;
-width: 400px;
-height: 78px;
-border: 1px solid #000000;
-padding: 10px;
-}
-
-div#zip_builder {
-position: absolute;
-top: 650px;
-left: 1054px;
-width: 400px;
-height: 138px;
-border: 1px solid #000000;
-padding: 10px;
-}
-*/
 
 .tooltip {
     display: inline;
@@ -323,63 +295,11 @@ tooltip:hover:before{
 </form>
 </div>
 
-<!--
-<div id="shape_controls">
-  <h3>Save shape to JSON file</h3>
-  <button onclick="saveShape();">Export JSON ...</button>
-  <br/>
-  <br/>							     
-  <h3>Load shape from JSON file</h3>
-  <form name="bezier_file_upload_form">
-  <input type="file" name="bezier_json_file" /><br/>
-  <input type="button" value="Upload JSON file" onclick="loadShape();">
-  </form>
-</div>
--->
 
-<!-- NOT IN USE ANY MORE AS THERE EXSISTS A MENU BAR NOW
-<div id="stl_builder">
-  <h3>Export STL file</h3>
-  <form name="stl_form">
-    <label for="stl_filename">Filename</label>
-    <input type="text" id="stl_filename" name="stl_filename" value="my_extrusion.stl" />
-    <input type="button" value="Save STL ..." onclick="exportSTL();" />
-    <span class="tooltip" title="Note: split meshes result in two unconnected objects; they will be stored as a sequence of objects in the STL file. Not all programs are capable to read this!" style="font-size: 22pt;">&#x26a0;</span>
-    <div style="text-align: right;">
-      <input type="checkbox" id="stl_merge_meshes" name="stl_merge_meshes" checked="checked" />
-      <label for="stl_merge_meshes">Merge meshes</label>
-    </div>
-    
-  </form>
-</div>
--->
 <!-- DUMMY FORM -->
 <form name="stl_form">
     <input type="hidden" id="stl_filename" name="stl_filename" value="my_extrusion.stl" />
 </form>
-
-
-<!--
-<div id="zip_builder">
-<h3>Export Settings (to ZIP)</h3>
-<form name="zip_form">
-  <label for="zip_filename">Filename</label>
-  <input type="text" id="zip_filename" name="zip_filename" value="settings.zip" />
-  <input type="button" value="Save ZIP ..." onclick="exportZIP();" /> <br/>
-  <div style="text-align: right"><input type="checkbox" id="compress_zip" name="compress_zip" /><label for="compress_zip">Compress</label></div>
-</form>
-
-
-
-<h3>Import Settings (from ZIP)</h3>
-<form name="zip_import_form">
-  <input type="file" name="zip_upload_file" onchange="alert('changed')" /><br/>
-  <input type="button" value="Upload ZIP file" onclick="ZipFileImporter.importZipFile( document.forms['zip_import_form'].elements['zip_upload_file'] );">	
-</form>
-
-</div>
--->
-
 
 
 
@@ -500,9 +420,10 @@ cursor: pointer;
 	    </li>
 	  </ul>
 	</li>	
-	<li class="heading"><a href="#">Edit</a>
+	<li class="heading"><a href="#">Options</a>
 	  <ul>
 	    <li><a href="#" onclick="alert('not yet implemented')">Settings</a></li>   
+	    <li><a href="#" onclick="about()">About</a></li> 
 	  </ul>
 	</li>
 	

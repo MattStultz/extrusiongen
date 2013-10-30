@@ -63,13 +63,18 @@ IKRS.MessageBox = function( baseID ) {
 
 }
 
-IKRS.MessageBox.prototype.mouseEvent = function() {
-    alert( "Mouse Event?" );
-}
-
 IKRS.MessageBox.prototype = new IKRS.Object();
 IKRS.MessageBox.prototype.constructor = IKRS.MessageBox;
 
+IKRS.MessageBox.prototype.setSize = function( width, height ) {
+    this.boxWidth  = width;  // px
+    this.boxHeight = height;
+}
+
+
+IKRS.MessageBox.prototype.mouseEvent = function() {
+    alert( "Mouse Event?" );
+}
 
 IKRS.MessageBox.prototype.toggleVisibility = function() {
 

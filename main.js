@@ -218,6 +218,25 @@ function importZIP() {
 	ZipFileImporter.importZipFile( zip_filename );
 }
 
+/**
+ * Toggles the 'about' dialog.
+ **/
+function about() {
+
+    var buttonHandler = "messageBox.hide()";
+    
+    messageBox.setSize( 300, 320 );
+    messageBox.show( 
+        "<br/><br/>About<br/>\n" +
+            "<br/>\n" +
+	    "<img src=\"img/I_eat_food_quadratisch_0_-_0.jpg\" alt=\"Logo - I eat food\" width=\"120\" height=\"120\" /><br/>\n" +
+	    "<br/>\n" +
+	    "<a href=\"https://github.com/IkarosKappler/extrusiongen\">github</a><br/>\n" +
+            "<br/><button onclick=\"" + buttonHandler + "\"" + (buttonHandler?"":" disabled") + ">Close</button>" 
+    );
+    
+}
+
 
 function debug() {
     window.alert( 
@@ -341,6 +360,7 @@ function showLoadingBar( buttonHandler ) {
     if( !buttonHandler )
 	buttonHandler = "hideLoadingBar()";
     
+    messageBox.setSize( 300, 180 );
     messageBox.show( 
         "<br/><br/>Loading ...<br/>\n" +
             "<br/>\n" +
