@@ -52,24 +52,34 @@ IKRS.PreviewCanvasHandler = function( bezierCanvasHandler,
 
 
     // Install a mouse wheel listener
-    if( this.preview_canvas.addEventListener ) { // window.addEventListener ) {
-
+    if( this.preview_canvas.addEventListener ) { 
 	// For Mozilla 
-	//window.addEventListener( 'DOMMouseScroll', mouseWheelHandler, false );
 	this.preview_canvas.addEventListener( 'DOMMouseScroll', this.mouseWheelHandler, false );
     } else {
-
 	// IE
 	this.preview_canvas.onmousewheel = document.onmousewheel = mouseWheelHandler;
-
     }
+
+
+    // Prepare a second scene that contains the background only
+    var backgroundTexture = THREE.ImageUtils.loadTexture( "bg_preview.png" );
+    var bg = new THREE.Mesh(
+	new THREE.PlaneGeometry( 2, 2, 0 ),
+	new THREE.MeshBasicMaterial( { map: backgroundTexture } )
+    );
+    // The bg plane shouldn't care about the z-buffer.
+    bg.material.depthTest = false;
+    bg.material.depthWrite = false;    
+    this.backgroundScene = new THREE.Scene();
+    this.backgroundCam = new THREE.Camera();
+    this.backgroundScene.add( this.backgroundCam );
+    this.backgroundScene.add( bg );
+
 
     
     this.preview_renderer.setSize( preview_canvas_width, 
 				   preview_canvas_height 
 				 ); 
-    
-
     document.body.appendChild( this.preview_renderer.domElement );
 
 
@@ -182,8 +192,6 @@ IKRS.PreviewCanvasHandler.prototype.preview_mouseMoveHandler = function ( e ) {
 
 IKRS.PreviewCanvasHandler.prototype._setCameraPositionFromLocalSettings = function() {
     
-    //window.alert( JSON.stringify(this.preview_camera.ikrsSettings) );
-    
     var newCameraOffset_X = new THREE.Vector3( Math.cos( this.preview_camera.ikrsSettings.rotation.x ),
 					       Math.sin( this.preview_camera.ikrsSettings.rotation.x ),
 					       0 
@@ -251,7 +259,7 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
     }
 
     var build_negative_mesh      = document.forms["mesh_form"].elements["build_negative_mesh"].checked;
-    var mesh_hull_strength       = document.forms["mesh_form"].elements["mesh_hull_strength"].value;
+    var mesh_hull_strength       = document.forms["mesh_form"].elements["mesh_hull_strength"].value;      // in mm
     var mesh_close_path_begin    = document.forms["mesh_form"].elements["mesh_close_path_begin"].checked;
     var mesh_close_path_end      = document.forms["mesh_form"].elements["mesh_close_path_end"].checked;
     var wireFrame                = document.forms["mesh_form"].elements["wireframe"].checked; 
@@ -265,6 +273,10 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
     circleSegmentCount  = parseInt( circleSegmentCount );
     pathSegments        = parseInt( pathSegments );
     
+
+    // Convert mesh hull strength to bezier units
+    mesh_hull_strength  = mesh_hull_strength / this.bezierCanvasHandler.getMillimeterPerUnit();
+
 
     var vectorFactories;
     var offsets;
@@ -629,6 +641,13 @@ IKRS.PreviewCanvasHandler.prototype._clearScene = function() {
 }
 
 IKRS.PreviewCanvasHandler.prototype.render = function() {
+    
+    // Draw background image
+    this.preview_renderer.autoClear = false;
+    this.preview_renderer.clear();
+    this.preview_renderer.render( this.backgroundScene, this.backgroundCam );
+    
+    // Draw main scene
     this.preview_renderer.render( this.preview_scene, this.preview_camera ); 
 }
 

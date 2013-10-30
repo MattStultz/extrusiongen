@@ -26,7 +26,10 @@ ZipFileImporter = {
 		triangulate:       document.forms[ "mesh_form" ].elements[ "triangulate" ].checked,
 		
 		// This is new since 2013-09-16
-		splitShape:        document.forms[ "mesh_form" ].elements[ "split_shape" ].checked
+		splitShape:        document.forms[ "mesh_form" ].elements[ "split_shape" ].checked,
+		
+		// This is new since 2013-10-30
+		arrangeSplitsOnPlane: document.forms[ "mesh_form" ].elements[ "arrange_splits_on_plane" ].checked
 	    },
 	    compress:          document.forms[ "zip_form" ].elements[ "compress_zip" ].checked
 	}; // END object
@@ -42,12 +45,14 @@ ZipFileImporter = {
 	    document.forms[ "mesh_form" ].elements[ "preview_bend" ].value = meshSettings.bendAngle;
 	else
 	    document.forms[ "mesh_form" ].elements[ "preview_bend" ].value = 0;
-
 	
-	if( meshSettings.buildNegativeMesh )
+	if( meshSettings.buildNegativeMesh ) {
 	    document.forms[ "mesh_form" ].elements[ "build_negative_mesh" ].checked = "checked";
-	else
+	    document.forms[ "mesh_form" ].elements[ "mesh_hull_strength" ].disabled = false;
+	} else {
 	    document.forms[ "mesh_form" ].elements[ "build_negative_mesh" ].checked = false;
+	    document.forms[ "mesh_form" ].elements[ "mesh_hull_strength" ].disabled = true;
+	}
 
 	if( typeof meshSettings.meshHullStrength != "undefined" )
 	    document.forms[ "mesh_form" ].elements[ "mesh_hull_strength" ].value = meshSettings.meshHullStrength;
@@ -72,10 +77,21 @@ ZipFileImporter = {
 	else
 	    document.forms[ "mesh_form" ].elements[ "triangulate" ].checked = false;
 
-	if( meshSettings.splitShape )
+	if( meshSettings.splitShape ) {
 	    document.forms[ "mesh_form" ].elements[ "split_shape" ].checked = "checked";
-	else
+	    document.forms[ "mesh_form" ].elements[ "mesh_hull_strength" ].disabled = false;
+	} else {
 	    document.forms[ "mesh_form" ].elements[ "split_shape" ].checked = false;
+	    document.forms[ "mesh_form" ].elements[ "mesh_hull_strength" ].disabled = true;
+	}
+
+	if( meshSettings.arrangeSplitsOnPlane ) {
+	    document.forms[ "mesh_form" ].elements[ "arrange_splits_on_plane" ].checked = "checked";
+	    //document.forms[ "mesh_form" ].elements[ "mesh_hull_strength" ].disabled = false;
+	} else {
+	    document.forms[ "mesh_form" ].elements[ "arrange_splits_on_plane" ].checked = false;
+	    //document.forms[ "mesh_form" ].elements[ "mesh_hull_strength" ].disabled = true;
+	}
 
 	
 	return false;

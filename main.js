@@ -32,28 +32,8 @@ function getDefaultBezierJSON() {
 
 function onloadHandler() {
     
-    // Append the current date to the output filename values
-/*
-    var curDate = new Date();
-    //var ts      = curDate.toString( "yyyy-MM-dd H-i" );
-    var ts        = "" +
-	curDate.getFullYear() +
-	"-" +
-	(curDate.getMonth()+1) +  // months start at 0
-	"-" +
-	curDate.getDate() +
-	"_" +
-	curDate.getHours() + 
-	"." +
-	curDate.getMinutes() +
-	"." +
-	curDate.getSeconds();
-	
-    
-    //window.alert( ts );
-    document.forms[ "stl_form" ].elements[ "stl_filename" ].value = "my_extrusion_" + ts + ".stl";
-    document.forms[ "zip_form" ].elements[ "zip_filename" ].value = "settings_" + ts + ".zip";
-    */
+    // NOOP
+
 }
 
 // IE < v9 does not support this function.
@@ -63,7 +43,8 @@ if( window.addEventListener ) {
 			     false
 			   );
 } else {
-    window.onload = onloadHandler;}
+    window.onload = onloadHandler;
+}
 
 
 
@@ -192,7 +173,7 @@ function newScene() {
 	pathSegments:      80,
 	bendAngle:         0,
 	buildNegativeMesh: false,
-	meshHullStrength:  0,
+	meshHullStrength:  12,
 	closePathBegin:    false,
 	closePathEnd:      true,
 	wireframe:         false,

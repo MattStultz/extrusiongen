@@ -4,8 +4,8 @@ Path Extrusion Generator
 
 @author   Ikaros Kappler
 @date     2013-09-11
-@modified 2013-10-15
-@version  0.2.4
+@modified 2013-10-30
+@version  0.2.6
 
 
 
@@ -20,6 +20,14 @@ Plan
 
 Changelog
 ---------
+[2013-10-30]
+ - Added background images to the 2D- and 3D-canvas.
+
+[2013-10-29]
+ - Added the VectorFactory to the preview handler.
+ - Added a new function that arranges the wto splits (if split)
+   on the horizontal plane.
+
 [2013-10-25]
  - Moved all secondary controls the the new menu bar.
 

@@ -138,7 +138,7 @@ tooltip:hover:before{
 
 
 <div id="version_tag">
-  v0.2.4 built 20131025#0
+  v0.2.6 built 20131030#0
 </div>
 
 <canvas 
@@ -256,7 +256,7 @@ tooltip:hover:before{
 					     (only if hollow)
   </td>
   <td valign="top">
-        <input type="number" id="mesh_hull_strength" name="mesh_hull_strength" value="25" class="tooltip" title="..." onchange="javascript:bezierCanvasHandler.redraw();" onkeyup="javascript:bezierCanvasHandler.redraw();preview_rebuild_model();" size="4" style="width: 35px;" onchange="preview_rebuild_model();" />px
+        <input type="number" id="mesh_hull_strength" name="mesh_hull_strength" value="12" class="tooltip" title="..." onchange="bezierCanvasHandler.redraw();" onkeyup="bezierCanvasHandler.redraw();preview_rebuild_model();" size="4" style="width: 35px;" onchange="preview_rebuild_model();" />mm
          
   </td>
 </tr>
@@ -468,7 +468,12 @@ cursor: pointer;
 	<li class="heading"><a href="#">File</a>
 	  <ul>
 	    <li><a href="#" onclick="newScene()">New</a></li>
-	    <li><a href="#" onclick="exportZIP()">Save (*.zip)</a></li>
+	    <li>
+	      <a href="#" onclick="exportZIP()">Save (*.zip)</a>
+	      <form name="zip_form">
+		<input type="hidden" name="compress_zip" value="0" />
+	      </form>
+	    </li>
 	    <li>
 	      <!-- <a href="#" onclick="alert('no action assigned yet')">Load</a> -->
 	      <form name="zip_import_form">		

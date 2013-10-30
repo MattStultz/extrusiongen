@@ -24,20 +24,24 @@ ZipFileExporter = {
 	    meshes:              msh,
 	    bezierPath:          getBezierPath(),
 	    meshSettings:      {
-		shapeSegments:     document.forms[ "mesh_form" ].elements[ "shape_segments" ].value,
-		pathSegments:      document.forms[ "mesh_form" ].elements[ "path_segments" ].value,
-		bendAngle:         document.forms[ "mesh_form" ].elements[ "preview_bend" ].value,
-		buildNegativeMesh: document.forms[ "mesh_form" ].elements[ "build_negative_mesh" ].checked,
-		meshHullStrength:  document.forms[ "mesh_form" ].elements[ "mesh_hull_strength" ].value,
-		closePathBegin:    document.forms[ "mesh_form" ].elements[ "mesh_close_path_begin" ].checked,
-		closePathEnd:      document.forms[ "mesh_form" ].elements[ "mesh_close_path_end" ].checked,
-		wireframe:         document.forms[ "mesh_form" ].elements[ "wireframe" ].checked,
-		triangulate:       document.forms[ "mesh_form" ].elements[ "triangulate" ].checked,
+		shapeSegments:        document.forms[ "mesh_form" ].elements[ "shape_segments" ].value,
+		pathSegments:         document.forms[ "mesh_form" ].elements[ "path_segments" ].value,
+		bendAngle:            document.forms[ "mesh_form" ].elements[ "preview_bend" ].value,
+		buildNegativeMesh:    document.forms[ "mesh_form" ].elements[ "build_negative_mesh" ].checked,
+		meshHullStrength:     document.forms[ "mesh_form" ].elements[ "mesh_hull_strength" ].value,
+		closePathBegin:       document.forms[ "mesh_form" ].elements[ "mesh_close_path_begin" ].checked,
+		closePathEnd:         document.forms[ "mesh_form" ].elements[ "mesh_close_path_end" ].checked,
+		wireframe:            document.forms[ "mesh_form" ].elements[ "wireframe" ].checked,
+		triangulate:          document.forms[ "mesh_form" ].elements[ "triangulate" ].checked,
 		
 		// This is new since 2013-09-16
-		splitShape:        document.forms[ "mesh_form" ].elements[ "split_shape" ].checked
+		splitShape:           document.forms[ "mesh_form" ].elements[ "split_shape" ].checked,
+
+		// This is new since 2013-10-30
+		arrangeSplitsOnPlane: document.forms[ "mesh_form" ].elements[ "arrange_splits_on_plane" ].checked
 	    },
-	    compress:          document.forms[ "zip_form" ].elements[ "compress_zip" ].checked
+	    //compress:          document.forms[ "zip_form" ].elements[ "compress_zip" ].checked
+	    compress:          (document.forms[ "zip_form" ].elements[ "compress_zip" ].value!="0")
 	}; // END object
     }, // END function
 

@@ -165,8 +165,15 @@ IKRS.BezierCanvasHandler.prototype.undo = function() {
 }
 
 IKRS.BezierCanvasHandler.prototype.redraw = function() {
+    
+    this._drawWithBackgroundImages();
+
+}
+
+IKRS.BezierCanvasHandler.prototype._drawWithBackgroundImages = function() {
 
     // Clear screen?
+    /*
     if( !document.forms["bezier_form"] ||
 	!document.forms["bezier_form"].elements["clear_on_repaint"] ||
 	document.forms["bezier_form"].elements["clear_on_repaint"].checked ) {
@@ -175,6 +182,35 @@ IKRS.BezierCanvasHandler.prototype.redraw = function() {
 	this.context.fillRect( 0, 0, 512, 768 );
 	
     }
+    */
+    
+    // Draw background image
+    var bgImage = new Image();
+    bgImage.bezierCanvasHandler = this;
+    bgImage.onload = function() {
+	// Clear screen? [not required if using background image]
+	/*
+	if( !document.forms["bezier_form"] ||
+	    !document.forms["bezier_form"].elements["clear_on_repaint"] ||
+	    document.forms["bezier_form"].elements["clear_on_repaint"].checked ) {
+	    
+	    this.bezierCanvasHandler.context.fillStyle = "#FFFFFF";
+	    this.bezierCanvasHandler.context.fillRect( 0, 0, 512, 768 );	    
+	}
+	*/
+	this.bezierCanvasHandler.context.drawImage( this,
+						    0, 0, 
+						    512,
+						    768
+						  );
+	this.bezierCanvasHandler._drawWighoutBackgroundImages();
+    };
+    
+    bgImage.src = "bg_bezier.png"; 
+
+}
+
+IKRS.BezierCanvasHandler.prototype._drawWighoutBackgroundImages = function() {
 
     // Draw coordinate system (global crosshair)?
     // This form element is deprecated!
