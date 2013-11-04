@@ -225,13 +225,16 @@ function about() {
 
     var buttonHandler = "messageBox.hide()";
     
-    messageBox.setSize( 300, 320 );
+    messageBox.setSize( 300, 340 );
     messageBox.show( 
-        "<br/><br/>About<br/>\n" +
+        "<br/><br/>Extrusion/Rotation Generator<br/>\n" +
+	    "<br/>\n" + 
             "<br/>\n" +
+	    "extrusiongen<br/>\n" + 
+	    VERSION_STRING + "<br/>\n" + 
 	    "<img src=\"img/I_eat_food_quadratisch_0_-_0.jpg\" alt=\"Logo - I eat food\" width=\"120\" height=\"120\" /><br/>\n" +
 	    "<br/>\n" +
-	    "<a href=\"https://github.com/IkarosKappler/extrusiongen\">github</a><br/>\n" +
+	    "<a href=\"https://github.com/IkarosKappler/extrusiongen\" target=\"_blank\">github</a><br/>\n" +
             "<br/><button onclick=\"" + buttonHandler + "\"" + (buttonHandler?"":" disabled") + ">Close</button>" 
     );
     

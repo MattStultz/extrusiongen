@@ -8,7 +8,7 @@ body {
    font-family: Monospace;
    font-size: 10pt;
    background-color: #f8f8f8;
-   background-image: url('img/depositphotos_1692651-Blueprint_0.5.jpg');
+   /* background-image: url('img/depositphotos_1692651-Blueprint_0.6.jpg'); */
 }
 
 h3 {
@@ -44,13 +44,13 @@ position: absolute;
 top: 40px;
 left: 1054px;
 width: 400px;
-height: 330px;
+height: 340px;
 border: 1px solid #000000;
 padding: 10px;
 background-color: #ffffff;
 background-image: url('bg_controls.png');
 background-position: 0 0;
-background-size: 420px 350px;
+background-size: 420px 360px;
 }
 
 .tooltip {
@@ -109,9 +109,16 @@ tooltip:hover:before{
 <body> 
 
 
+
+<script language="Javascript" src="version.js"></script>
 <div id="version_tag">
-  v0.2.6 built 20131030#0
+  <script language="Javascript">
+    // v0.2.6 built 20131030#1
+    document.write( VERSION_STRING );
+  </script>
 </div>
+
+
 
 <canvas 
   title="Click, hold and drag to rotate the view."
@@ -228,7 +235,7 @@ tooltip:hover:before{
 					     (only if hollow)
   </td>
   <td valign="top">
-        <input type="number" id="mesh_hull_strength" name="mesh_hull_strength" value="12" class="tooltip" title="..." onchange="bezierCanvasHandler.redraw();" onkeyup="bezierCanvasHandler.redraw();preview_rebuild_model();" size="4" style="width: 35px;" onchange="preview_rebuild_model();" />mm
+        <input type="number" id="mesh_hull_strength" name="mesh_hull_strength" value="12" class="tooltip" title="..." onchange="bezierCanvasHandler.redraw();" onkeyup="bezierCanvasHandler.redraw();preview_rebuild_model();" size="4" style="width: 35px;" onchange="preview_rebuild_model();" disabled="disabled" />mm
          
   </td>
 </tr>
@@ -378,7 +385,7 @@ top: -30px;
 left: 0px; 
 opacity: 0; 
 filter: alpha(opacity=0); 
-cursor: pointer;
+/* cursor: default; pointer; */
 }
 
 </style>
