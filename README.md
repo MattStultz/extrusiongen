@@ -17,9 +17,17 @@ Plan
 - ...
 
 
+Knows Issues
+------------
+ - 3D canvas background is not properly drawn on Safari/KHTML (black
+   area).
+
 
 Changelog
 ---------
+[2014-01-09]
+ - Fixed a syntax error in the mootools library.
+
 [2013-10-30]
  - Added background images to the 2D- and 3D-canvas.
 
