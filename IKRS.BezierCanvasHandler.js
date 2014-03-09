@@ -198,13 +198,11 @@ IKRS.BezierCanvasHandler.prototype._drawWithBackgroundImages = function() {
 	    this.bezierCanvasHandler.context.fillRect( 0, 0, 512, 768 );	    
 	}
 	*/
-	
 	this.bezierCanvasHandler.context.drawImage( this,
 						    0, 0, 
 						    512,
 						    768
 						  );
-
 	this.bezierCanvasHandler._drawWighoutBackgroundImages();
     };
     
