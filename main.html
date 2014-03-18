@@ -39,7 +39,23 @@ height: 768px;
 border: 1px solid #000000;
 }
 
-div#mesh_controls {
+div#register_head {
+position: absolute;
+top: 21px;
+left: 1054px;
+width: 400px;
+height: 16px;
+border: 0px solid #000000;
+padding: 0px;
+background-color: #ffffff;
+/*
+background-image: url('bg_controls.png');
+background-position: 0 0;
+background-size: 420px 360px;
+*/
+}
+
+div.register_card {
 position: absolute;
 top: 40px;
 left: 1054px;
@@ -51,6 +67,26 @@ background-color: #ffffff;
 background-image: url('bg_controls.png');
 background-position: 0 0;
 background-size: 420px 360px;
+}
+
+.register_tab_selected {
+border-top-left-radius: 8px;
+border-top-right-radius: 8px;
+height: 24px;
+padding: 2px;
+color: #000000;
+background-color: #b0b0b0;
+cursor: normal;
+}
+
+.register_tab {
+border-top-left-radius: 8px;
+border-top-right-radius: 8px;
+height: 24px;
+padding: 2px;
+color: #000000;
+background-color: #e8e8e8;
+cursor: pointer;
 }
 
 .tooltip {
@@ -173,7 +209,7 @@ tooltip:hover:before{
 
 
 
-<div id="mesh_controls">
+<div class="register_card" id="mesh_controls">
 <h3>Mesh controls</h3>
 <form name="mesh_form">
 <table border="0">
@@ -303,6 +339,25 @@ tooltip:hover:before{
 </div>
 
 
+
+<div class="register_card" id="background_settings" style="display: none;">
+<h3>Background Settings</h3>
+<form name="background_form">
+
+</form>
+</div>
+
+
+
+<div id="register_head">
+<span onclick="show_register_card('mesh_controls');" id="mesh_controls" class="register_tab_selected">Mesh Controls</span>
+<span onclick="show_register_card('background_settings');" id="background_settings" class="register_tab">Background Settings</span>
+</div>
+
+
+
+
+
 <!-- DUMMY FORM -->
 <form name="stl_form">
     <input type="hidden" id="stl_filename" name="stl_filename" value="my_extrusion.stl" />
@@ -315,6 +370,7 @@ tooltip:hover:before{
 
 
 <script language="Javascript" type="text/javascript" src="console_check.js"></script>
+<script language="Javascript" type="text/javascript" src="register_cards.js"></script>
 <script language="Javascript" type="text/javascript" src="three.js"></script>
 
 <script language="Javascript" type="text/javascript" src="Blob.js"></script>
