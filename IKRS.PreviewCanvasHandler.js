@@ -556,9 +556,11 @@ IKRS.PreviewCanvasHandler.prototype._buildMeshFromSettings = function( shapedPat
 								  vectorFactory
 								);	
 	
+    var color            = document.forms["color_form"].elements["color"].value;
+    //window.alert( color );
 
     var exrusionMaterial = new THREE.MeshPhongMaterial( 
-	{ color: 0x151D28, //0x2D303D, 
+	{ color: color, // 0x151D28, //0x2D303D, 
 	  ambient: 0x996633, // 0xffffff, // 0x996633, // should generally match color
 	  specular: 0x888888, // 0x050505,
 	  shininess: 50, //100,
