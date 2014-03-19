@@ -39,6 +39,7 @@ height: 768px;
 border: 1px solid #000000;
 }
 
+/*
 div#mesh_controls {
 position: absolute;
 top: 40px;
@@ -51,7 +52,73 @@ background-color: #ffffff;
 background-image: url('bg_controls.png');
 background-position: 0 0;
 background-size: 420px 360px;
+}*/
+
+div#register_head {
+position: absolute;
+top: 21px;
+left: 1054px;
+width: 400px;
+height: 16px;
+border: 0px solid #000000;
+padding: 0px;
+background-color: #ffffff;
+/*
+background-image: url('bg_controls.png');
+background-position: 0 0;
+background-size: 420px 360px;
+*/
 }
+
+div.register_card {
+position: absolute;
+top: 40px;
+left: 1054px;
+width: 400px;
+height: 360px;
+border: 1px solid #000000;
+padding: 10px;
+background-color: #ffffff;
+background-image: url('bg_controls.png');
+background-position: 0 0;
+background-size: 420px 380px;
+}
+
+.register_tab_selected {
+border-top-left-radius: 8px;
+border-top-right-radius: 8px;
+height: 24px;
+padding: 2px;
+color: #000000;
+background-color: #b0b0b0;
+cursor: normal;
+}
+
+.register_tab {
+border-top-left-radius: 8px;
+border-top-right-radius: 8px;
+height: 24px;
+padding: 2px;
+color: #000000;
+background-color: #e8e8e8;
+cursor: pointer;
+}
+
+/*
+div#color_controls {
+position: absolute;
+top: 410px;
+left: 1054px;
+width: 400px;
+height: 340px;
+border: 1px solid #000000;
+padding: 10px;
+background-color: #ffffff;
+background-image: url('bg_controls.png');
+background-position: 0 0;
+background-size: 420px 360px;
+}
+*/
 
 .tooltip {
     display: inline;
@@ -173,7 +240,7 @@ tooltip:hover:before{
 
 
 
-<div id="mesh_controls">
+<div class="register_card" id="mesh_controls">
 <h3>Mesh controls</h3>
 <form name="mesh_form">
 <table border="0">
@@ -235,7 +302,7 @@ tooltip:hover:before{
 					     (only if hollow)
   </td>
   <td valign="top">
-        <input type="number" id="mesh_hull_strength" name="mesh_hull_strength" value="12" class="tooltip" title="..." onchange="bezierCanvasHandler.redraw();" onkeyup="bezierCanvasHandler.redraw();preview_rebuild_model();" size="4" style="width: 35px;" onchange="preview_rebuild_model();" disabled="disabled" />mm
+        <input type="number" id="mesh_hull_strength" name="mesh_hull_strength" value="6" class="tooltip" title="..." onchange="bezierCanvasHandler.redraw();" onkeyup="bezierCanvasHandler.redraw();preview_rebuild_model();" size="4" style="width: 35px;" onchange="preview_rebuild_model();" disabled="disabled" />mm
          
   </td>
 </tr>
@@ -279,7 +346,7 @@ tooltip:hover:before{
 <tr>
   <td></td>
   <td>
-        <input type="checkbox" id="split_shape" name="split_shape" onchange="document.getElementById('arrange_splits_on_plane').disabled = !document.getElementById('split_shape').checked; preview_rebuild_model();" />
+        <input type="checkbox" id="split_shape" name="split_shape" onchange="document.getElementById('arrange_splits_on_plane').disabled = !document.getElementById('split_shape').checked; toggleMeshDirectionEnabled(); preview_rebuild_model();" />
           <label for="split_shape">Split shape/mesh</label>
   </td>
 </tr>
@@ -287,8 +354,41 @@ tooltip:hover:before{
 <tr>
   <td></td>
   <td>
-        <input type="checkbox" id="arrange_splits_on_plane" name="arrange_splits_on_plane" onchange="preview_rebuild_model();" disabled="disabled" />
-          <label for="arrange_splits_on_plabe">Arrange splits on plane</label>
+        <input type="checkbox" id="arrange_splits_on_plane" name="arrange_splits_on_plane" onchange="toggleMeshDirectionEnabled(); preview_rebuild_model();" disabled="disabled" />
+          <label for="arrange_splits_on_plane">Arrange splits on plane</label>
+  </td>
+</tr>
+
+<tr>
+  <script language="Javascript">
+    function toggleMeshDirectionEnabled() {
+    document.getElementById('directions_xyz').disabled = document.getElementById('directions_yxz').disabled = (!document.getElementById('split_shape').checked || !document.getElementById('arrange_splits_on_plane').checked);
+    }
+    function getSelectedMeshDirection() {
+
+    var radios = document.forms["mesh_form"].elements["directions"]; 
+    for( var i = 0; i < radios.length; i++ ) {
+			if( radios[i].checked )
+			return radios[i].value;
+			}
+			return "X"; //undefined;
+
+			}
+			</script>
+  <td>Directions:</td>
+  <td>
+    <table border="0">
+      <tr>
+	<td>
+	  <input type="radio" id="directions_xyz" name="directions" onchange="preview_rebuild_model();" value="xyz" checked="checked" disabled="disabled" />
+          <label for="directions_xyz">(x,y,z)</label>
+	</td>
+	<td>
+	  <input type="radio" id="directions_yxz" name="directions"onchange="preview_rebuild_model();" value="yxz" disabled="disabled" />
+          <label for="directions_yxz">(y,x,-z)</label>
+	</td>
+      </tr>
+    </table>
   </td>
 </tr>
 
@@ -300,6 +400,84 @@ tooltip:hover:before{
 
 </table>
 </form>
+</div>
+
+
+
+
+<div class="register_card" id="background_settings" style="display: none;">
+  <script language="Javascript">
+    function getSelectedBezierBackgroundType() {
+
+    var radios = document.forms["bezier_background_form"].elements["bezier_background_type"]; //( "bezier_background_form" );
+    for( var i = 0; i < radios.length; i++ ) {
+			if( radios[i].checked )
+			return radios[i].value;
+			}
+			return "X"; //undefined;
+
+    }
+    function changeBezierBackgroundType() {
+			var type = getSelectedBezierBackgroundType();
+			//window.alert( type );
+			if( type == "default" )
+			bezierCanvasHandler.loadBackgroundImage( "bg_bezier.png", 
+			                                          true             // redraw when ready
+			); 
+			else if( type == "file" ) 
+			document.forms['bezier_background_form'].elements['bezier_background_file'].click();		
+    }
+
+			function loadBezierBackground() {
+			ImageFileReader.readBezierBackgroundImage();
+			}
+  </script>
+<h3>Background Settings</h3>
+<form name="bezier_background_form">
+  <table border="0">
+    <tr>
+      <td><input type="radio" name="bezier_background_type" id="bezier_background_default" value="default" onchange="changeBezierBackgroundType();" checked="checked" /></td>
+      <td colspan="2"><label for="bezier_background_default">Default</label></td>
+    </tr>
+    <tr>
+      <td><input type="radio" name="bezier_background_type" value="file" onchange="changeBezierBackgroundType();" /></td>
+      <td><label for="bezier_background_file">File:</label></td>
+      <td><input type="file" id="bezier_background_file" name="bezier_background_file" accept="image/*" onchange="loadBezierBackground();" style="width: 330px;" /></td>
+    </tr>
+  </table>
+</form>
+</div>
+
+
+
+<div id="register_head">
+<span onclick="show_register_card('mesh_controls');" id="mesh_controls" class="register_tab_selected">Mesh Controls</span>
+<span onclick="show_register_card('background_settings');" id="background_settings" class="register_tab">Background Settings</span>
+<span onclick="show_register_card('color_settings');" id="color_settings" class="register_tab">Color Settings</span>
+</div>
+
+
+
+
+
+<div class="register_card" id="color_settings" style="display: none;">
+  <script language="Javascript">
+    function changeColor( c ) {
+          document.forms["color_form"].elements["color"].value = c;
+          preview_rebuild_model();
+    }
+  </script>
+  <h3>Color</h3>
+  <form name="color_form">
+    <input type="hidden" name="color" value="#151D28" />
+  </form>
+  <table border="0">
+    <tr>
+      <td><div style="width: 20px; height: 20px; background-color: #151D28; cursor: pointer;" onclick="changeColor('#151D28');" ></div></td>
+      <td><div style="width: 20px; height: 20px; background-color: #ff60d4; cursor: pointer;" onclick="changeColor('#ff60d4');" ></div></td>
+      <td><div style="width: 20px; height: 20px; background-color: #e00000; cursor: pointer;" onclick="changeColor('#e00000');" ></div></td>
+    </tr>
+  </table>
 </div>
 
 
@@ -315,6 +493,7 @@ tooltip:hover:before{
 
 
 <script language="Javascript" type="text/javascript" src="console_check.js"></script>
+<script language="Javascript" type="text/javascript" src="register_cards.js"></script>
 <script language="Javascript" type="text/javascript" src="three.js"></script>
 
 <script language="Javascript" type="text/javascript" src="Blob.js"></script>
@@ -329,6 +508,7 @@ tooltip:hover:before{
 <script language="Javascript" type="text/javascript" src="base64-binary.js"></script>
 <script language="Javascript" type="text/javascript" src="ZipFileExporter.js"></script>
 <script language="Javascript" type="text/javascript" src="ZipFileImporter.js"></script>
+<script language="Javascript" type="text/javascript" src="ImageFileReader.js"></script>
 
 <script language="Javascript" type="text/javascript" src="IKRS.js"></script>
 <script language="Javascript" type="text/javascript" src="IKRS.Object.js"></script>

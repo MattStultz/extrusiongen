@@ -100,6 +100,8 @@ document.body.appendChild( preview_renderer.domElement );
 
 function preview_rebuild_model() {
     
+    //window.alert( "X" );
+    
     // Fetch bezier path from bezier canvas handler
     var shapedPath           = this.bezierCanvasHandler.getBezierPath();
     var shapedPathBounds     = shapedPath.computeBoundingBox();
@@ -266,6 +268,9 @@ function preview_rebuild_model() {
 	} 
 	);
 	*/
+
+    //var color            = document.forms["color_form"].elements["color"].value;
+    //window.alert( color );
 
     var exrusionMaterial = new THREE.MeshPhongMaterial( 
 	{ color: 0x151D28, //0x2D303D, 

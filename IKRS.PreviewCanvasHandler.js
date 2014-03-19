@@ -280,6 +280,9 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 
     var vectorFactories;
     var offsets;
+    //var factorZ = -1; //( getSelectedMeshDirection()=="xyz" ? 1 : -1 );
+    var meshDirection = getSelectedMeshDirection();
+    //window.alert( "meshDirection=" + meshDirection );
     if( split_shape && arrange_splits_on_plane ) {
 
 	var bezierBounds = shapedPath.computeBoundingBox();
@@ -289,16 +292,28 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 	tmpFactory_A.createVector2 = function( x, y ) { 
 	    return new THREE.Vector2(x,y); 
 	};
-	tmpFactory_A.createVector3 = function( x, y, z ) { 
-	    return new THREE.Vector3(y,z,x); 
-	};
+	if( meshDirection == "xyz" ) {
+	    tmpFactory_A.createVector3 = function( x, y, z ) { 
+		return new THREE.Vector3(y,z,x); 
+	    };
+	} else {
+	    tmpFactory_A.createVector3 = function( x, y, z ) { 
+		return new THREE.Vector3(y,z,-x); 
+	    };
+	}
 	var tmpFactory_B = new IKRS.VectorFactory();
 	tmpFactory_B.createVector2 = function( x, y ) { 
 	    return new THREE.Vector2(x,y); 
 	};
-	tmpFactory_B.createVector3 = function( x, y, z ) { 
-	    return new THREE.Vector3(y,-z,-x); // y,-z,x); 
-	};
+	if( meshDirection == "xyz" ) {
+	    tmpFactory_B.createVector3 = function( x, y, z ) { 
+		return new THREE.Vector3(y,-z,-x); // y,-z,x); 
+	    };
+	} else {
+	    tmpFactory_B.createVector3 = function( x, y, z ) { 
+		return new THREE.Vector3(y,-z,x); // y,-z,x); 
+	    };
+	}
 	vectorFactories = [
 	    tmpFactory_A,
 	    tmpFactory_B
@@ -308,10 +323,26 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 	    new THREE.Vector3( 0, 0, -50 - bezierBounds.getWidth()/2 )     // NOTE: recognize diameter
 	];
     } else {
-	vectorFactories = [
-	    new IKRS.VectorFactory(),       // use default factories (x,y,z)
-	    new IKRS.VectorFactory()
-	];
+	//if( meshDirection == "xyz" ) {
+	    vectorFactories = [
+		new IKRS.VectorFactory( 1, 1, 1 ),       // use default factories (x,y,z)
+		new IKRS.VectorFactory( 1, 1, 1 )
+	    ];
+	/*
+	} else {
+	    vectorFactories = [
+		{ createVector2 : function(x,y) { return new THREE.Vector2(x,y); },
+		  createVector3 : function(x,y,z) { return new THREE.Vector3(x,-y,-z); } 
+		}, 
+		{ createVector2 : function(x,y) { return new THREE.Vector2(x,y); },
+		  createVector3 : function(x,y,z) { return new THREE.Vector3(x,-y,-z); } 
+		},
+		//new IKRS.VectorFactory( 1, 1, -1 ),       // use default factories (x,y,z)
+		//new IKRS.VectorFactory( 1, 1, 1 )
+	    ];
+	}
+	*/
+
 	offsets = [
 	    new THREE.Vector3(0,  50, 0),   // Create two 'standing' objects with a distance of 300 px
 	    new THREE.Vector3(0, -50, 0)
@@ -518,16 +549,31 @@ IKRS.PreviewCanvasHandler.prototype._buildMeshFromSettings = function( shapedPat
 	var sin   = Math.sin( angle );
 	var cos   = Math.cos( angle );
 
+	
 	var pathPoint = new THREE.Vector3( cos * tmpCircleRadius,  // 110?
 					   sin * tmpCircleRadius, // 110?
 					   0 
 					 );
+	/*
+	var pathPoint = vectorFactory.createVector3( cos * tmpCircleRadius,  // 110?
+						     sin * tmpCircleRadius, // 110?
+						     0 
+						   );
+	*/
 	// translate to center
+	
 	pathPoint.add( new THREE.Vector3( -tmpCircleRadius,
 					  -pathLength/2, 
 					  0
 					)
 		     );
+	/*
+	pathPoint.add( vectorFactory.createVector3( -tmpCircleRadius,
+						    -pathLength/2, 
+						    0
+						  )
+		     );
+	*/
 	pathPoints.push( pathPoint );
 
     }
@@ -556,9 +602,11 @@ IKRS.PreviewCanvasHandler.prototype._buildMeshFromSettings = function( shapedPat
 								  vectorFactory
 								);	
 	
+    var color            = document.forms["color_form"].elements["color"].value;
+    //window.alert( color );
 
     var exrusionMaterial = new THREE.MeshPhongMaterial( 
-	{ color: 0x151D28, //0x2D303D, 
+	{ color: color, // 0x151D28, //0x2D303D, 
 	  ambient: 0x996633, // 0xffffff, // 0x996633, // should generally match color
 	  specular: 0x888888, // 0x050505,
 	  shininess: 50, //100,

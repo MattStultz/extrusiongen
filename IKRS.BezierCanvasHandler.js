@@ -74,9 +74,15 @@ IKRS.BezierCanvasHandler = function() {
     // Store a reverse reference inside the handler so the mousehandlers can access this object
     this.canvas.bezierCanvasHandler = this;
         
+    //this.backgroundImage            = "bg_bezier.png";
+    this.backgroundImage              = undefined;
+    this.loadBackgroundImage( "bg_bezier.png", 
+			      true             // redraw when ready
+			    ); 
 
-    this.redraw();
+    //this.redraw();
 }
+
 
 IKRS.BezierCanvasHandler.POINT_ID_LEFT_UPPER_BOUND  = -1001;
 IKRS.BezierCanvasHandler.POINT_ID_RIGHT_UPPER_BOUND = -1002;
@@ -88,8 +94,6 @@ IKRS.BezierCanvasHandler.prototype.constructor = IKRS.BezierCanvasHandler;
 
 
 IKRS.BezierCanvasHandler.prototype.mouseWheelHandler = function( e ) {
-
-    // window.alert( "X" );
 
     var delta = 0;
     if (!e) // For IE.
@@ -168,36 +172,55 @@ IKRS.BezierCanvasHandler.prototype.redraw = function() {
     
     this._drawWithBackgroundImages();
 
-}
+};
+
+IKRS.BezierCanvasHandler.prototype.loadBackgroundImage = function( url, redraw ) {
+    var bgImage = new Image();
+    bgImage.bezierCanvasHandler = this;
+    bgImage.onload = function() {
+	//window.alert( "Loaded: width=" + this.width );
+	/*
+	// Clear screen? [not required if using background image]
+	this.bezierCanvasHandler.context.drawImage( this,
+						    0, 0, 
+						    512,
+						    768
+						  );
+	this.bezierCanvasHandler._drawWighoutBackgroundImages();
+	*/
+	//this.bezierCanvasHandler.backgroundImage = this; // bgImage;
+	//if( redraw )
+	//    this.bezierCanvasHandler.redraw();
+	this.bezierCanvasHandler.setBackgroundImage( this, redraw );
+    };
+    
+    bgImage.src = url; // this.backgroundImage; //"bg_bezier.png"; 
+};
+
+IKRS.BezierCanvasHandler.prototype.setBackgroundImage = function( image, redraw ) {
+    this.backgroundImage = image;
+    //window.alert( "image=" + image );
+    if( redraw )
+	this.redraw();
+};
 
 IKRS.BezierCanvasHandler.prototype._drawWithBackgroundImages = function() {
 
-    // Clear screen?
-    /*
-    if( !document.forms["bezier_form"] ||
-	!document.forms["bezier_form"].elements["clear_on_repaint"] ||
-	document.forms["bezier_form"].elements["clear_on_repaint"].checked ) {
+    var contextWidth = 512;
+    var contextHeight = 768;
 
-	this.context.fillStyle = "#FFFFFF";
-	this.context.fillRect( 0, 0, 512, 768 );
-	
-    }
-    */
+
+    // Clear screen!
+    this.context.fillStyle = "#FFFFFF";
+    this.context.fillRect( 0, 0, contextWidth, contextHeight );
     
+
+    /*
     // Draw background image
     var bgImage = new Image();
     bgImage.bezierCanvasHandler = this;
     bgImage.onload = function() {
 	// Clear screen? [not required if using background image]
-	/*
-	if( !document.forms["bezier_form"] ||
-	    !document.forms["bezier_form"].elements["clear_on_repaint"] ||
-	    document.forms["bezier_form"].elements["clear_on_repaint"].checked ) {
-	    
-	    this.bezierCanvasHandler.context.fillStyle = "#FFFFFF";
-	    this.bezierCanvasHandler.context.fillRect( 0, 0, 512, 768 );	    
-	}
-	*/
 	this.bezierCanvasHandler.context.drawImage( this,
 						    0, 0, 
 						    512,
@@ -206,9 +229,38 @@ IKRS.BezierCanvasHandler.prototype._drawWithBackgroundImages = function() {
 	this.bezierCanvasHandler._drawWighoutBackgroundImages();
     };
     
-    bgImage.src = "bg_bezier.png"; 
+    bgImage.src = this.backgroundImage; //"bg_bezier.png"; 
+    */
 
-}
+    //window.alert( this.backgroundImage );
+
+    var imageWidth  = this.backgroundImage.width;
+    var imageHeight = this.backgroundImage.height;
+
+    var widthRatio  = contextWidth  / imageWidth;
+    var heightRatio = contextHeight / imageHeight;
+    
+    var drawWidth, drawHeight;
+    if( widthRatio < heightRatio ) {
+	// normalize width
+	drawWidth = imageWidth * widthRatio;
+	drawHeight = imageHeight * widthRatio;
+    } else {
+	// normalize height
+	drawWidth = imageWidth * heightRatio;
+	drawHeight = imageHeight * heightRatio;
+    }	   
+    
+
+    this.context.drawImage( this.backgroundImage,
+			    (contextWidth - drawWidth)/2, 
+			    (contextHeight - drawHeight)/2, 
+			    drawWidth, // 512,
+			    drawHeight // 768
+			  );
+    this._drawWighoutBackgroundImages();
+
+};
 
 IKRS.BezierCanvasHandler.prototype._drawWighoutBackgroundImages = function() {
 
@@ -259,7 +311,7 @@ IKRS.BezierCanvasHandler.prototype._drawWighoutBackgroundImages = function() {
 	// Fill inner shape?
 	var rightLowerPoint = boundingBox.getRightLowerPoint();
 	var rightUpperPoint = boundingBox.getRightUpperPoint();
-	this.context.fillStyle   = "#e8e8e8";
+	this.context.fillStyle   = "rgba(214, 214, 214, 0.9)"; // "#e8e8e8";
 	this.context.beginPath();
 	this.context.moveTo( rightUpperPoint.x * this.zoomFactor + this.drawOffset.x, 
 			     rightUpperPoint.y * this.zoomFactor + this.drawOffset.y
