@@ -1,4 +1,14 @@
 /**
+ * The BezierCanvasHandler holds a bezier path and a HTML5 canvas (id=bezier_canvas)
+ * and manages UI events and user input.
+ *
+ * Initially it holds a default bezier path which is defined by the value from
+ * getDefaultBezierJSON() function call.
+ *
+ * The redraw() function is directly connected with the canvas object and draws - if
+ * triggered - the bezier curve, holding points, rulers and background.
+ *
+ *
  * @author Ikaros Kappler
  * @date 2013-08-14
  * @version 1.0.0
@@ -55,26 +65,24 @@ IKRS.BezierCanvasHandler = function() {
 
     window.addEventListener( "keydown", this.keyDownHandler, false );
 
-    // This is a new way: build from a JSON string
-    /*
-    var jsonString = "[ { \"startPoint\" : [-122,77.80736634304651], \"endPoint\" : [-65.59022229786551,21.46778533702511], \"startControlPoint\": [-121.62058129515852,25.08908859418696], \"endControlPoint\" : [-79.33419353770395,48.71529293460728] }, { \"startPoint\" : [-65.59022229786551,21.46778533702511], \"endPoint\" : [-65.66917273472913,-149.23537680826058], \"startControlPoint\": [-52.448492057756646,-4.585775770903305], \"endControlPoint\" : [-86.1618869001374,-62.11613821618976] }, { \"startPoint\" : [-65.66917273472913,-149.23537680826058], \"endPoint\" : [-61.86203591980055,-243.8368165606738], \"startControlPoint\": [-53.701578771473564,-200.1123697454778], \"endControlPoint\" : [-69.80704300441666,-205.36451303641783] }, { \"startPoint\" : [-61.86203591980055,-243.8368165606738], \"endPoint\" : [-21.108966092052256,-323], \"startControlPoint\": [-54.08681426887413,-281.486963896856], \"endControlPoint\" : [-53.05779349623559,-323] } ]";
-    */
-    var jsonString = getDefaultBezierJSON();
-    this.bezierPath = IKRS.BezierPath.fromJSON( jsonString );
+    // Build bezier curve from a JSON string
+    var jsonString                    = getDefaultBezierJSON();
+    this.bezierPath                   = IKRS.BezierPath.fromJSON( jsonString );
     
     // THE UNDO-HISTORY IS REALLY BUGGY AND CURRENTLY NOT IN USE.
     // THIS IS STILL TO BE FIXED!!!
-    this.undoHistory = new IKRS.UndoHistory( this.bezierPath,
-					     32
-					   );
-    this.bezierPath  = this.undoHistory.getCurrentState().clone();
+    this.undoHistory                  = new IKRS.UndoHistory( this.bezierPath,
+							      32
+							    );
+    this.bezierPath                   = this.undoHistory.getCurrentState().clone();
     
 
     // Store a reverse reference inside the handler so the mousehandlers can access this object
-    this.canvas.bezierCanvasHandler = this;
+    this.canvas.bezierCanvasHandler   = this;
         
     //this.backgroundImage            = "bg_bezier.png";
-    this.backgroundImage              = undefined;
+    this.backgroundImage              = null; // undefined;
+    this.customBackgroundImage        = null;
     this.loadBackgroundImage( "bg_bezier.png", 
 			      true             // redraw when ready
 			    ); 
@@ -142,7 +150,7 @@ IKRS.BezierCanvasHandler.prototype.mouseWheelHandler = function( e ) {
 }
 
 
-IKRS.BezierCanvasHandler.prototype.drawOffset = new THREE.Vector2( 324, 525 ); //256, 384 );
+IKRS.BezierCanvasHandler.prototype.drawOffset = new THREE.Vector2( 324, 525 );
 IKRS.BezierCanvasHandler.prototype.zoomFactor = 1.4;
 // 0: start point
 // 1: start control point
@@ -196,20 +204,17 @@ IKRS.BezierCanvasHandler.prototype.loadBackgroundImage = function( url, redraw )
     var bgImage = new Image();
     bgImage.bezierCanvasHandler = this;
     bgImage.onload = function() {
-	//window.alert( "Loaded: width=" + this.width );
-	/*
-	// Clear screen? [not required if using background image]
-	this.bezierCanvasHandler.context.drawImage( this,
-						    0, 0, 
-						    512,
-						    768
-						  );
-	this.bezierCanvasHandler._drawWighoutBackgroundImages();
-	*/
-	//this.bezierCanvasHandler.backgroundImage = this; // bgImage;
-	//if( redraw )
-	//    this.bezierCanvasHandler.redraw();
 	this.bezierCanvasHandler.setBackgroundImage( this, redraw );
+    };
+    
+    bgImage.src = url; // this.backgroundImage; //"bg_bezier.png"; 
+};
+
+IKRS.BezierCanvasHandler.prototype.loadCustomBackgroundImage = function( url, redraw ) {
+    var bgImage = new Image();
+    bgImage.bezierCanvasHandler = this;
+    bgImage.onload = function() {
+	this.bezierCanvasHandler.setCustomBackgroundImage( this, redraw );
     };
     
     bgImage.src = url; // this.backgroundImage; //"bg_bezier.png"; 
@@ -222,11 +227,17 @@ IKRS.BezierCanvasHandler.prototype.setBackgroundImage = function( image, redraw 
 	this.redraw();
 };
 
+IKRS.BezierCanvasHandler.prototype.setCustomBackgroundImage = function( image, redraw ) {
+    this.customBackgroundImage = image;
+    //window.alert( "image=" + image );
+    if( redraw )
+	this.redraw();
+};
+
 IKRS.BezierCanvasHandler.prototype._drawWithBackgroundImages = function() {
 
-    var contextWidth = 512;
-    var contextHeight = 768;
-
+    var contextWidth  = this.canvasWidth; // 512;
+    var contextHeight = this.canvasHeight; // 768;
 
     // Clear screen!
     this.context.fillStyle = "#FFFFFF";
@@ -234,25 +245,7 @@ IKRS.BezierCanvasHandler.prototype._drawWithBackgroundImages = function() {
     
 
     /*
-    // Draw background image
-    var bgImage = new Image();
-    bgImage.bezierCanvasHandler = this;
-    bgImage.onload = function() {
-	// Clear screen? [not required if using background image]
-	this.bezierCanvasHandler.context.drawImage( this,
-						    0, 0, 
-						    512,
-						    768
-						  );
-	this.bezierCanvasHandler._drawWighoutBackgroundImages();
-    };
-    
-    bgImage.src = this.backgroundImage; //"bg_bezier.png"; 
-    */
-
-    //window.alert( this.backgroundImage );
-
-    var imageWidth  = this.backgroundImage.width;
+      var imageWidth  = this.backgroundImage.width;
     var imageHeight = this.backgroundImage.height;
 
     var widthRatio  = contextWidth  / imageWidth;
@@ -276,11 +269,53 @@ IKRS.BezierCanvasHandler.prototype._drawWithBackgroundImages = function() {
 			    drawWidth, // 512,
 			    drawHeight // 768
 			  );
-    this._drawWighoutBackgroundImages();
+    this._drawWithoutBackgroundImages();
+
+*/
+    
+    if( this.customBackgroundImage != null )
+	this._drawAnonymousBackgroundImage( this.customBackgroundImage );
+    this._drawAnonymousBackgroundImage( this.backgroundImage );
+    this._drawWithoutBackgroundImages();
+};
+
+IKRS.BezierCanvasHandler.prototype._drawAnonymousBackgroundImage = function( image ) {
+
+    var contextWidth  = this.canvasWidth; // 512;
+    var contextHeight = this.canvasHeight; // 768;
+    
+
+    var imageWidth  = image.width;
+    var imageHeight = image.height;
+
+    var widthRatio  = contextWidth  / imageWidth;
+    var heightRatio = contextHeight / imageHeight;
+    
+    var drawWidth, drawHeight;
+    if( widthRatio < heightRatio ) {
+	// normalize width
+	drawWidth = imageWidth * widthRatio;
+	drawHeight = imageHeight * widthRatio;
+    } else {
+	// normalize height
+	drawWidth = imageWidth * heightRatio;
+	drawHeight = imageHeight * heightRatio;
+    }	   
+    
+
+    this.context.drawImage( image,
+			    (contextWidth - drawWidth)/2, 
+			    (contextHeight - drawHeight)/2, 
+			    drawWidth, // 512,
+			    drawHeight // 768
+			  );
+    //this._drawWithoutBackgroundImages();
 
 };
 
-IKRS.BezierCanvasHandler.prototype._drawWighoutBackgroundImages = function() {
+
+
+IKRS.BezierCanvasHandler.prototype._drawWithoutBackgroundImages = function() {
 
     // Draw coordinate system (global crosshair)?
     // This form element is deprecated!
@@ -1013,7 +1048,8 @@ IKRS.BezierCanvasHandler.prototype.mouseMoveHandler = function( e ) {
 	    this.bezierCanvasHandler._scaleBezierPath( oldBounds,
 						       newBounds,
 						       oldBounds.getRightLowerPoint(), // anchor
-						       true  // redraw
+						       true,  // redraw
+						       true   // nextEventFollowing
 						     );
 	    fireChangeEvent = true;
 
@@ -1029,7 +1065,8 @@ IKRS.BezierCanvasHandler.prototype.mouseMoveHandler = function( e ) {
 	    this.bezierCanvasHandler._scaleBezierPath( oldBounds,
 						       newBounds,
 						       oldBounds.getLeftLowerPoint(), // anchor
-						       true  // redraw
+						       true,  // redraw
+						       true   // nextEventFollowing
 						     );
 	    fireChangeEvent = true;
 	    
@@ -1045,7 +1082,8 @@ IKRS.BezierCanvasHandler.prototype.mouseMoveHandler = function( e ) {
 	    this.bezierCanvasHandler._scaleBezierPath( oldBounds,
 						       newBounds,
 						       oldBounds.getLeftUpperPoint(), // anchor
-						       true  // redraw
+						       true,  // redraw
+						       true   // nextEventFollowing
 						     );
 	    fireChangeEvent = true;
 
@@ -1061,7 +1099,8 @@ IKRS.BezierCanvasHandler.prototype.mouseMoveHandler = function( e ) {
 	    this.bezierCanvasHandler._scaleBezierPath( oldBounds,
 						       newBounds,
 						       oldBounds.getRightUpperPoint(), // anchor
-						       true  // redraw	
+						       true,  // redraw	
+						       true   // nextEventFollowing
 						     );
 	    fireChangeEvent = true;
 	    
@@ -1086,7 +1125,8 @@ IKRS.BezierCanvasHandler.prototype.mouseMoveHandler = function( e ) {
 IKRS.BezierCanvasHandler.prototype._scaleBezierPath = function( oldBounds,
 								newBounds,
 								anchor,
-								redraw
+								redraw,
+								nextEventFollowing
 							      ) {
     // Calculate scale factors
     var scaling    = new THREE.Vector2( oldBounds.getWidth()  / newBounds.getWidth(),
@@ -1113,7 +1153,7 @@ IKRS.BezierCanvasHandler.prototype._scaleBezierPath = function( oldBounds,
 	this.redraw();
     
 
-    this._fireChangeEvent( { nextEventFollowing: false } );
+    this._fireChangeEvent( { nextEventFollowing: nextEventFollowing } );
 };
 
 

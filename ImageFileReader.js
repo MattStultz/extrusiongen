@@ -19,7 +19,7 @@ ImageFileReader = {
 	ImageFileReader._readImageFile( imgFile,
 					function(image) {
 					    //alert( "width=" + image.width + ", height=" + image.height );
-					    bezierCanvasHandler.setBackgroundImage(image,true); // redraw=true
+					    bezierCanvasHandler.setCustomBackgroundImage(image,true); // redraw=true
 					}
 				      );
     },

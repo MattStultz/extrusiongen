@@ -106,6 +106,17 @@ IKRS.CubicBezierCurve.prototype.getLength = function() {
     return this.arcLength;
 };
 
+/**
+ * This function computes the area size of this bezier curve in an y-axis 
+ * integrational approach.
+ *
+ * For each bezier segment (which are linear segments) the distance to a given
+ * relative Y axis is computed (position of Y axis specified by 'relativeX'
+ * parameter).
+ *
+ * Each resulting sub area has a determined segment height and thus a determined
+ * area size. The sum of all segment area sizes is returned.
+ **/
 IKRS.CubicBezierCurve.prototype.computeVerticalAreaSize = function( relativeX,
 								    deltaSize, 
 								    useAbsoluteValues 
@@ -132,6 +143,9 @@ IKRS.CubicBezierCurve.prototype.computeVerticalAreaSize = function( relativeX,
     return size;
 };
 
+/**
+ * This helper function computes the area size of the given segment (param segmentIndex).
+ **/
 IKRS.CubicBezierCurve.prototype._computeVerticalAreaSizeForSegment = function( relativeX,
 									       deltaSize, 
 									       useAbsoluteValues, 
@@ -147,20 +161,11 @@ IKRS.CubicBezierCurve.prototype._computeVerticalAreaSizeForSegment = function( r
     var segmentB      = this.segmentCache[ segmentIndex+1 ];
     var segmentHeight = segmentB.y - segmentA.y;
     
-    /*
-    var intersection = IKRS.CubicBezierCurve._computeLineIntersection( segmentA, 
-								       segmentB,
-								       horizontalA,
-								       horizontalB
-								     );
-*/
+ 
     var relativeA = relativeX - segmentA.x;
     var relativeB = relativeX - segmentB.x;
-    //var averageX = segmentB.x + (segmentB.x - segmentA.x) / 2.0;
     var averageX = relativeB + (relativeA - relativeB) / 2.0;
-    //window.alert( "averageX=" + averageX );
-    
-    
+        
     if( useAbsoluteValues )
 	return Math.abs( segmentHeight * averageX );
     else
@@ -168,12 +173,47 @@ IKRS.CubicBezierCurve.prototype._computeVerticalAreaSizeForSegment = function( r
     
 };
 
-/*
-IKRS.CubicBezierCurve.prototype._computeVerticalAreaSizeForSegment = function( relativeX,
-									       deltaSize, 
-									       useAbsoluteValues, 
-									       segmentIndex 
-									     ) {
+
+/**
+ * This function computes the volume size of that revolution solid which outline
+ * is determined by the bezier curve.
+ *
+ * The calculation uses the segments area sizes to compute each layer's volume.
+ **/
+IKRS.CubicBezierCurve.prototype.computeVerticalRevolutionVolumeSize = function( relativeX,
+										//deltaSize, 
+										useAbsoluteValues 
+									      ) {
+    
+    //if( deltaSize == 0 )
+//	throw "Cannot compute bezier curve's vertical area size with delta=0.";
+    
+    if( this.segmentCache.length <= 1 )
+	return 0.0;
+
+
+    var volume = 0.0;
+    for( var i = 0; i+1 < this.segmentCache.length; i++ ) {
+
+	volume += this._computeVerticalRevolutionVolumeSizeForSegment( relativeX,
+								       //deltaSize,
+								       useAbsoluteValues,
+								       i
+								     );
+
+    }
+
+    return volume;
+};
+
+/**
+ * This helper function computes the area size of the given segment (param segmentIndex).
+ **/
+IKRS.CubicBezierCurve.prototype._computeVerticalRevolutionVolumeSizeForSegment = function( relativeX,
+											   //deltaSize, 
+											   useAbsoluteValues, 
+											   segmentIndex 
+											 ) {
 
     // Two points make a segment.
     // So at least two points must be available. Otherwise there is no area (size=0).
@@ -184,49 +224,22 @@ IKRS.CubicBezierCurve.prototype._computeVerticalAreaSizeForSegment = function( r
     var segmentB      = this.segmentCache[ segmentIndex+1 ];
     var segmentHeight = segmentB.y - segmentA.y;
     
-    //window.alert( "segmentHeight[" + segmentIndex + "]=" + segmentHeight );
+ 
+    var relativeA = relativeX - segmentA.x;
+    var relativeB = relativeX - segmentB.x;
+    var averageX  = relativeB + (relativeA - relativeB) / 2.0;
 
-    // Compute 'top down' or 'bottom up'?
-    if( segmentHeight < 0 )
-	deltaSize = -deltaSize;
+    // Volume is PI * square(radius) * height
+    var volume    = Math.PI * Math.pow(averageX,2) * segmentHeight;
+
+    if( useAbsoluteValues )
+	return Math.abs( volume );
+    else
+	return volume;              // May be negative
     
-    var y    = 0.0;
-    var size = 0.0;
-    var i    = 0;
-    while( Math.abs(y) <= Math.abs(segmentHeight) ) {
-	var horizontalA  = new THREE.Vector2(0,   this.startPoint.y+y);
-	var horizontalB  = new THREE.Vector2(100, this.startPoint.y+y);
-	var intersection = IKRS.CubicBezierCurve._computeLineIntersection( segmentA, 
-									   segmentB,
-									   horizontalA,
-									   horizontalB
-									 );
-	// The x component now contains the distance from the y axis
-	var xValue = null;
-	xValue = Math.abs( relativeX ) - Math.abs( intersection.x );
-	
-	if( Math.abs(xValue) > 100 )
-	    window.alert( "xValue at segment[" + segmentIndex + "] is ridiculous large: " + xValue );
-
-	if( segmentIndex == 0 )
-	    ; //window.alert( "segment[" + i + "] xValue=" + xValue );
-
-	if( useAbsoluteValues )
-	    size += Math.abs( deltaSize*relativeX );
-	else
-	    size += deltaSize*relativeX;             // May be negative
-	
-	
-	y += deltaSize;
-	i++;
-    }
-    
-    //window.alert( "Approximated area of segment " + segmentIndex + " in " + i + " iterations." );
-
-    return size;
 };
-*/
-    
+
+
 IKRS.CubicBezierCurve.prototype.updateArcLengths = function() {
     var 
     //x1 = this.startPoint.x, 
@@ -477,56 +490,6 @@ IKRS.CubicBezierCurve.fromObject = function( obj ) {
 };
 
 
-/**
- * This static function computes the intersection of the two passed lines (line1A, line1B) and 
- * (line2A, line2B).
- * All four parameters must be points with x and y components.
- *
- * Usually it would be well located in a Line class, but I didn't need a Line class before. So 
- * this must be enough.
- *
- * If both lines a parallel the function returns null.
- *
- * Note that the general LINE intersection is computed; the intersection point (if not null) 
- * is not necessarily located on the passed line segments.
- **/
-/*
-IKRS.CubicBezierCurve._computeLineIntersection = function( line1A, line1B,    // First line
-							   line2A, line2B     // second line
-							 ) {
-    
-    var a1 = line1B.y - line1A.y;
-    var b1 = line1A.x - line1B.x;
-    var c1 = a1 * line1A.x + b1 * line1A.y;
 
-    var a2 = line2B.y - line2A.y;
-    var b2 = line2A.x - line2B.x;
-    var c2 = a2 * line2A.x + b2 * line2A.y;
 
-    
-    var det = a1*b2 - a2*b1;
-    // Parellel lines?
-    if( det == 0 )
-	return null;
-    
-    return new THREE.Vector2( (b2*c1 - b1*c2)/det,
-			      (a1*c2 - a2*c1)/det
-			    );
-    
-};
-*/
 
-/*
-var tmpBC = new IKRS.CubicBezierCurve( new THREE.Vector2(10,20),
-				       new THREE.Vector2(40,40),
-				       new THREE.Vector2(60,40),
-				       new THREE.Vector2(80,20)
-				     );
-var tmpJSON = tmpBC.toJSON()
-window.alert( "toJSON(...)=" + tmpJSON );
-window.alert( "fromJSON(...)=" + IKRS.CubicBezierCurve.fromJSON(tmpJSON) );
-*/
-                                               
-
-//window.alert( "IKRS.CubicBezierCurve=" +IKRS.CubicBezierCurve );
-//window.alert( "IKRS.CubicBezierCurve.prototype=" + IKRS.CubicBezierCurve.prototype );

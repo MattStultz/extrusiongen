@@ -100,9 +100,14 @@ function changeBezierBackgroundType() {
     var type = getSelectedBezierBackgroundType();
     //window.alert( type );
     if( type == "default" ) {
+	/*
 	bezierCanvasHandler.loadBackgroundImage( "bg_bezier.png", 
 			                         true             // redraw when ready
 					       ); 
+	*/
+	bezierCanvasHandler.setCustomBackgroundImage( null, 
+			                              true             // redraw when ready
+						    ); 
     } else if( type == "file" ) {
 	document.forms['bezier_background_form'].elements['bezier_background_file'].click();		
     }

@@ -87,6 +87,26 @@ IKRS.BezierPath.prototype.computeVerticalAreaSize = function( deltaSize, useAbso
     return size;
 };
 
+IKRS.BezierPath.prototype.computeVerticalRevolutionVolumeSize = function( useAbsoluteValues ) {
+    
+    var bounds    = this.computeBoundingBox();
+    var relativeX = bounds.xMax;
+    
+    //window.alert( "relativeX=" + relativeX );
+
+    var volume = 0.0;
+    for( var i = 0; i < this.bezierCurves.length; i++ ) {
+
+	volume += this.bezierCurves[i].computeVerticalRevolutionVolumeSize( relativeX,         // An imaginary x-axis at the right bound
+									    //deltaSize, 
+									    useAbsoluteValues 
+									  );
+	
+    }
+
+    return volume;
+};
+
 IKRS.BezierPath.prototype.updateArcLengths = function() {
 
     this.totalArcLength = 0.0;

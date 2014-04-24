@@ -243,12 +243,15 @@ function updateBezierStatistics( source, event ) {
     var bounds         = this.bezierCanvasHandler.getBezierPath().computeBoundingBox();
     // Now imagine the whole are to be a rectangle with the same height.
     // The resulting radius is then:
-    var imaginaryRectangleWidth = bezierAreaSize / bounds.getHeight();
+    //var imaginaryRectangleWidth = bezierAreaSize / bounds.getHeight();
     
     // Now imagine the solid revolution of that rectangle.
     // It's volume is the value we are interesed in. It equals the volume of the present mesh.
     // Volume = PI * square(radius) * height
-    var volumeInUnits = Math.PI * Math.pow(imaginaryRectangleWidth,2) * bounds.getHeight();
+    //var volumeInUnits_old = Math.PI * Math.pow(imaginaryRectangleWidth,2) * bounds.getHeight();
+    var volumeInUnits     = this.bezierCanvasHandler.getBezierPath().computeVerticalRevolutionVolumeSize( //1.0,   // deltaSize
+													  true   // useAbsoluteValues
+													);
     
 
     var areaSize_squareMillimeters = bezierAreaSize * Math.pow( this.bezierCanvasHandler.getMillimeterPerUnit(), 2.0 );
@@ -265,7 +268,8 @@ function updateBezierStatistics( source, event ) {
 	[ "Height",       roundToDigits((bounds.getHeight()/10)*this.bezierCanvasHandler.getMillimeterPerUnit(),1,3),    "cm"  ],
 	//[ "Bezier Area",  roundToDigits(areaSize_squareMillimeters,1,3), "mm<sup>2</sup>"  ],
 	[ "Bezier Area",             roundToDigits((areaSize_squareMillimeters/100.0),2,3), "cm<sup>2</sup>"  ],
-	//[ "Volume",       roundToDigits(volume_cubeMillimeters,1,3), "mm<sup>3</sup>"  ],
+	//[ "Volume[Units]",       roundToDigits(volumeInUnits,2,3), " units"  ],
+	//[ "Volume[Units]_OLD",   roundToDigits(volumeInUnits_old,2,3), " units"  ],
 	[ "Volume",             roundToDigits((volume_cubeMillimeters/1000.0),1,3), "cm<sup>3</sup>"  ],
 	[ "",             roundToDigits((volume_cubeMilliLiters),1,3), "ml"  ],
 	[ "",             roundToDigits((volume_cubeMilliLiters/imperialCup),1,3), " Imperial Cups"  ],
@@ -430,6 +434,7 @@ function newScene() {
     }
 
     setBezierPath( bezierPath );
+    updateBezierStatistics( null, null );
 
     preview_rebuild_model();
 }
