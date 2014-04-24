@@ -15,8 +15,22 @@ function getSelectedMeshDirection() {
     return getSelectedRadioBoxValueByName( "mesh_form", "directions" );
 }
 
+// Value must be "xyz" or "zxy"
+function setSelectedMeshDirection( value ) {
+    return setSelectedRadioBoxValueByName( "mesh_form", "directions", value );
+}
+
 function getSelectedMeshHullType() {
     return getSelectedRadioBoxValueByName( "mesh_form", "mesh_hull_type" );
+}
+
+// Value must be "perpendicular" or "prism"
+function setSelectedMeshHullType( value ) {
+    return setSelectedRadioBoxValueByName( "mesh_form", "mesh_hull_type", value );
+}
+
+function setSelectedMeshColor( value ) {
+    document.forms["color_form"].elements["color"].value = value;
 }
 
 function getSelectedBezierBackgroundType() {
@@ -30,6 +44,18 @@ function getSelectedRadioBoxValueByName( formName, radioName ) {
             return radios[i].value;
     }                                                                                 
     return undefined;
+}
+
+function setSelectedRadioBoxValueByName( formName, radioName, value ) {
+    var radios = document.forms[ formName ].elements[ radioName ];
+    for( var i = 0; i < radios.length; i++ ) {
+        if( radios[i].value == value ) { //radios[i].checked )
+	    radios[i].checked = true;
+            //return radios[i].value;
+	    return true;
+	}
+    }                                                                                 
+    return false;
 }
 
 function displayBendingValue() {

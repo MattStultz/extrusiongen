@@ -253,8 +253,11 @@ function updateBezierStatistics( source, event ) {
 
     var areaSize_squareMillimeters = bezierAreaSize * Math.pow( this.bezierCanvasHandler.getMillimeterPerUnit(), 2.0 );
     var volume_cubeMillimeters     = volumeInUnits * Math.pow( this.bezierCanvasHandler.getMillimeterPerUnit(), 3.0 );
+    var volume_cubeMilliLiters     = volume_cubeMillimeters / 1000.0;
     var lowDensity                 = 0.76;
     var highDensity                = 1.07;
+    var imperialCup                = 284.130642624675; // ml
+    var usCup                      = 236.5882365;      // ml
     var weight_lowDensity          = roundToDigits((volume_cubeMillimeters/1000)*lowDensity,0);
     var weight_highDensity         = roundToDigits((volume_cubeMillimeters/1000)*highDensity,0);
     var tableData = [
@@ -263,10 +266,12 @@ function updateBezierStatistics( source, event ) {
 	//[ "Bezier Area",  roundToDigits(areaSize_squareMillimeters,1,3), "mm<sup>2</sup>"  ],
 	[ "Bezier Area",             roundToDigits((areaSize_squareMillimeters/100.0),2,3), "cm<sup>2</sup>"  ],
 	//[ "Volume",       roundToDigits(volume_cubeMillimeters,1,3), "mm<sup>3</sup>"  ],
-	[ "Volume",             roundToDigits((volume_cubeMillimeters/1000.0),3,3), "cm<sup>3</sup>"  ],
-	[ "",             roundToDigits((volume_cubeMillimeters/1000.0),0,3), "ml<br/>(not available in cups)"  ],
-	[ "Weight<br/>[low density silicone, " + lowDensity + "g/cm<sup>3</sup>]", roundToDigits(weight_lowDensity,0,3), "g"  ],
-	[ "Weight<br/>[high density silicone, " + highDensity + "g/cm<sup>3</sup>]", roundToDigits(weight_highDensity,0,3), "g"  ]
+	[ "Volume",             roundToDigits((volume_cubeMillimeters/1000.0),1,3), "cm<sup>3</sup>"  ],
+	[ "",             roundToDigits((volume_cubeMilliLiters),1,3), "ml"  ],
+	[ "",             roundToDigits((volume_cubeMilliLiters/imperialCup),1,3), " Imperial Cups"  ],
+	[ "",             roundToDigits((volume_cubeMilliLiters/usCup),1,3), " US Cups"  ],
+	[ "Weight<br/>&nbsp;[low density silicone, " + lowDensity + "g/cm<sup>3</sup>]", roundToDigits(weight_lowDensity,0,3), "g"  ],
+	[ "Weight<br/>&nbsp;[high density silicone, " + highDensity + "g/cm<sup>3</sup>]", roundToDigits(weight_highDensity,0,3), "g"  ]
     ];
     document.getElementById( "volume_and_weight" ).innerHTML = makeTable( tableData );
 
@@ -294,16 +299,19 @@ function makeTable( tableData ) {
     // I know, this is ugly.
     // String concatenation _and_ direct HTML insert insert DOM use. Bah!
     // Please optimize.
-    var result = "<table border=\"0\">";
+    var result = "<table style=\"border: 1px solid #686868;\">";
     for( var r = 0; r < tableData.length; r++ ) {
 
 	result += "<tr>\n";
 	for( var c = 0; c < tableData[r].length; c++ ) {
 
+	    var valign = "top";
+	    var align  = "left";
+
 	    if( c == 1 )
-		result += "<td valign=\"top\" align=\"right\">" + tableData[r][c] + "</td>\n";
+		result += "<td valign=\"bottom\" align=\"right\">" + tableData[r][c] + "&nbsp;</td>\n";
 	    else
-		result += "<td valign=\"top\">" + tableData[r][c] + "</td>\n";
+		result += "<td valign=\"bottom\">" + tableData[r][c] + "&nbsp;</td>\n";
 
 	}
 	result += "</tr>\n";

@@ -180,3 +180,20 @@ div#informational {
 
     font-size:           7pt;
 }
+
+td.color_cell {
+    width:               20px; 
+    height:              20px; 
+    padding:             2px;
+}
+
+div.color_picker {
+    width:               20px; 
+    height:              20px; 
+    cursor:              pointer;
+}
+
+comment {
+    font-size:           7pt;
+    color:               #888888;
+}

@@ -38,9 +38,18 @@ ZipFileExporter = {
 		splitShape:           document.forms[ "mesh_form" ].elements[ "split_shape" ].checked,
 
 		// This is new since 2013-10-30
-		arrangeSplitsOnPlane: document.forms[ "mesh_form" ].elements[ "arrange_splits_on_plane" ].checked
+		arrangeSplitsOnPlane: document.forms[ "mesh_form" ].elements[ "arrange_splits_on_plane" ].checked,
+		
+		// These are new since 2014-04-23
+		directions:           getSelectedMeshDirection(),  // "xyz" or "zxy"
+		meshHullType:         getSelectedMeshHullType()    // "perpendicular" or "prism"
 	    },
-	    //compress:          document.forms[ "zip_form" ].elements[ "compress_zip" ].checked
+
+	    // This is new since 2014-04-23
+	    colorSettings:  {
+		meshColor:            document.forms["color_form"].elements["color"].value
+	    },
+
 	    compress:          (document.forms[ "zip_form" ].elements[ "compress_zip" ].value!="0")
 	}; // END object
     }, // END function
@@ -103,6 +112,18 @@ ZipFileExporter = {
 	//window.alert( meshSettingsJSON );
 	zip.file( "mesh_settings.json",
 		  meshSettingsJSON,
+		  { base64: false,
+		    binary: false,
+		    type: "application/json"
+		  }
+		);
+
+
+	// Add color settings (JSON) to zip
+	var colorSettingsJSON = JSON.stringify( data.colorSettings, null, "\t" );
+	//window.alert( meshSettingsJSON );
+	zip.file( "color_settings.json",
+		  colorSettingsJSON,
 		  { base64: false,
 		    binary: false,
 		    type: "application/json"

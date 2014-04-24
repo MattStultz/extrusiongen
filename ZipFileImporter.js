@@ -29,8 +29,18 @@ ZipFileImporter = {
 		splitShape:        document.forms[ "mesh_form" ].elements[ "split_shape" ].checked,
 		
 		// This is new since 2013-10-30
-		arrangeSplitsOnPlane: document.forms[ "mesh_form" ].elements[ "arrange_splits_on_plane" ].checked
+		arrangeSplitsOnPlane: document.forms[ "mesh_form" ].elements[ "arrange_splits_on_plane" ].checked,
+
+		// These are new since 2014-04-23
+		directions:           getSelectedMeshDirection(),  // "xyz" or "zxy"
+		meshHullType:         getSelectedMeshHullType()    // "perpendicular" or "prism"
 	    },
+	    
+	    // This is new since 2014-04-23
+	    colorSettings:  {
+		color:                document.forms["color_form"].elements["color"].value
+	    },
+
 	    compress:          document.forms[ "zip_form" ].elements[ "compress_zip" ].checked
 	}; // END object
 	*/
@@ -94,7 +104,21 @@ ZipFileImporter = {
 	}
 
 	
-	return false;
+	setSelectedMeshDirection( meshSettings.meshDirection ); // May be null
+	setSelectedMeshHullType( meshSettings.meshHullType );   // May be null
+	
+	return true;
+    },
+
+    _apply_color_settings: function( colorSettings ) {
+	
+	if( !colorSettings )
+	    return false;
+
+	if( colorSettings.meshColor != null )
+	    setSelectedMeshColor( colorSettings.meshColor );         // Not null
+	
+	return true;
     },
 
     importZipFile: function( inputFileElement ) {
@@ -128,11 +152,15 @@ ZipFileImporter = {
 		//setBezierPath( bezierPath );
 		
 
-		var zip              = new JSZip( e.target.result );
+		var zip                = new JSZip( e.target.result );
 		
 		//window.alert( zip );
-		var shapedPathFile   = zip.file( "shape.bezierpath.json" );
-		var meshSettingsFile = zip.file( "mesh_settings.json" );
+		var shapedPathFile     = zip.file( "shape.bezierpath.json" );
+		var meshSettingsFile   = zip.file( "mesh_settings.json" );
+		var colorSettingsFile  = zip.file( "color_settings.json" );
+		//window.alert( "ColorSettingsFile=" + colorSettingsFile );
+		
+
 
 		if( !shapedPathFile ) {
 
@@ -150,8 +178,9 @@ ZipFileImporter = {
 		    
 
 		// Prepare variables
-		var bezierPath   = null;
-		var meshSettings = null;
+		var bezierPath     = null;
+		var meshSettings   = null;
+		var colorSettings  = null;
 		
 		//window.alert( "shapedPathFile=" + shapedPathFile + ", meshSettingsFile=" + meshSettingsFile );
 		
@@ -159,7 +188,7 @@ ZipFileImporter = {
 		try {
 		    bezierPath = IKRS.BezierPath.fromJSON( shapedPathFile.asText() );		    
 		} catch( e ) {
-		    window.alert( "Error: " + e );
+		    window.alert( "Error[0]: " + e );
 		    return false;
 		}
 		
@@ -168,8 +197,20 @@ ZipFileImporter = {
 		try {
 		    meshSettings = JSON.parse( meshSettingsFile.asText() );
 		} catch( e ) {
-		    window.alert( "Error: " + e );
+		    window.alert( "Error[1]: " + e );
 		    return false;
+		}
+
+		// Parse color settings?
+		// The color settings file 'color_settings.json' was added in a later version.
+		// For backwards compatibility ignore this if the file does not exist
+		if( colorSettingsFile ) {
+		    try {
+			colorSettings = JSON.parse( colorSettingsFile.asText() );
+		    } catch( e ) {
+			window.alert( "Error[2]: " + e );
+			return false;
+		    }
 		}
 
 		// Apply path
@@ -177,6 +218,9 @@ ZipFileImporter = {
 		
 		// Apply settings
 		ZipFileImporter._apply_mesh_settings( meshSettings );
+
+		// Apply color settings
+		ZipFileImporter._apply_color_settings( colorSettings );
 		
 		// Rebuild model with new settings
 		preview_rebuild_model();
@@ -187,16 +231,6 @@ ZipFileImporter = {
 		window.alert( "Error: " + e );
 	    }
 	    
-	    /*
-	    // Send to server?
-	    var xhr = new XMLHttpRequest();
-	    xhr.onreadystatechange = function() {
-
-	    };
-	    xhr.open( "POST", "ajax_file_uploader.php" );
-	    xhr.setRequestHeader( "Content-Type", "application/x-www-form-urlencoded" );
-	    xhr.send( "file=" + uncodeURIComponent(e.target.result) );
-	    */
 	    
 	};
 	reader.onprogress = function( e ) {

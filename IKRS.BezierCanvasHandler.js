@@ -1072,8 +1072,14 @@ IKRS.BezierCanvasHandler.prototype.mouseMoveHandler = function( e ) {
 	this.bezierCanvasHandler.latestMouseDragPosition.set( e.pageX, e.pageY );
 	
 
-	if( fireChangeEvent )
-	    this.bezierCanvasHandler._fireChangeEvent( { nextEventFollowing: true } );
+	// I don't think it is necessary to throw an event here.
+	// It's just a sequence of events which will be ignored by the main
+	// script until the last event of the sequence is triggered (indicated
+	// by the event's 'nextEventFollowing' flag).
+	// So avoid this call to save resources.
+	
+	//if( fireChangeEvent )
+	//    this.bezierCanvasHandler._fireChangeEvent( { nextEventFollowing: true } );
     }
 }
 
