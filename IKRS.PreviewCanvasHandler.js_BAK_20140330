@@ -23,13 +23,12 @@ IKRS.PreviewCanvasHandler = function( bezierCanvasHandler,
 						       0.1,  // 0.1, 
 						       8000  // 2000   // max draw depth (on z)
 						     ); 
-    // Add custom settings to the camera to we can store the mouse movement inside.   
+    // Add custom settings to the camera to we can store the mouse movement inside.
     this.preview_camera.ikrsSettings = { 
 	lastRotationStep: new THREE.Vector2(0,0),
 	rotation:         new THREE.Vector4(1.57,3.92,0,0),
 	rotationRadius:   500.0
     };
-    
     this.preview_camera.position = new THREE.Vector3( 0.39816335536663167, -376.42747328364794,    170.90660641346517 );
     this.preview_camera.rotation = new THREE.Vector3( 1.144602197912255,   0.0009631226746176703, -0.0021213060976673294 );
     // THIS DEPENDS ON THE SCENE. ALIGN CAMERA AT THE END (AFTER ADDING THE MESHES)!
@@ -140,7 +139,7 @@ IKRS.PreviewCanvasHandler.prototype.increaseZoomFactor = function() {
     
     // Would the increase zoom hit the max draw range? (the camera frustum far plane)
     if( this.preview_camera.ikrsSettings.rotationRadius / 1.2 >= this.preview_camera.far )
-    	return false; 
+	return false; 
 
     this.preview_camera.ikrsSettings.rotationRadius /= 1.2;
     this._setCameraPositionFromLocalSettings();
@@ -175,9 +174,7 @@ IKRS.PreviewCanvasHandler.prototype.preview_mouseMoveHandler = function ( e ) {
 };
 
 
-
 IKRS.PreviewCanvasHandler.prototype._setCameraPositionFromLocalSettings = function() {
-    
     
     var newCameraOffset_X = new THREE.Vector3( Math.cos( this.preview_camera.ikrsSettings.rotation.x ),
 					       Math.sin( this.preview_camera.ikrsSettings.rotation.x ),
@@ -254,12 +251,9 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
     var split_shape              = document.forms["mesh_form"].elements["split_shape"].checked;
     var arrange_splits_on_plane  = document.forms["mesh_form"].elements["arrange_splits_on_plane"].checked;
 
-    //window.alert( "A" );
-
     var meshDirection            = getSelectedMeshDirection();
     var hullType                 = getSelectedMeshHullType();  // "perpendicular" or "prism"
     
-    //window.alert( "B" );
 
     // Convert numeric text values to numbers!
     mesh_hull_strength  = parseInt( mesh_hull_strength );
@@ -278,11 +272,10 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 	var bezierBounds = shapedPath.computeBoundingBox();
 
 	// Use different vector factories for both splits
-	var tmpFactory_A; // = new IKRS.VectorFactory( 1, 1, 1 );
-	/*tmpFactory_A.createVector2 = function( x, y ) { 
+	var tmpFactory_A = new IKRS.VectorFactory();
+	tmpFactory_A.createVector2 = function( x, y ) { 
 	    return new THREE.Vector2(x,y); 
-	};*/
-	/*
+	};
 	if( meshDirection == "xyz" ) {
 	    tmpFactory_A.createVector3 = function( x, y, z ) { 
 		return new THREE.Vector3(y,z,x); 
@@ -292,28 +285,17 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 		return new THREE.Vector3(y,z,-x); 
 	    };
 	}
-	*/
-	var tmpFactory_B; // = new IKRS.VectorFactory( 1, 1, 1 );
-	/*tmpFactory_B.createVector2 = function( x, y ) { 
+	var tmpFactory_B = new IKRS.VectorFactory();
+	tmpFactory_B.createVector2 = function( x, y ) { 
 	    return new THREE.Vector2(x,y); 
-	};*/
+	};
 	if( meshDirection == "xyz" ) {
-	    tmpFactory_A = new IKRS.VectorFactory( 1, 1, 1 );
-	    tmpFactory_B = new IKRS.VectorFactory( 1, -1, -1 );
-	    tmpFactory_A.createVector3 = function( x, y, z ) { 
-		return new THREE.Vector3(z,x,y); // OLD: )y,z,x); 
-	    };
 	    tmpFactory_B.createVector3 = function( x, y, z ) { 
-		return new THREE.Vector3(-z,x,-y); // OLD: (y,-z,-x); // y,-z,x); 
+		return new THREE.Vector3(y,-z,-x); // y,-z,x); 
 	    };
 	} else {
-	    tmpFactory_A = new IKRS.VectorFactory( 1, -1, -1 );
-	    tmpFactory_B = new IKRS.VectorFactory( 1, 1, 1 );
-	    tmpFactory_A.createVector3 = function( x, y, z ) { 
-		return new THREE.Vector3(-z,x,-y); //-z,x,-y); // OLD: (y,z,-x); 
-	    };
 	    tmpFactory_B.createVector3 = function( x, y, z ) { 
-		return new THREE.Vector3(z,x,y); // OLD: (y,-z,x); // y,-z,x); 
+		return new THREE.Vector3(y,-z,x); // y,-z,x); 
 	    };
 	}
 	vectorFactories = [
@@ -325,11 +307,26 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 	    new THREE.Vector3( 0, 0, -50 - bezierBounds.getWidth()/2 )     // NOTE: recognize diameter
 	];
     } else {
-	vectorFactories = [
-	    new IKRS.VectorFactory( 1, 1, 1 ),       // use default factories (x,y,z)
-	    new IKRS.VectorFactory( 1, 1, 1 )
-	];
-	
+	//if( meshDirection == "xyz" ) {
+	    vectorFactories = [
+		new IKRS.VectorFactory( 1, 1, 1 ),       // use default factories (x,y,z)
+		new IKRS.VectorFactory( 1, 1, 1 )
+	    ];
+	/*
+	} else {
+	    vectorFactories = [
+		{ createVector2 : function(x,y) { return new THREE.Vector2(x,y); },
+		  createVector3 : function(x,y,z) { return new THREE.Vector3(x,-y,-z); } 
+		}, 
+		{ createVector2 : function(x,y) { return new THREE.Vector2(x,y); },
+		  createVector3 : function(x,y,z) { return new THREE.Vector3(x,-y,-z); } 
+		},
+		//new IKRS.VectorFactory( 1, 1, -1 ),       // use default factories (x,y,z)
+		//new IKRS.VectorFactory( 1, 1, 1 )
+	    ];
+	}
+	*/
+
 	offsets = [
 	    new THREE.Vector3(0,  50, 0),   // Create two 'standing' objects with a distance of 300 px
 	    new THREE.Vector3(0, -50, 0)
@@ -359,8 +356,7 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 						     
 						     offsets[0], // new THREE.Vector3(0,50,0),  // offset,
 						     
-						     vectorFactories[0],
-						     hullType
+						     vectorFactories[0]
 						   );
         
     this._addMeshToScene( new_mesh_left, 
@@ -385,8 +381,7 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
 							  Math.PI/2.0,  // shape_start_angle
 
 							  offsets[1], // new THREE.Vector3(0,-50,0),  // offset
-							  vectorFactories[1],
-							  hullType
+							  vectorFactories[1]
 							);
         
 	this._addMeshToScene( new_mesh_right, 
@@ -488,8 +483,7 @@ IKRS.PreviewCanvasHandler.prototype._buildMeshFromSettings = function( shapedPat
 								       
 								       mesh_offset,  // Vector3
 
-								       vectorFactory,
-								       meshHullType // "perpendicular" or "box"
+								       vectorFactory
 								     ) {
     
     var shapedPathBounds     = shapedPath.computeBoundingBox();
@@ -551,6 +545,7 @@ IKRS.PreviewCanvasHandler.prototype._buildMeshFromSettings = function( shapedPat
 						   );
 	*/
 	// translate to center
+	
 	pathPoint.add( new THREE.Vector3( -tmpCircleRadius,
 					  -pathLength/2, 
 					  0
@@ -585,8 +580,7 @@ IKRS.PreviewCanvasHandler.prototype._buildMeshFromSettings = function( shapedPat
 								    closePathEnd:               mesh_close_path_end,
 								    perpendicularHullStrength:  mesh_hull_strength,
 								    closeShape:                 !split_shape,
-								    meshOffset:                 mesh_offset,
-								    meshHullType:               meshHullType
+								    meshOffset:                 mesh_offset
 								  },
 								  
 								  vectorFactory
@@ -604,7 +598,7 @@ IKRS.PreviewCanvasHandler.prototype._buildMeshFromSettings = function( shapedPat
 	  wireframe: wireFrame, 
 	  shading: THREE.LambertShading // THREE.FlatShading 
 	} 
-    );
+	);
 
     // As many as there are extrusion steps
     var extrusionMaterialArray = [ exrusionMaterial,

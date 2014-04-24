@@ -65,7 +65,27 @@ IKRS.BezierPath.prototype.END_POINT           = 3;
 
 IKRS.BezierPath.prototype.getLength = function() {
     return this.totalArcLength;
-}
+};
+
+IKRS.BezierPath.prototype.computeVerticalAreaSize = function( deltaSize, useAbsoluteValues ) {
+
+    var bounds    = this.computeBoundingBox();
+    var relativeX = bounds.xMax;
+
+    //window.alert( "relativeX=" + relativeX );
+
+    var size = 0.0;
+    for( var i = 0; i < this.bezierCurves.length; i++ ) {
+
+	size += this.bezierCurves[i].computeVerticalAreaSize( relativeX,         // An imaginary x-axis at the right bound
+							      deltaSize, 
+							      useAbsoluteValues 
+							    );
+
+    }
+
+    return size;
+};
 
 IKRS.BezierPath.prototype.updateArcLengths = function() {
 

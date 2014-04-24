@@ -87,29 +87,6 @@ IKRS.CubicBezierCurve.prototype.moveCurvePoint = function( pointID,           //
 	this.updateArcLengths();
 }
 
-/*
-IKRS.CubicBezierCurve.prototype.scale = function( anchor,  // Vector2
-						  scaling  // Vector2
-						) {
-    IKRS.CubicBezierCurve._scalePoint( this.getStartPoint(),
-				       anchor,
-				       scaling
-				     );
-    IKRS.CubicBezierCurve._scalePoint( this.getEndPoint(),
-				       anchor,
-				       scaling
-				     );
-    IKRS.CubicBezierCurve._scalePoint( this.getStartControlPoint(),
-				       anchor,
-				       scaling
-				     );
-    IKRS.CubicBezierCurve._scalePoint( this.getEndControlPoint(),
-				       anchor,
-				       scaling
-				     );
-    this.updateArcLengths();
-}
-*/
 
 IKRS.CubicBezierCurve._scalePoint = function( point,   // Vector2
 					      anchor,  // Vector2
@@ -123,11 +100,132 @@ IKRS.CubicBezierCurve._scalePoint = function( point,   // Vector2
     // Move back to original position
     point.add( anchor );
     
-}
+};
 
 IKRS.CubicBezierCurve.prototype.getLength = function() {
     return this.arcLength;
-}
+};
+
+IKRS.CubicBezierCurve.prototype.computeVerticalAreaSize = function( relativeX,
+								    deltaSize, 
+								    useAbsoluteValues 
+								  ) {
+    
+    if( deltaSize == 0 )
+	throw "Cannot compute bezier curve's vertical area size with delta=0.";
+    
+    if( this.segmentCache.length <= 1 )
+	return 0.0;
+
+
+    var size = 0.0;
+    for( var i = 0; i+1 < this.segmentCache.length; i++ ) {
+
+	size += this._computeVerticalAreaSizeForSegment( relativeX,
+							 deltaSize,
+							 useAbsoluteValues,
+							 i
+						       );
+
+    }
+
+    return size;
+};
+
+IKRS.CubicBezierCurve.prototype._computeVerticalAreaSizeForSegment = function( relativeX,
+									       deltaSize, 
+									       useAbsoluteValues, 
+									       segmentIndex 
+									     ) {
+
+    // Two points make a segment.
+    // So at least two points must be available. Otherwise there is no area (size=0).
+    if( segmentIndex+1 >= this.segmentCache.length )
+	return 0.0;
+
+    var segmentA      = this.segmentCache[ segmentIndex ];
+    var segmentB      = this.segmentCache[ segmentIndex+1 ];
+    var segmentHeight = segmentB.y - segmentA.y;
+    
+    /*
+    var intersection = IKRS.CubicBezierCurve._computeLineIntersection( segmentA, 
+								       segmentB,
+								       horizontalA,
+								       horizontalB
+								     );
+*/
+    var relativeA = relativeX - segmentA.x;
+    var relativeB = relativeX - segmentB.x;
+    //var averageX = segmentB.x + (segmentB.x - segmentA.x) / 2.0;
+    var averageX = relativeB + (relativeA - relativeB) / 2.0;
+    //window.alert( "averageX=" + averageX );
+    
+    
+    if( useAbsoluteValues )
+	return Math.abs( segmentHeight * averageX );
+    else
+	return segmentHeight * averageX;              // May be negative
+    
+};
+
+/*
+IKRS.CubicBezierCurve.prototype._computeVerticalAreaSizeForSegment = function( relativeX,
+									       deltaSize, 
+									       useAbsoluteValues, 
+									       segmentIndex 
+									     ) {
+
+    // Two points make a segment.
+    // So at least two points must be available. Otherwise there is no area (size=0).
+    if( segmentIndex+1 >= this.segmentCache.length )
+	return 0.0;
+
+    var segmentA      = this.segmentCache[ segmentIndex ];
+    var segmentB      = this.segmentCache[ segmentIndex+1 ];
+    var segmentHeight = segmentB.y - segmentA.y;
+    
+    //window.alert( "segmentHeight[" + segmentIndex + "]=" + segmentHeight );
+
+    // Compute 'top down' or 'bottom up'?
+    if( segmentHeight < 0 )
+	deltaSize = -deltaSize;
+    
+    var y    = 0.0;
+    var size = 0.0;
+    var i    = 0;
+    while( Math.abs(y) <= Math.abs(segmentHeight) ) {
+	var horizontalA  = new THREE.Vector2(0,   this.startPoint.y+y);
+	var horizontalB  = new THREE.Vector2(100, this.startPoint.y+y);
+	var intersection = IKRS.CubicBezierCurve._computeLineIntersection( segmentA, 
+									   segmentB,
+									   horizontalA,
+									   horizontalB
+									 );
+	// The x component now contains the distance from the y axis
+	var xValue = null;
+	xValue = Math.abs( relativeX ) - Math.abs( intersection.x );
+	
+	if( Math.abs(xValue) > 100 )
+	    window.alert( "xValue at segment[" + segmentIndex + "] is ridiculous large: " + xValue );
+
+	if( segmentIndex == 0 )
+	    ; //window.alert( "segment[" + i + "] xValue=" + xValue );
+
+	if( useAbsoluteValues )
+	    size += Math.abs( deltaSize*relativeX );
+	else
+	    size += deltaSize*relativeX;             // May be negative
+	
+	
+	y += deltaSize;
+	i++;
+    }
+    
+    //window.alert( "Approximated area of segment " + segmentIndex + " in " + i + " iterations." );
+
+    return size;
+};
+*/
     
 IKRS.CubicBezierCurve.prototype.updateArcLengths = function() {
     var 
@@ -241,17 +339,6 @@ IKRS.CubicBezierCurve.prototype.getTangent = function( t ) {
     var c = this.getEndControlPoint();
     var d = this.getEndPoint();  
     
-    // THIS IS CORRECT (it is the original formula with tons of arithmetic operations)
-    /* 
-    var tX = -3 * a.x * Math.pow( 1-t, 2 ) +
-	b.x * (3 * Math.pow(1-t,2) - 6 *(1-t)*t ) +
-	c.x * (6 *(1-t)*t - 3*t*t) +
-	3*d.x*t*t;
-    var tY = -3 * a.y * Math.pow( 1-t, 2 ) +
-	b.y * (3 * Math.pow(1-t,2) - 6 *(1-t)*t ) +
-	c.y * (6 *(1-t)*t - 3*t*t) +
-	3*d.y*t*t;	
-	*/
 
     // This is the shortened one
     var t2 = t * t;
@@ -387,8 +474,47 @@ IKRS.CubicBezierCurve.fromObject = function( obj ) {
 				      new THREE.Vector2(obj.startControlPoint[0], obj.startControlPoint[1]),
 				      new THREE.Vector2(obj.endControlPoint[0],   obj.endControlPoint[1])
 				    );
-}
+};
 
+
+/**
+ * This static function computes the intersection of the two passed lines (line1A, line1B) and 
+ * (line2A, line2B).
+ * All four parameters must be points with x and y components.
+ *
+ * Usually it would be well located in a Line class, but I didn't need a Line class before. So 
+ * this must be enough.
+ *
+ * If both lines a parallel the function returns null.
+ *
+ * Note that the general LINE intersection is computed; the intersection point (if not null) 
+ * is not necessarily located on the passed line segments.
+ **/
+/*
+IKRS.CubicBezierCurve._computeLineIntersection = function( line1A, line1B,    // First line
+							   line2A, line2B     // second line
+							 ) {
+    
+    var a1 = line1B.y - line1A.y;
+    var b1 = line1A.x - line1B.x;
+    var c1 = a1 * line1A.x + b1 * line1A.y;
+
+    var a2 = line2B.y - line2A.y;
+    var b2 = line2A.x - line2B.x;
+    var c2 = a2 * line2A.x + b2 * line2A.y;
+
+    
+    var det = a1*b2 - a2*b1;
+    // Parellel lines?
+    if( det == 0 )
+	return null;
+    
+    return new THREE.Vector2( (b2*c1 - b1*c2)/det,
+			      (a1*c2 - a2*c1)/det
+			    );
+    
+};
+*/
 
 /*
 var tmpBC = new IKRS.CubicBezierCurve( new THREE.Vector2(10,20),

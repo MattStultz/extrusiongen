@@ -3,173 +3,8 @@
 <head> 
 <title>My first Three.js app</title> 
 <meta charset="UTF-8">
-<style>
-body {
-   font-family: Monospace;
-   font-size: 10pt;
-   background-color: #f8f8f8;
-   /* background-image: url('img/depositphotos_1692651-Blueprint_0.6.jpg'); */
-}
-
-h3 {
-  margin-bottom: 0px;
-  margin-top: 0px;
-}
-
-input {
-  font-family: Monospace;
-}
-
-canvas#preview_canvas { 
- position: absolute; 
- top: 40px;
- left: 10px; 
- width: 512px; 
- height: 768px; 
- border: 1px solid #000000;
- background-color: #FFFFFF;
-}
-
-canvas#bezier_canvas {
-position: absolute;
-top: 40px;
-left: 532px;
-width: 512px;
-height: 768px;
-border: 1px solid #000000;
-}
-
-/*
-div#mesh_controls {
-position: absolute;
-top: 40px;
-left: 1054px;
-width: 400px;
-height: 340px;
-border: 1px solid #000000;
-padding: 10px;
-background-color: #ffffff;
-background-image: url('bg_controls.png');
-background-position: 0 0;
-background-size: 420px 360px;
-}*/
-
-div#register_head {
-position: absolute;
-top: 21px;
-left: 1054px;
-width: 400px;
-height: 16px;
-border: 0px solid #000000;
-padding: 0px;
-background-color: #ffffff;
-/*
-background-image: url('bg_controls.png');
-background-position: 0 0;
-background-size: 420px 360px;
-*/
-}
-
-div.register_card {
-position: absolute;
-top: 40px;
-left: 1054px;
-width: 400px;
-height: 360px;
-border: 1px solid #000000;
-padding: 10px;
-background-color: #ffffff;
-background-image: url('bg_controls.png');
-background-position: 0 0;
-background-size: 420px 380px;
-}
-
-.register_tab_selected {
-border-top-left-radius: 8px;
-border-top-right-radius: 8px;
-height: 24px;
-padding: 2px;
-color: #000000;
-background-color: #b0b0b0;
-cursor: normal;
-}
-
-.register_tab {
-border-top-left-radius: 8px;
-border-top-right-radius: 8px;
-height: 24px;
-padding: 2px;
-color: #000000;
-background-color: #e8e8e8;
-cursor: pointer;
-}
-
-/*
-div#color_controls {
-position: absolute;
-top: 410px;
-left: 1054px;
-width: 400px;
-height: 340px;
-border: 1px solid #000000;
-padding: 10px;
-background-color: #ffffff;
-background-image: url('bg_controls.png');
-background-position: 0 0;
-background-size: 420px 360px;
-}
-*/
-
-.tooltip {
-    display: inline;
-    position: relative;
-    font-size: 10pt;
- }
-
-.tooltip:hover:after{
-    background: #333;
-    background: rgba(0,0,0,.8);
-    border-radius: 5px;
-    bottom: 26px;
-    color: #fff;
-    content: attr(title);
-    left: 20%;
-    padding: 5px 15px;
-    position: absolute;
-    z-index: 98;
-    width: 220px;
-    font-size: 10pt;
-}
-
-tooltip:hover:before{
-    border: solid;
-    border-color: #333 transparent;
-    border-width: 6px 6px 0 6px;
-    bottom: 20px;
-    content: "";
-    left: 50%;
-    position: absolute;
-    z-index: 99;
-    font-size: 10pt;
-}
-
-#version_tag {
-    position:   absolute;
-    top:        30px;
-    left:       10px;
-    width:      512px;
-    text-align: right;
-    font-size:  7pt;
-
-}
-
-#menu_bar {
-    position: absolute;
-    left: 10px;
-    top: 10px;
-}
-
-</style> 
+<link rel="stylesheet" type="text/css" media="screen" href="style.css" />
+<link rel="stylesheet" type="text/css" media="screen" href="moo_tools_drop_down_menu/css/dropdown.css" />
 
 </head> 
 
@@ -284,7 +119,7 @@ tooltip:hover:before{
 					     onmousedown="preview_bend_mousedown=true;"
 					     onmouseup="preview_bend_mousedown=false;"
 					     onmousemove="if(preview_bend_mousedown) document.getElementById('preview_bend_display').innerHTML=document.getElementById('preview_bend').value;"
-					     onchange="document.getElementById('preview_bend_display').innerHTML=document.getElementById('preview_bend').value;preview_rebuild_model();" />180°
+					     onchange="displayBendingValue(); preview_rebuild_model();" />180°
 
   </td>			     
 </tr>
@@ -346,7 +181,7 @@ tooltip:hover:before{
 <tr>
   <td></td>
   <td>
-        <input type="checkbox" id="split_shape" name="split_shape" onchange="document.getElementById('arrange_splits_on_plane').disabled = !document.getElementById('split_shape').checked; toggleMeshDirectionEnabled(); preview_rebuild_model();" />
+        <input type="checkbox" id="split_shape" name="split_shape" onchange="toggleFormElementsEnabled(); preview_rebuild_model();" />
           <label for="split_shape">Split shape/mesh</label>
   </td>
 </tr>
@@ -354,27 +189,12 @@ tooltip:hover:before{
 <tr>
   <td></td>
   <td>
-        <input type="checkbox" id="arrange_splits_on_plane" name="arrange_splits_on_plane" onchange="toggleMeshDirectionEnabled(); preview_rebuild_model();" disabled="disabled" />
+        <input type="checkbox" id="arrange_splits_on_plane" name="arrange_splits_on_plane" onchange="toggleFormElementsEnabled(); preview_rebuild_model();" disabled="disabled" />
           <label for="arrange_splits_on_plane">Arrange splits on plane</label>
   </td>
 </tr>
 
 <tr>
-  <script language="Javascript">
-    function toggleMeshDirectionEnabled() {
-    document.getElementById('directions_xyz').disabled = document.getElementById('directions_yxz').disabled = (!document.getElementById('split_shape').checked || !document.getElementById('arrange_splits_on_plane').checked);
-    }
-    function getSelectedMeshDirection() {
-
-    var radios = document.forms["mesh_form"].elements["directions"]; 
-    for( var i = 0; i < radios.length; i++ ) {
-			if( radios[i].checked )
-			return radios[i].value;
-			}
-			return "X"; //undefined;
-
-			}
-			</script>
   <td>Directions:</td>
   <td>
     <table border="0">
@@ -384,14 +204,24 @@ tooltip:hover:before{
           <label for="directions_xyz">(x,y,z)</label>
 	</td>
 	<td>
-	  <input type="radio" id="directions_yxz" name="directions"onchange="preview_rebuild_model();" value="yxz" disabled="disabled" />
-          <label for="directions_yxz">(y,x,-z)</label>
+	  <input type="radio" id="directions_yxz" name="directions" onchange="preview_rebuild_model();" value="zxy" disabled="disabled" />
+          <label for="directions_zxy">(-z,x,-y)</label>
 	</td>
       </tr>
     </table>
   </td>
 </tr>
 
+<tr>
+  <td>Base type: </td> 
+  <td>
+    <input type="radio" name="mesh_hull_type" id="mesh_hull_perpendicular" value="perpendicular" checked="checked" disabled="disabled" onchange="preview_rebuild_model();" />
+    <label for="mesh_base_perpendicular">Perpendicular</label>
+
+    <input type="radio" name="mesh_hull_type" id="mesh_hull_prism" value="prism" value="prism" disabled="disabled" onchange="preview_rebuild_model();" />
+    <label for="mesh_hull_prism">Prism</label>
+  </td>                                                                                                   
+</tr>  
 
 <tr>
   <td></label></td>
@@ -407,30 +237,6 @@ tooltip:hover:before{
 
 <div class="register_card" id="background_settings" style="display: none;">
   <script language="Javascript">
-    function getSelectedBezierBackgroundType() {
-
-    var radios = document.forms["bezier_background_form"].elements["bezier_background_type"]; //( "bezier_background_form" );
-    for( var i = 0; i < radios.length; i++ ) {
-			if( radios[i].checked )
-			return radios[i].value;
-			}
-			return "X"; //undefined;
-
-    }
-    function changeBezierBackgroundType() {
-			var type = getSelectedBezierBackgroundType();
-			//window.alert( type );
-			if( type == "default" )
-			bezierCanvasHandler.loadBackgroundImage( "bg_bezier.png", 
-			                                          true             // redraw when ready
-			); 
-			else if( type == "file" ) 
-			document.forms['bezier_background_form'].elements['bezier_background_file'].click();		
-    }
-
-			function loadBezierBackground() {
-			ImageFileReader.readBezierBackgroundImage();
-			}
   </script>
 <h3>Background Settings</h3>
 <form name="bezier_background_form">
@@ -481,6 +287,15 @@ tooltip:hover:before{
 </div>
 
 
+
+<!-- An area for the volume display -->
+<div id="informational">
+  <h3>Size, Volume and Weight</h3>
+   <div id="volume_and_weight">-</div>
+</div>
+
+
+
 <!-- DUMMY FORM -->
 <form name="stl_form">
     <input type="hidden" id="stl_filename" name="stl_filename" value="my_extrusion.stl" />
@@ -494,6 +309,7 @@ tooltip:hover:before{
 
 <script language="Javascript" type="text/javascript" src="console_check.js"></script>
 <script language="Javascript" type="text/javascript" src="register_cards.js"></script>
+<script language="Javascript" type="text/javascript" src="form_utils.js"></script>
 <script language="Javascript" type="text/javascript" src="three.js"></script>
 
 <script language="Javascript" type="text/javascript" src="Blob.js"></script>
@@ -519,6 +335,7 @@ tooltip:hover:before{
 <script language="Javascript" type="text/javascript" src="IKRS.DivisibleSTLBuilder.js"></script>
 
 <script language="Javascript" type="text/javascript" src="IKRS.BoundingBox2.js"></script>
+<!-- <script language="Javascript" type="text/javascript" src="IKRS.BoundingBox3.js"></script> -->
 <script language="Javascript" type="text/javascript" src="IKRS.VectorFactory.js"></script>
 <script language="Javascript" type="text/javascript" src="IKRS.CubicBezierCurve.js"></script>
 <script language="Javascript" type="text/javascript" src="IKRS.BezierCanvasHandler.js"></script>
@@ -537,7 +354,6 @@ tooltip:hover:before{
 
 
 <!-- Add the menu bar -->
-<link rel="stylesheet" type="text/css" media="screen" href="moo_tools_drop_down_menu/css/dropdown.css" />
 <script type="text/javascript" src="moo_tools_drop_down_menu/scripts/mootools.js"> </script>
 <script type="text/javascript" src="moo_tools_drop_down_menu/scripts/mootools-plugins.js"> </script>
 <script type="text/javascript" src="moo_tools_drop_down_menu/scripts/dropdown-compressed.js"> </script>
@@ -546,30 +362,8 @@ tooltip:hover:before{
 </script>
 
 
-<style>
-
-.open_file_menu_div {
-position: relative; 
-top: 0px; 
-left: 0px; 
-width: 220px; 
-height: 30px; 
-cursor: pointer;
-}
-
-.open_file_menu_input {
-position: relative; 
-width: 220px; 
-height: 30px; 
-top: -30px; 
-left: 0px; 
-opacity: 0; 
-filter: alpha(opacity=0); 
-/* cursor: default; pointer; */
-}
-
-</style>
-<div id="menu_bar">
+<!--- BEGIN ----------- Menu bar structure ---------------------------- -->
+<div id="menu_bar" style="z-index: 1001">
     <div id="dropdown-holder">
       <ul id="nav" class="dropdown">
 	<li class="heading"><a href="#">File</a>
@@ -592,7 +386,7 @@ filter: alpha(opacity=0);
 	    </li>
 	    <li><a href="#" class="popout">Export Mesh &gt;</a>
 	      <ul>
-		<li><a href="#" onclick="exportSTL()">STL file (*.stl)</a></li>	
+		<li><a href="#" onclick="exportSTL()">STL File (*.stl)</a></li>	
 	      </ul>
 	    </li>
 	    <li><a href="#" onclick="saveShape();">Export shape (*.json)</a></li>

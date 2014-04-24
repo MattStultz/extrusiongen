@@ -2,7 +2,8 @@
 /**
  * @author Ikaros Kappler
  * @date 2013-08-26
- * @version 1.0.0
+ * @modified 2014-03-30 Ikaros Kappler (options.meshHullType added).
+ * @version 1.0.1
  **/
 
 
@@ -71,9 +72,11 @@ IKRS.PathDirectedExtrudeGeometry = function( shape,
 
     var old_closePathEnd   = options.closePathEnd;
     var old_closePathBegin = options.closePathBegin;
+    var old_meshHullType   = options.meshHullType;
     if( options.hollow ) {
 	options.closePathEnd   = false;
 	options.closePathBegin = false;
+	options.meshHullType   = false; // The default value is "perpendicular"
     }
     
     options.buildPerpendicularHull = true;
@@ -92,6 +95,8 @@ IKRS.PathDirectedExtrudeGeometry = function( shape,
     //window.alert( options.closePathEnd );
     
     if( options.hollow ) {
+
+	options.meshHullType = old_meshHullType; // DEFAULT (the inner shape is ALWAYS the shape itself)
 
 	// Fetch the points from the shape
 	var shapePoints        = shape.extractAllPoints().shape;
@@ -112,13 +117,13 @@ IKRS.PathDirectedExtrudeGeometry = function( shape,
 	for( var i = 0; i < shapePoints.length; i++ ) {
 
 	    /*
-	    var scaledPoint = new THREE.Vector2( shapePoints[ i ].x * shapeScaleX,
-						 shapePoints[ i ].y * shapeScaleY
-					       );
-					       */
 	    var scaledPoint = vectorFactory.createVector2( shapePoints[ i ].x * shapeScaleX,
 							   shapePoints[ i ].y * shapeScaleY
 							 );
+	    */
+	    var scaledPoint = new THREE.Vector2( shapePoints[ i ].x * shapeScaleX,
+						 shapePoints[ i ].y * shapeScaleY
+					       );
 	    scaledShapePoints.push( scaledPoint );
 
 	}
@@ -235,10 +240,10 @@ IKRS.PathDirectedExtrudeGeometry = function( shape,
 	// The shape is NOT closed, but the mesh isn't hollow.
 	//  -> Make a plane of faces along the cut to close the mesh.
 	// NOTE: THIS ALGORITHM HAS TO BE OPTIMIZED, BECAUSE THIS IS _NOT_
-	//       A CLEAN SHAPE TRIANGULATION.
+	//       A PROPER SHAPE TRIANGULATION.
 	//       (on non-convex bezier shapes this algorithm heavily fails on the 
 	//        concave parts!).
-	// Note 2: there is not outer path result, as there is no outer path.
+	// Note 2: there is no outer path result, as there is no outer path.
 	for( var i = 1; i < innerPathResult.outerPointIndices.left.length; i++ ) {
 
 	    // Triangulate yes or no?
@@ -256,17 +261,9 @@ IKRS.PathDirectedExtrudeGeometry = function( shape,
 
     } else // END else [not hollow but closeShape]
 	if( old_closePathBegin ) {
-	
-	//window.alert( "Closing path begin ... begin.length=" + innerPathResult.outerPointIndices.begin.length );
 
+	    // Close path Begin
 	for( var i = 2; i < innerPathResult.outerPointIndices.begin.length; i++ ) {
-
-	    /*
-	    window.alert( "begin[0]=" +  innerPathResult.outerPointIndices.begin[0] + 
-			  ", begin[" + (i-1) + "]=" + innerPathResult.outerPointIndices.begin[i-1] +
-			  ", begin[" + i + "]=" + innerPathResult.outerPointIndices.begin[i]
-			);
-			*/
 
 	    // Triangulate yes or no?
 	    // Connect the left with the right side.
@@ -305,6 +302,11 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPathExtrusion = function( shape,
     var shapePoints = shape.extractAllPoints();
     shape = shapePoints.shape;
 
+    var shapeBounds = IKRS.BoundingBox2.computeFromPoints( shape );
+    //window.alert( "shapeBounds=" + shapeBounds );
+    
+    //window.alert( 
+
     var result_perpendicularPathPoints        = [];
     var result_outerPointIndices_left         = [];
     var result_outerPointIndices_right        = [];
@@ -314,7 +316,10 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPathExtrusion = function( shape,
     // (required for the outer mesh)
     var result_extendedExtrusionPathPoints    = [];
     
-    
+
+
+    if( !options.meshHullType )
+	options.meshHullType = "perpendicular";
     
 
     
@@ -342,7 +347,8 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPathExtrusion = function( shape,
 					(shapedPathBounds.getYMax() - shapedPathPoint.y) / shapedPathBounds.getHeight()
 				      );
 	
-	
+	//window.alert( "options.perpendicularHullStrength=" + options.perpendicularHullStrength );
+
 	// This only works with bezier curves!!!
 	// (other paths have no perpendicular calculation implemented)
 	if( options.buildPerpendicularHull ) {
@@ -352,8 +358,8 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPathExtrusion = function( shape,
 	    // Normalize directive vector
 	    shapedPathPerpendicular.normalize();
 	    // And set to the default hull size
-	    shapedPathPerpendicular.multiplyScalar( options.perpendicularHullStrength ); //50.0 );
-	    var perpendicularHullPoint  = shapedPath.getPoint( 1-tSegment ); // shapedPathPoint.clone();
+	    shapedPathPerpendicular.multiplyScalar( options.perpendicularHullStrength );
+	    var perpendicularHullPoint  = shapedPath.getPoint( 1-tSegment );
 	    perpendicularHullPoint.add( shapedPathPerpendicular );
 	    result_perpendicularPathPoints.push( perpendicularHullPoint );
 
@@ -364,11 +370,11 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPathExtrusion = function( shape,
 	result_extendedExtrusionPathPoints.push( path.getPoint(1-tSegment) ); // pathPoint );
 
 	/*
-	if( i == options.curveSegments ) pathTangent = new THREE.Vector2( 0, 0 ); // No slope at first level?
-	else                             pathTangent = new THREE.Vector2( pathPoint.x-lastPathPoint.x, pathPoint.y-lastPathPoint.y );
-	*/
 	if( i == options.curveSegments ) pathTangent = vectorFactory.createVector2( 0, 0 ); // No slope at first level?
 	else                             pathTangent = vectorFactory.createVector2( pathPoint.x-lastPathPoint.x, pathPoint.y-lastPathPoint.y );
+	*/
+	if( i == options.curveSegments ) pathTangent = new THREE.Vector2( 0, 0 ); // No slope at first level?
+	else                             pathTangent = new THREE.Vector2( pathPoint.x-lastPathPoint.x, pathPoint.y-lastPathPoint.y );	
 	
 	// Calculate slope from tangent
 	if( pathTangent.x == 0 ) pathTangentSlope = -Math.PI/2.0; // -90 deg
@@ -379,67 +385,92 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPathExtrusion = function( shape,
 
 	var firstShapePointIndex = vertexCount;
 	for( var s in shape ) {
-
+	    
+	    //window.alert( "s=" + s + ", len=" + shape.length + ", s+1=" + (s+1) + ", s+1 < len: " + (s+1 < shape.length) );
 	    
 	    var shapePoint2 = shapePoints.shape[s];
 	    /*
-	    var shapePoint3 = new THREE.Vector3( Math.sin(-pathTangentSlope) * shapePoint2.x,
-						 shapePoint2.y, 
-						 Math.cos(-pathTangentSlope) * shapePoint2.x
-					       );
-					       */
 	    var shapePoint3 = vectorFactory.createVector3( Math.sin(-pathTangentSlope) * shapePoint2.x,
 							   shapePoint2.y, 
 							   Math.cos(-pathTangentSlope) * shapePoint2.x
 							 );
+	    */
+	    var shapePoint3 = new THREE.Vector3( Math.sin(-pathTangentSlope) * shapePoint2.x,
+						 shapePoint2.y, 
+						 Math.cos(-pathTangentSlope) * shapePoint2.x
+					       );
 	    
 	    shapePoint3.multiplyScalar( radiusFactor );
-	    
+
 	    // Translate along path		   
-	    var pathHeightPoint = path.getPoint( tHeight );	   
-	    /*
-	    shapePoint3.add( new THREE.Vector3( pathHeightPoint.x,  
-						0, 
-						pathHeightPoint.y 
-					      ) 
-					      ); // addSelf instead of add?!
-	    */
+	    var pathHeightPoint = path.getPoint( tHeight );
+/*	   
 	    shapePoint3.add( vectorFactory.createVector3( pathHeightPoint.x,  
 							  0, 
 							  pathHeightPoint.y 
 							) 
 			   ); // addSelf instead of add?!
+*/
+	    shapePoint3.add( new THREE.Vector3( pathHeightPoint.x,  
+							  0, 
+							  pathHeightPoint.y 
+							) 
+			   ); // addSelf instead of add?!
+
 
 	    // Add the passed mesh offset before adding.
 	    /*
-	    shapePoint3.add( new THREE.Vector3( 0, // options.meshOffset.x,
-						options.meshOffset.y,
-						options.meshOffset.x
-					      )
-			   );
-			   */
 	    shapePoint3.add( vectorFactory.createVector3( options.meshOffset.z, // 0, // options.meshOffset.x,
 							  options.meshOffset.y,
 							  options.meshOffset.x
 							)
 			   );
-			   
-	    // Add path point?	    	    
-	    // ... Vertex was replaced by Vector3 (Vertex is DEPRECATED!)
-	    /*
-	    this.vertices.push( new THREE.Vector3( shapePoint3.x, 
-						   shapePoint3.y, 
-						   shapePoint3.z 
-						 ) 
-			      );
-			      */
-	    this.vertices.push( vectorFactory.createVector3( shapePoint3.x, 
-							     shapePoint3.y, 
-							     shapePoint3.z 
-							   ) 
-			      );
+	    */
+	    shapePoint3.add( new THREE.Vector3( options.meshOffset.z, // 0, // options.meshOffset.x,
+							  options.meshOffset.y,
+							  options.meshOffset.x
+							)
+			   );
 
+	   // window.alert( options.meshHullType );
+	    if( options.meshHullType == "perpendicular" ) {
 
+		// NOOP
+
+	    } else if( options.meshHullType == "prism" ) {
+	
+		//window.alert( "shapeBounds.getHeight()=" + shapeBounds.getHeight() + ", options.perpendicularHullStrength=" + options.perpendicularHullStrength );
+		var maxHeight = shapedPathBounds.getWidth(); //shapeBounds.getHeight(); // + options.perpendicularHullStrength/10.0;
+		//window.alert( maxHeight );
+
+		// The direction of the prism only depends on the split 2D-shape! As it is split
+		// on the x axis, the (-y,+y) range defines the prism sign.
+		var prismDirection = Math.sign( Math.round( shapeBounds.getYMax() + shapeBounds.getYMin() ) );
+		if( s != 0 && parseInt(s)+1 < shape.length ) {
+		    var tmp = vectorFactory.createVector3( maxHeight, maxHeight, maxHeight );
+		    //if( Math.sign(vectorFactory.signX * vectorFactory.signY * vectorFactory.signZ) == -1 )
+		    shapePoint3.y = maxHeight * prismDirection; //tmp.y * vectorFactory.signY; //Math.sign(tmp.y*tmp.z*tmp.x) * vectorFactory.signZ * vectorFactory.signZ; //(-tmp.y); //-tmp.z; //tmp.x;
+		    //else
+		//	shapePoint3.y = maxHeight * vectorFactory.signY * vectorFactory.signZ; //Math.sign(tmp.y); //  * Math.sign(tmp.y*tmp.z*tmp.x);	;
+		}
+
+	    } else {
+		var errmsg = "[IKRS.PathDirectedExtrudeGeometry.buildPathExtrusion() Illegal value for options.meshHullType: " + options.meshHullType;
+		console.log( errmsg );
+		throw errmsg;
+	    }
+	    
+
+	    // Add path point?
+            // ... Vertex was replaced by Vector3 (Vertex is DEPRECATED!)                                                
+            this.vertices.push( vectorFactory.createVector3( shapePoint3.x,                                              
+                                                             shapePoint3.y,                                              
+                                                             shapePoint3.z                                               
+                                                           )                                                             
+                              ); 
+
+	    
+	    
 	    // Connect previous shape/level with current?
 	    if( i < options.curveSegments ) { // > 0 ) {
 
@@ -655,12 +686,14 @@ IKRS.PathDirectedExtrudeGeometry.prototype.buildPerpendicularHull = function( sh
 					(shapedPathBounds.getYMax() - shapedPathPoint.y) / shapedPathBounds.getHeight()
 				      );
 	
-	/*
+	
 	if( i == options.curveSegments ) pathTangent = new THREE.Vector2( 0, 0 ); // No slope at first level
 	else                             pathTangent = new THREE.Vector2( pathPoint.x-lastPathPoint.x, pathPoint.y-lastPathPoint.y );
-	*/
+	
+	/*
 	if( i == options.curveSegments ) pathTangent = vectorFactory.createVector2( 0, 0 ); // No slope at first level
 	else                             pathTangent = vectorFactory.createVector2( pathPoint.x-lastPathPoint.x, pathPoint.y-lastPathPoint.y );
+	*/
 	
 	// Calculate slope from tangent
 	if( pathTangent.x == 0 ) pathTangentSlope = -Math.PI/2.0; // 90 deg

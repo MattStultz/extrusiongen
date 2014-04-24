@@ -38,12 +38,13 @@ IKRS.BezierCanvasHandler = function() {
     this.canvas.onmousedown    = this.mouseDownHandler;
     this.canvas.onmouseup      = this.mouseUpHandler;
     this.canvas.onmousemove    = this.mouseMoveHandler; 
+    
+    this.changeListeners       = [];
 
     // Install a mouse wheel listener
     if( this.canvas.addEventListener ) { // window.addEventListener ) {
 
 	// For Mozilla 
-	//window.addEventListener( 'DOMMouseScroll', mouseWheelHandler, false );
 	this.canvas.addEventListener( 'DOMMouseScroll', this.mouseWheelHandler, false );
     } else {
 
@@ -66,8 +67,6 @@ IKRS.BezierCanvasHandler = function() {
     this.undoHistory = new IKRS.UndoHistory( this.bezierPath,
 					     32
 					   );
-    //this.undoHistory.createHistoryEntry();
-    //window.alert( "bezierPath=" + JSON.stringify(this.bezierPath) + ",\n current_state: " + JSON.stringify(this.undoHistory.getCurrentState()) + ",\n equal=" + this.bezierPath.equals(this.undoHistory.getCurrentState()) );
     this.bezierPath  = this.undoHistory.getCurrentState().clone();
     
 
@@ -80,7 +79,6 @@ IKRS.BezierCanvasHandler = function() {
 			      true             // redraw when ready
 			    ); 
 
-    //this.redraw();
 }
 
 
@@ -91,6 +89,25 @@ IKRS.BezierCanvasHandler.POINT_ID_LEFT_LOWER_BOUND  = -1004;
 
 IKRS.BezierCanvasHandler.prototype = new IKRS.Object();
 IKRS.BezierCanvasHandler.prototype.constructor = IKRS.BezierCanvasHandler;
+
+
+/**
+ * The passed listener must be a function with two arguments:
+ *   function( source, event ) { ... }
+ **/
+IKRS.BezierCanvasHandler.prototype.addChangeListener = function( listener ) {
+    if( listener == null )
+	return false;
+    this.changeListeners.push( listener );
+    return true;
+};
+
+IKRS.BezierCanvasHandler.prototype._fireChangeEvent = function( e ) {
+    for( var i = 0; i < this.changeListeners.length; i++ ) {
+	var listener = this.changeListeners[i];
+	listener( this, e );
+    }
+};
 
 
 IKRS.BezierCanvasHandler.prototype.mouseWheelHandler = function( e ) {
@@ -153,6 +170,7 @@ IKRS.BezierCanvasHandler.prototype.setMillimeterPerUnit = function( m, redraw ) 
     this.millimeterPerPixel = m;
     if( redraw )
 	this.redraw();
+    this._fireChangeEvent( { nextEventFollowing: false } );
 }
 
 IKRS.BezierCanvasHandler.prototype.undo = function() {
@@ -941,8 +959,11 @@ IKRS.BezierCanvasHandler.prototype.mouseUpHandler = function( e ) {
     this.bezierCanvasHandler.latestClickTime = currentTime;
 
     // If any points were dragged: create a history entry
-    if( this.bezierCanvasHandler.draggedPointID != -1 )
+    var fireChangeEvent = false;
+    if( this.bezierCanvasHandler.draggedPointID != -1 ) {
 	this.bezierCanvasHandler.undoHistory.createHistoryEntry();
+	fireChangeEvent = true;
+    }
 
     // Clear mouse down position
     this.bezierCanvasHandler.latestMouseDownPosition = null; 
@@ -954,11 +975,16 @@ IKRS.BezierCanvasHandler.prototype.mouseUpHandler = function( e ) {
 
     // And repaint the curve (to make the eventually hidden drag points to disappear)
     this.bezierCanvasHandler.redraw();
+
+    if( fireChangeEvent )
+	this.bezierCanvasHandler._fireChangeEvent( { nextEventFollowing: false } );
 } // END mouseUpHandler
 
 IKRS.BezierCanvasHandler.prototype.mouseMoveHandler = function( e ) {
     
     if( this.bezierCanvasHandler.latestMouseDownPosition ) {
+
+	var fireChangeEvent = false;
 
 	// Update dragges point's position
 	var moveX = (this.bezierCanvasHandler.latestMouseDragPosition.x - e.pageX) / this.bezierCanvasHandler.zoomFactor;
@@ -974,6 +1000,7 @@ IKRS.BezierCanvasHandler.prototype.mouseMoveHandler = function( e ) {
 
 	    // And repaint the curve
 	    this.bezierCanvasHandler.redraw();
+	    fireChangeEvent = true;
 	} else if( this.bezierCanvasHandler.draggedPointID == IKRS.BezierCanvasHandler.POINT_ID_LEFT_UPPER_BOUND 
 		   && document.forms["bezier_form"].elements["draw_bounding_box"].checked ) {
 	  
@@ -988,6 +1015,7 @@ IKRS.BezierCanvasHandler.prototype.mouseMoveHandler = function( e ) {
 						       oldBounds.getRightLowerPoint(), // anchor
 						       true  // redraw
 						     );
+	    fireChangeEvent = true;
 
 	} else if( this.bezierCanvasHandler.draggedPointID == IKRS.BezierCanvasHandler.POINT_ID_RIGHT_UPPER_BOUND 
 		   && document.forms["bezier_form"].elements["draw_bounding_box"].checked ) {
@@ -1003,6 +1031,7 @@ IKRS.BezierCanvasHandler.prototype.mouseMoveHandler = function( e ) {
 						       oldBounds.getLeftLowerPoint(), // anchor
 						       true  // redraw
 						     );
+	    fireChangeEvent = true;
 	    
 	} else if( this.bezierCanvasHandler.draggedPointID == IKRS.BezierCanvasHandler.POINT_ID_RIGHT_LOWER_BOUND 
 		   && document.forms["bezier_form"].elements["draw_bounding_box"].checked ) {
@@ -1018,7 +1047,7 @@ IKRS.BezierCanvasHandler.prototype.mouseMoveHandler = function( e ) {
 						       oldBounds.getLeftUpperPoint(), // anchor
 						       true  // redraw
 						     );
-						   
+	    fireChangeEvent = true;
 
 	} else if( this.bezierCanvasHandler.draggedPointID == IKRS.BezierCanvasHandler.POINT_ID_LEFT_LOWER_BOUND 
 		   && document.forms["bezier_form"].elements["draw_bounding_box"].checked ) {
@@ -1032,15 +1061,19 @@ IKRS.BezierCanvasHandler.prototype.mouseMoveHandler = function( e ) {
 	    this.bezierCanvasHandler._scaleBezierPath( oldBounds,
 						       newBounds,
 						       oldBounds.getRightUpperPoint(), // anchor
-						       true  // redraw
+						       true  // redraw	
 						     );
-
+	    fireChangeEvent = true;
+	    
 	}
 	
 
 	this.bezierCanvasHandler.latestMouseDownPosition.set( e.pageX, e.pageY );
 	this.bezierCanvasHandler.latestMouseDragPosition.set( e.pageX, e.pageY );
 	
+
+	if( fireChangeEvent )
+	    this.bezierCanvasHandler._fireChangeEvent( { nextEventFollowing: true } );
     }
 }
 
@@ -1072,8 +1105,10 @@ IKRS.BezierCanvasHandler.prototype._scaleBezierPath = function( oldBounds,
 			      );
     if( redraw )
 	this.redraw();
+    
 
-}
+    this._fireChangeEvent( { nextEventFollowing: false } );
+};
 
 
 IKRS.BezierCanvasHandler.prototype.doubleClickHandler = function( parent,
@@ -1091,8 +1126,10 @@ IKRS.BezierCanvasHandler.prototype.doubleClickHandler = function( parent,
     if( splitSucceeded ) {
 	this.undoHistory.createHistoryEntry();
 	this.redraw();
+	
+	this._fireChangeEvent( { nextEventFollowing: false } );
     }
-}
+};
 
 
 IKRS.BezierCanvasHandler.prototype.keyDownHandler = function( e ) {
@@ -1129,6 +1166,8 @@ IKRS.BezierCanvasHandler.prototype.keyDownHandler = function( e ) {
 	this.bezierCanvasHandler.redraw();
     }
   
+
+    this.bezierCanvasHandler._fireChangeEvent( { nextEventFollowing: false } );
 }
 
 
