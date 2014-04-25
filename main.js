@@ -393,7 +393,9 @@ function decrease_mesh_details() {
 
         if( shape_segments < 3 && path_segments < 2 )
 	    return; // No change
-			
+
+    // The min or max bound might have been reached and the segment values
+    // were re-adjusted. Display the new value in the HTML form.
 	this.document.forms["mesh_form"].elements["shape_segments"].value = shape_segments;
 	this.document.forms["mesh_form"].elements["path_segments"].value  = path_segments;
 			

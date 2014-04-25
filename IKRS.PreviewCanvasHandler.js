@@ -126,15 +126,30 @@ IKRS.PreviewCanvasHandler.prototype.mouseWheelHandler = function( e ) {
 	e.preventDefault();
     e.returnValue = false;
 
-}
+};
 
 IKRS.PreviewCanvasHandler.prototype.getCanvas = function() {
     return this.preview_canvas;
-}
+};
 
 IKRS.PreviewCanvasHandler.prototype.getMeshes = function() {
     return this.preview_meshes;
-}
+};
+
+/**
+ * Due to the THREE.js documentation a CSS-style string is explicitly allowed.
+ * @see http://threejs.org/docs/#Reference/Math/Color
+ **/
+IKRS.PreviewCanvasHandler.prototype.setMaterialColorRGB = function( c, redraw ) {
+    for( var i = 0; i < this.preview_meshes.length; i++ ) {
+	
+	//window.alert( JSON.stringify(this.preview_meshes[i].material.color) );
+	this.preview_meshes[i].material.color = new THREE.Color(c);
+
+    }
+    if( redraw )
+	this.redraw();
+};
 
 IKRS.PreviewCanvasHandler.prototype.increaseZoomFactor = function() {
     
@@ -146,7 +161,7 @@ IKRS.PreviewCanvasHandler.prototype.increaseZoomFactor = function() {
     this._setCameraPositionFromLocalSettings();
     
     return true;
-}
+};
 
 IKRS.PreviewCanvasHandler.prototype.decreaseZoomFactor = function() {
 
@@ -158,7 +173,7 @@ IKRS.PreviewCanvasHandler.prototype.decreaseZoomFactor = function() {
     this._setCameraPositionFromLocalSettings();
 
     return true;
-}
+};
 
 IKRS.PreviewCanvasHandler.prototype.preview_mouseMoveHandler = function ( e ) {
   //window.alert( "clicked. Event: " + e + ", e.pageX=" + e.pageX + ", e.pageY=" + e.pageY );
@@ -254,12 +269,12 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
     var split_shape              = document.forms["mesh_form"].elements["split_shape"].checked;
     var arrange_splits_on_plane  = document.forms["mesh_form"].elements["arrange_splits_on_plane"].checked;
 
-    //window.alert( "A" );
 
-    var meshDirection            = getSelectedMeshDirection();
+    var meshDirection            = getSelectedMeshDirection(); // "xyz" or "zxy"
     var hullType                 = getSelectedMeshHullType();  // "perpendicular" or "prism"
+    var makeParts                = getSelectedMeshParts();     // "both" or "left" or "right"
+    //window.alert( "makeParts=" + makeParts );
     
-    //window.alert( "B" );
 
     // Convert numeric text values to numbers!
     mesh_hull_strength  = parseInt( mesh_hull_strength );
@@ -344,31 +359,37 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
     this._clearScene();
     
 
-    var new_mesh_left = this._buildMeshFromSettings( shapedPath,
-						     circleSegmentCount,
-						     pathSegments,
-						     build_negative_mesh,
-						     mesh_hull_strength,
-						     mesh_close_path_begin,
-						     mesh_close_path_end,
-						     wireFrame,
-						     triangulate,
-						     split_shape,
-						     
-						     -Math.PI/2.0,  // shape_start_angle
-						     
-						     offsets[0], // new THREE.Vector3(0,50,0),  // offset,
-						     
-						     vectorFactories[0],
-						     hullType
-						   );
+    if( makeParts == "both" || 
+	makeParts == "left" 
+      ) {
+	var new_mesh_left = this._buildMeshFromSettings( shapedPath,
+							 circleSegmentCount,
+							 pathSegments,
+							 build_negative_mesh,
+							 mesh_hull_strength,
+							 mesh_close_path_begin,
+							 mesh_close_path_end,
+							 wireFrame,
+							 triangulate,
+							 split_shape,
+							 
+							 -Math.PI/2.0,  // shape_start_angle
+							 
+							 offsets[0], // new THREE.Vector3(0,50,0),  // offset,
+							 
+							 vectorFactories[0],
+							 hullType
+						       );
         
-    this._addMeshToScene( new_mesh_left, 
-			  viewSettings,
-			  null  // (split_shape ? new THREE.Vector3(0,50,0) : null)   // offset
-			);
+	this._addMeshToScene( new_mesh_left, 
+			      viewSettings,
+			      null  // (split_shape ? new THREE.Vector3(0,50,0) : null)   // offset
+			    );
+    }
     
-    if( split_shape ) {
+    if( split_shape && 
+	(makeParts == "both" || makeParts == "right")
+      ) {
 
 	var new_mesh_right = this._buildMeshFromSettings( shapedPath,
 							  circleSegmentCount,
@@ -595,7 +616,7 @@ IKRS.PreviewCanvasHandler.prototype._buildMeshFromSettings = function( shapedPat
     var color            = document.forms["color_form"].elements["color"].value;
     //window.alert( color );
 
-    var exrusionMaterial = new THREE.MeshPhongMaterial( 
+    var extrusionMaterial = new THREE.MeshPhongMaterial( 
 	{ color: color, // 0x151D28, //0x2D303D, 
 	  ambient: 0x996633, // 0xffffff, // 0x996633, // should generally match color
 	  specular: 0x888888, // 0x050505,
@@ -607,13 +628,16 @@ IKRS.PreviewCanvasHandler.prototype._buildMeshFromSettings = function( shapedPat
     );
 
     // As many as there are extrusion steps
-    var extrusionMaterialArray = [ exrusionMaterial,
-				   exrusionMaterial
+    /*
+    var extrusionMaterialArray = [ extrusionMaterial,
+				   extrusionMaterial
 				 ];
+    var meshFaceMaterial = new THREE.MeshFaceMaterial( extrusionMaterialArray );
+    */
 
     
     var new_mesh = new THREE.Mesh( extrusionGeometry,
-				   new THREE.MeshFaceMaterial( extrusionMaterialArray )
+				   extrusionMaterial  // meshFaceMaterial
 				 );
     
     return new_mesh;

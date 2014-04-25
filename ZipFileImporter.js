@@ -106,6 +106,7 @@ ZipFileImporter = {
 	
 	setSelectedMeshDirection( meshSettings.meshDirection ); // May be null
 	setSelectedMeshHullType( meshSettings.meshHullType );   // May be null
+	setSelectedMeshParts( meshSettings.parts );             // May be null
 	
 	return true;
     },

@@ -42,7 +42,10 @@ ZipFileExporter = {
 		
 		// These are new since 2014-04-23
 		directions:           getSelectedMeshDirection(),  // "xyz" or "zxy"
-		meshHullType:         getSelectedMeshHullType()    // "perpendicular" or "prism"
+		meshHullType:         getSelectedMeshHullType(),   // "perpendicular" or "prism"
+		
+		// This is new since 2014-04-25
+		parts:                getSelectedMeshParts()       // "both" or "left" or "right"
 	    },
 
 	    // This is new since 2014-04-23
