@@ -325,24 +325,6 @@ function makeTable( tableData ) {
     return result;
 }
 
-function roundToDigits( number, digits, enforceInvisibleDigits ) {
-    var magnitude = Math.pow( 10, digits ); // This could be LARGE :/
-    number = Math.round( number * magnitude );
-    var result = "" + (number / magnitude);
-    var index = result.lastIndexOf(".");
-    if( index == -1 ) {	
-	//result += ".0";
-	index = result.length;
-    }
-    var digitsAfterPoint = result.length - index - 1;
-    var digitsMissing    = enforceInvisibleDigits - digitsAfterPoint;
-    while( digitsMissing-- > 0 )
-	result += "&nbsp;";
-    
-    return result;
-};
-
-
 function preview_render() {
   
   // Recursive call
@@ -570,6 +552,100 @@ function exportSTL_cancelHandler() {
     }
 }
 
+
+var divisibleOBJBuilder = null;
+function exportOBJ() {
+
+    if( !divisibleOBJBuilder ) { 
+	
+	window.alert( "This function is still experimental." );
+	
+	var meshes        = getPreviewMeshes();
+	var filename      = null;
+	if( document.forms['obj_form'].elements['obj_filename'] )
+	    filename =  document.forms['obj_form'].elements['obj_filename'].value;
+	else
+	    filename = "mesh.obj";
+
+	var merge_meshes  = false;
+	if( document.forms["obj_form"] &&
+	    document.forms["obj_form"].elements["obj_merge_meshes"] &&
+	    document.forms["obj_form"].elements["obj_merge_meshes"].checked ) {
+
+	    merge_meshes = true;
+	}
+	
+	// Init the divisible STL builder
+	divisibleOBJBuilder = new IKRS.DivisibleOBJBuilder( meshes,
+							    filename,
+							    function( e ) { },
+							    1024*128,    // 128 kB chunks,
+							    this.bezierCanvasHandler.getMillimeterPerUnit(),
+							    !merge_meshes        // export as single mesh?
+							  );
+	
+	showLoadingBar( "exportOBJ_cancelHandler()" );
+
+    }
+    
+    if( divisibleOBJBuilder.isInterrupted() ) {
+
+	divisibleOBJBuilder = null;
+	hideLoadingBar();
+	return;
+
+    }
+
+    //console.log( "Next chunk (" + divisibleSTLBuilder.chunkResults.length + ")." );
+    displayProcessState( divisibleOBJBuilder.getProcessedChunkCount(),
+			 divisibleOBJBuilder.getProjectedChunkCount() 
+		       );
+
+    var hasNextChunk = divisibleOBJBuilder.processNextChunk();
+    
+    if( hasNextChunk ) 
+	window.setTimeout( "exportOBJ();", 100 );
+    else {
+	
+	//window.alert( "Finished. " + divisibleSTLBuilder.chunkResults.length + " chunks calculated." );
+	displayProcessState( divisibleOBJBuilder.getProcessedChunkCount(), 
+			     divisibleOBJBuilder.getProjectedChunkCount() 
+			   );
+	divisibleOBJBuilder.saveOBJResult();
+	divisibleOBJBuilder = null;
+	
+	hideLoadingBar();
+
+    }
+    
+}
+
+function exportOBJ_cancelHandler() {
+    if( divisibleOBJBuilder ) {
+	
+	//messageBox.show( "<br/><br/>Interrupted ...<br/><br/>Please wait for process to terminate.<br/>\n" );
+	divisibleOBJBuilder.interrupt();	
+	
+    }
+}
+
+
+
+/*
+function _exportOBJ_simple() {
+
+    var meshes        = getPreviewMeshes();
+    var filename      = null;
+    if( document.forms['obj_form'].elements['obj_filename'] )
+	filename =  document.forms['obj_form'].elements['obj_filename'].value;
+    else
+	filename = "mesh.stl";
+
+    OBJBuilder.saveOBJ( meshes, filename, function() { } );
+
+}
+*/
+
 /**
  * This script adds the message box/layer to the DOM and initializes
  * the process listener.
@@ -634,4 +710,19 @@ function stopLoadingAnimation() {
       loadingAnimationKey;
 }
 
-
+function roundToDigits( number, digits, enforceInvisibleDigits ) {
+    var magnitude = Math.pow( 10, digits ); // This could be LARGE :/
+    number = Math.round( number * magnitude );
+    var result = "" + (number / magnitude);
+    var index = result.lastIndexOf(".");
+    if( index == -1 ) {	
+	//result += ".0";
+	index = result.length;
+    }
+    var digitsAfterPoint = result.length - index - 1;
+    var digitsMissing    = enforceInvisibleDigits - digitsAfterPoint;
+    while( digitsMissing-- > 0 )
+	result += "&nbsp;";
+    
+    return result;
+};

@@ -359,7 +359,8 @@ IKRS.PreviewCanvasHandler.prototype.preview_rebuild_model = function() {
     this._clearScene();
     
 
-    if( makeParts == "both" || 
+    if( !split_shape ||
+	makeParts == "both" || 
 	makeParts == "left" 
       ) {
 	var new_mesh_left = this._buildMeshFromSettings( shapedPath,

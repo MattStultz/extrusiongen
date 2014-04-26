@@ -332,9 +332,14 @@
 
 
 
-<!-- DUMMY FORM -->
+<!-- DUMMY FORM FOR STL EXPORT -->
 <form name="stl_form">
     <input type="hidden" id="stl_filename" name="stl_filename" value="my_extrusion.stl" />
+</form>
+
+<!-- DUMMY FORM FOR OBJ EXPORT -->
+<form name="obj_form">
+    <input type="hidden" id="obj_filename" name="obj_filename" value="my_extrusion.obj" />
 </form>
 
 
@@ -354,6 +359,7 @@
 <script language="Javascript" type="text/javascript" src="jszip-deflate.js"></script>
 <script language="Javascript" type="text/javascript" src="jszip-load.js"></script>
 <!-- <script language="Javascript" type="text/javascript" src="STLBuilder.js"></script> -->
+<!-- <script language="Javascript" type="text/javascript" src="OBJBuilder.js"></script> -->
 
 <script language="Javascript" type="text/javascript" src="StringFileExporter.js"></script>
 <script language="Javascript" type="text/javascript" src="upload_bezier_json_file.js"></script>
@@ -368,7 +374,11 @@
 <script language="Javascript" type="text/javascript" src="IKRS.PathDirectedExtrudeGeometry.js"></script>
 
 <script language="Javascript" type="text/javascript" src="IKRS.Utils.js"></script>
+
+<!-- These two classes should get a common super class -->
 <script language="Javascript" type="text/javascript" src="IKRS.DivisibleSTLBuilder.js"></script>
+<script language="Javascript" type="text/javascript" src="IKRS.DivisibleOBJBuilder.js"></script>
+
 
 <script language="Javascript" type="text/javascript" src="IKRS.BoundingBox2.js"></script>
 <!-- <script language="Javascript" type="text/javascript" src="IKRS.BoundingBox3.js"></script> -->
@@ -423,6 +433,7 @@
 	    <li><a href="#" class="popout">Export Mesh &gt;</a>
 	      <ul>
 		<li><a href="#" onclick="exportSTL()">STL File (*.stl)</a></li>	
+		<li><a href="#" onclick="exportOBJ()">Wavefront File (*.obj)</a></li>
 	      </ul>
 	    </li>
 	    <li><a href="#" onclick="saveShape();">Export shape (*.json)</a></li>
