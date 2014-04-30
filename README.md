@@ -9,12 +9,8 @@ Path Extrusion Generator
 
 
 
-Plan
-----
-- Find name
-    + register domain
-- Propaganda
-- ...
+License:
+CC BY-NC-SA
 
 
 
