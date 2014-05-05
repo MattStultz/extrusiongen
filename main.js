@@ -434,6 +434,11 @@ function loadShape() {
 }
 
 function exportZIP() {
+
+    // Check size
+    if( !checkSizeBeforeSaving() )
+	return false;
+
     //var zip_filename = document.forms['zip_form'].elements['zip_filename'].value;
     var zip_filename = "settings_" + createHumanReadableTimestamp() + ".zip";
     ZipFileExporter.exportZipFile( zip_filename );
@@ -454,14 +459,14 @@ function about() {
     
     messageBox.setSize( 300, 340 );
     messageBox.show( 
-        "<br/><br/>Extrusion/Rotation Generator<br/>\n" +
+        "<br/><br/>Extrusion/Revolution Generator<br/>\n" +
 	    "<br/>\n" + 
             "<br/>\n" +
 	    "extrusiongen<br/>\n" + 
 	    VERSION_STRING + "<br/>\n" + 
 	    "<img src=\"img/I_eat_food_quadratisch_0_-_0.jpg\" alt=\"Logo - I eat food\" width=\"120\" height=\"120\" /><br/>\n" +
 	    "<br/>\n" +
-	    "<a href=\"https://github.com/IkarosKappler/extrusiongen\" target=\"_blank\">github</a><br/>\n" +
+	    "<a href=\"https://github.com/IkarosKappler/extrusiongen\" target=\"_blank\">Ikaros Kappler @ github</a><br/>\n" +
             "<br/><button onclick=\"" + buttonHandler + "\"" + (buttonHandler?"":" disabled") + ">Close</button>" 
     );
     
@@ -478,11 +483,37 @@ function debug() {
 }
 
 
+function checkSizeBeforeSaving() {
+    var bezierBounds        = this.bezierCanvasHandler.getBezierPath().computeBoundingBox();
+    var heightInMillimeters = (bezierBounds.getHeight()/1.0) * this.bezierCanvasHandler.getMillimeterPerUnit();
+    //window.alert( heightInMillimeters );
+    if( heightInMillimeters > 150 ) {	
+	//window.alert( "The shape must not be bigger than 200mm." );
+	/*
+	messageBox.show(
+	    "<br/><br/>\n" +
+		"The shape must not be bigger than 200mm.<br/>\n"
+	);
+	*/
+	return window.confirm( "The shape is bigger than 150mm (height) and cannot be printed this way.\n" +
+			       "\n" +
+			       "Do you want to continue though?\n" 
+			     );
+    }
+
+    return true;
+}
+
+
 var divisibleSTLBuilder = null;
 function exportSTL() {
 
     if( !divisibleSTLBuilder ) { 
 	
+	// Check size
+	if( !checkSizeBeforeSaving() )
+	    return false;
+
 	var meshes        = getPreviewMeshes();
 	var filename      = null;
 	if( document.forms['stl_form'].elements['stl_filename'] )
@@ -558,7 +589,10 @@ function exportOBJ() {
 
     if( !divisibleOBJBuilder ) { 
 	
-	window.alert( "This function is still experimental." );
+	//window.alert( "This function is still experimental." );
+	// Check size
+	if( !checkSizeBeforeSaving() )
+	    return false;
 	
 	var meshes        = getPreviewMeshes();
 	var filename      = null;
@@ -594,7 +628,7 @@ function exportOBJ() {
 	hideLoadingBar();
 	return;
 
-    }
+    }b
 
     //console.log( "Next chunk (" + divisibleSTLBuilder.chunkResults.length + ")." );
     displayProcessState( divisibleOBJBuilder.getProcessedChunkCount(),

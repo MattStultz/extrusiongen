@@ -1120,7 +1120,19 @@ IKRS.BezierCanvasHandler.prototype.mouseMoveHandler = function( e ) {
 	//if( fireChangeEvent )
 	//    this.bezierCanvasHandler._fireChangeEvent( { nextEventFollowing: true } );
     }
-}
+};
+
+IKRS.BezierCanvasHandler.prototype.scaleBezierPathUniform = function( scaleFactor ) {
+    
+    this.getBezierPath().scale( new THREE.Vector2(0,0),
+				new THREE.Vector2(scaleFactor,scaleFactor)
+			      );
+    
+    this.redraw();
+    this._fireChangeEvent( { nextEventFollowing: false  // nextEventFollowing 
+			   } 
+			 );
+};
 
 IKRS.BezierCanvasHandler.prototype._scaleBezierPath = function( oldBounds,
 								newBounds,

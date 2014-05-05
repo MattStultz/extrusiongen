@@ -136,6 +136,16 @@ tooltip:hover:before{
 
 }
 
+#beta_tag {
+    position:   absolute;
+    top:        18px;
+    left:       522px;
+    width:      512px;
+    text-align: center;
+    font-size:  7pt;
+
+}
+
 /* The menu bar style */
 #menu_bar {
     position: absolute;

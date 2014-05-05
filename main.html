@@ -20,6 +20,10 @@
   </script>
 </div>
 
+<div id="beta_tag">
+  <img src="img/icon_beta_A_(50x25).png" alt="This is a beta version!" width="36" height="18" />
+</div>
+
 
 
 <canvas 
@@ -30,8 +34,9 @@
 
 <div style="position: absolute; left: 10px; top: 818px; width: 256px;">
   <div style="position: absolute; top: 0px; left: 256px; width: 256px; text-align: right;">
-  <button onclick="decreaseZoomFactor(true);">-</button>
-  <button onclick="increaseZoomFactor(true);">+</button>
+    Zoom
+    <button onclick="decreaseZoomFactor(true);">-</button>
+    <button onclick="increaseZoomFactor(true);">+</button>
   </div>
 </div>
 
@@ -66,8 +71,13 @@
   </div>
 
   <div style="position: absolute; top: 0px; left: 256px; width: 256px; text-align: right;">
-  <button onclick="bezierCanvasHandler.decreaseZoomFactor(true);">-</button>
-  <button onclick="bezierCanvasHandler.increaseZoomFactor(true);">+</button>
+    Zoom
+    <button onclick="bezierCanvasHandler.decreaseZoomFactor(true);">-</button>
+    <button onclick="bezierCanvasHandler.increaseZoomFactor(true);">+</button>
+    <br/>
+    Scale
+    <button onclick="bezierCanvasHandler.scaleBezierPathUniform(1.05);">+5%</button>
+    <button onclick="bezierCanvasHandler.scaleBezierPathUniform(1.0/1.05);">-5%</button>
   <br/>
 
   </div>
