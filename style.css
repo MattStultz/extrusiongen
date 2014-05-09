@@ -146,11 +146,17 @@ tooltip:hover:before{
 
 }
 
+#license {
+    position:   absolute;
+    top:        760px;
+    left:       1154px;
+}
+
 /* The menu bar style */
 #menu_bar {
-    position: absolute;
-    left: 10px;
-    top: 10px;
+    position:   absolute;
+    left:       10px;
+    top:        10px;
 }
 
 .open_file_menu_div {
